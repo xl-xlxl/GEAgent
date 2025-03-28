@@ -20,7 +20,7 @@ export default {
     <aside class="sidebar">
       <div class="logo-container">
         <h1>GESeek</h1>
-        <h2 class="version-text">demo 0.0.1</h2>
+        <h2 class="version-text">demo 0.0.2</h2>
       </div>
       <nav class="nav-menu">
         <ul>

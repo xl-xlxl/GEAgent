@@ -1,78 +1,167 @@
 <template>
   <div class="chat-container">
-    <h1>AI 聊天</h1>
-    <div class="chat-interface">
-      <div class="messages-container">
-        <p>这里将显示聊天消息</p>
+    <div class="messages-container">
+      <div v-for="message in messages" :key="message.id" :class="{
+        'message': true,
+        'user-message': message.role === 'user',
+        'ai-message': message.role === 'assistant'
+      }">
+        <div class="message-content">{{ message.content }}</div>
       </div>
-      <div class="input-area">
-        <textarea placeholder="在这里输入你的问题..."></textarea>
-        <button>发送</button>
-      </div>
+      <div v-if="loading" class="loading-indicator">AI正在思考中...(当前阶段巨慢)</div>
+    </div>
+
+    <div class="input-container">
+      <textarea v-model="userInput" placeholder="请输入您的问题..." @keydown="handleKeyDown"></textarea>
+      <button @click="sendMessage" :disabled="loading">发送</button>
     </div>
   </div>
 </template>
 
 <script>
+import { chatService } from '@/services/aiService';
+
 export default {
-    name: 'ChatView',
-    data() {
-        return {
-            // 在此处添加数据属性
+  name: 'ChatView',
+  data() {
+    return {
+      messages: [],
+      userInput: '',
+      loading: false
+    };
+  },
+  methods: {
+
+    handleKeyDown(event) {
+      if (event.key === 'Enter') {
+        if (!event.shiftKey) {
+          event.preventDefault();
+          this.sendMessage();
         }
+        // 按下Shift+Enter时浏览器默认行为生效(插入换行符)
+      }
     },
-    methods: {
-        // 在此处添加方法
-    },
-    mounted() {
-        // 组件挂载后的逻辑
+
+    async sendMessage() {
+      if (!this.userInput.trim() || this.loading) return;
+
+      //用户消息
+      const userMessage = {
+        id: Date.now() + '-user',
+        role: 'user',
+        content: this.userInput
+      };
+      this.messages.push(userMessage);
+      this.userInput = '';
+
+      this.loading = true;
+
+      try {
+        const messagesToSend = this.messages.map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }));
+
+        const aiResponse = await chatService.sendMessage(messagesToSend);
+
+        //AI响应信息
+        this.messages.push({
+          ...aiResponse,
+          id: Date.now() + '-assistant'
+        });
+      } catch (error) {
+        console.error('AI响应错误:', error);
+        this.messages.push({
+          id: Date.now() + '-error',
+          role: 'assistant',
+          content: `抱歉，发生了错误: ${error.message || '请求失败'}`
+        });
+      } finally {
+        this.loading = false;
+      }
     }
-}
+  }
+};
 </script>
 
 <style scoped>
 .chat-container {
-  padding: 20px;
-}
-
-.chat-interface {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  height: 70vh;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  overflow: hidden;
+  padding: 20px;
 }
 
 .messages-container {
-  flex-grow: 1;
-  padding: 20px;
+  flex: 1;
   overflow-y: auto;
-  background-color: #f9f9f9;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  min-height: 300px;
 }
 
-.input-area {
+.message {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  word-break: break-word;
+}
+
+.user-message {
+  align-self: flex-end;
+  background: #1677ff;
+  color: white;
+}
+
+.ai-message {
+  align-self: flex-start;
+  background: white;
+  color: #333;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.message-content {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+.input-container {
   display: flex;
-  border-top: 1px solid #eee;
-  padding: 10px;
+  gap: 10px;
 }
 
 textarea {
   flex-grow: 1;
-  height: 60px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  min-height: 80px;
+  padding: 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
   resize: none;
+  font-family: inherit;
 }
 
 button {
-  margin-left: 10px;
   padding: 0 20px;
-  background-color: #4CAF50;
+  background: #1677ff;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+}
+
+button:disabled {
+  background: #ccc;
+}
+
+.loading-indicator {
+  align-self: center;
+  color: #888;
+  padding: 10px;
 }
 </style>

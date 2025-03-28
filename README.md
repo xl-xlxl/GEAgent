@@ -1,29 +1,10 @@
 # GESeek
 
-This template should help get you started developing with Vue 3 in Vite.
+## 环境变量配置
 
-## Recommended IDE Setup
+下载主包发在群里的.env.local：
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+```
+用.env.local替换掉.env.example
 ```
 
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
