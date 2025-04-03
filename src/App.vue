@@ -8,7 +8,7 @@ export default {
         { title: '聊天', route: '/chat' },
         { title: '历史', route: '/history' },
         { title: '设置', route: '/setting' }
-      ]
+      ],
     }
   }
 }

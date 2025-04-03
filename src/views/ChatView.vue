@@ -7,9 +7,15 @@
         'ai-message': message.role === 'assistant'
       }">
         <div class="message-content">{{ message.content }}</div>
+
+        <!-- 思考过程显示区域 -->
+        <div v-if="message.thinking" class="thinking-box">
+          <div class="thinking-title">思考过程：</div>
+          <div class="thinking-content">{{ message.thinking }}</div>
+        </div>
       </div>
-      <div v-if="loading" class="loading-indicator">AI正在思考中...(当前阶段巨慢)</div>
     </div>
+
 
     <div class="input-container">
       <textarea v-model="userInput" placeholder="请输入您的问题..." @keydown="handleKeyDown"></textarea>
@@ -56,21 +62,55 @@ export default {
 
       this.loading = true;
 
+      // 添加思考中的临时消息
+      const thinkingMessage = {
+        id: Date.now() + '-thinking',
+        role: 'thinking',
+        content: '思考中...',
+        thinking: ''
+      };
+      this.messages.push(thinkingMessage);
+
       try {
-        const messagesToSend = this.messages.map(msg => ({
-          role: msg.role,
-          content: msg.content
-        }));
+        const messagesToSend = this.messages
+          .filter(msg => msg.role !== 'thinking') // 排除思考消息
+          .map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }));
 
-        const aiResponse = await chatService.sendMessage(messagesToSend);
+        // 调用API并传入回调函数
+        const aiResponse = await chatService.sendMessage(messagesToSend, (thinking) => {
+          // 更新思考中消息的内容
+          const index = this.messages.findIndex(msg => msg.id === thinkingMessage.id);
+          if (index !== -1) {
+            // 使用Vue.set或直接赋值更新对象属性，确保响应式更新
+            this.$set ? this.$set(this.messages[index], 'thinking', thinking) :
+              this.messages[index].thinking = thinking;
+          }
+        });
 
-        //AI响应信息
+        // 移除思考中的临时消息
+        const thinkingIndex = this.messages.findIndex(msg => msg.id === thinkingMessage.id);
+        if (thinkingIndex !== -1) {
+          this.messages.splice(thinkingIndex, 1);
+        }
+
+        // 添加AI的实际响应
         this.messages.push({
           ...aiResponse,
           id: Date.now() + '-assistant'
         });
       } catch (error) {
         console.error('AI响应错误:', error);
+
+        // 移除思考中的临时消息
+        const thinkingIndex = this.messages.findIndex(msg => msg.id === thinkingMessage.id);
+        if (thinkingIndex !== -1) {
+          this.messages.splice(thinkingIndex, 1);
+        }
+
+        // 添加错误消息
         this.messages.push({
           id: Date.now() + '-error',
           role: 'assistant',
@@ -82,6 +122,7 @@ export default {
     }
   }
 };
+
 </script>
 
 <style scoped>
@@ -163,5 +204,50 @@ button:disabled {
   align-self: center;
   color: #888;
   padding: 10px;
+}
+
+.thinking-message {
+  background-color: rgba(230, 230, 230, 0.3);
+  font-style: italic;
+  border-left: 3px solid #aaa;
+  padding: 10px;
+  margin-bottom: 10px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.thinking-box {
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #ccc;
+  font-size: 0.9em;
+}
+
+.thinking-title {
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 4px;
+  font-size: 0.9em;
+}
+
+.thinking-content {
+  white-space: pre-wrap;
+  color: #555;
+  line-height: 1.4;
 }
 </style>

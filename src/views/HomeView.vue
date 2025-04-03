@@ -10,7 +10,7 @@
       <div class="feature-card">
         <div class="feature-icon">🚀</div>
         <h3>智能对话</h3>
-        <p>我要看Mygo!!!</p>
+        <p>我要看Mygo!!!!!</p>
       </div>
       
       <div class="feature-card">
