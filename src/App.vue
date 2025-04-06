@@ -9,7 +9,7 @@
       <nav class="nav-menu">
         <ul>
           <li v-for="(item, index) in menuItems" :key="index">
-            <a @click="page = item.id" :class="['nav-link', { 'active': page === item.id }]">
+            <a @click="view = item.id" :class="['nav-link', { 'active': view === item.id }]">
               <span class="title">{{ item.title }}</span>
             </a>
           </li>
@@ -18,9 +18,9 @@
     </aside>
     <!-- 主内容区域 -->
     <main class="main-content">
-      <ChatView v-if="page === 'chat'" />
-      <HistoryView v-else-if="page === 'history'" />
-      <SettingView v-else-if="page === 'setting'" />
+      <ChatView v-if="view === 'chat'" />
+      <HistoryView v-else-if="view === 'history'" />
+      <SettingView v-else-if="view === 'setting'" />
     </main>
   </div>
 </template>
@@ -40,7 +40,7 @@ export default {
   },
   data() {
     return {
-      page: 'chat',
+      view: 'chat',
       menuItems: [
         { id: 'chat', title: '聊天' },
         { id: 'history', title: '历史' },
