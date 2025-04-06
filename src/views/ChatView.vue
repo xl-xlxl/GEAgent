@@ -18,7 +18,7 @@
         </div>
         <!-- AI回复消息 -->
         <div v-else-if="message.role === 'assistant'" class="ai-response">
-          <div class="message-content">{{ message.content }}</div>
+          <div class="message-content" v-html="renderMarkdown(message.content)"></div>
         </div>
       </div>
     </div>
@@ -32,6 +32,9 @@
 <script>
 import { chatService } from '@/services/aiService';
 import '@/assets/styles/views/chat.css';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+
 export default {
   name: 'ChatView',
   data() {
@@ -51,6 +54,12 @@ export default {
         }
         // 按下Shift+Enter时浏览器默认行为生效(插入换行符)
       }
+    },
+
+    renderMarkdown(text) {
+      if (!text) return '';
+      const rawHtml = marked.parse(text);
+      return DOMPurify.sanitize(rawHtml);
     },
 
     async sendMessage() {
