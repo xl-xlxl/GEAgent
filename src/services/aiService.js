@@ -13,7 +13,7 @@ export const chatService = {
                     model: "deepseek-ai/DeepSeek-R1",
                     messages: messages,
                     stream: true,
-                    max_tokens: 1024,
+                    max_tokens: 4096,
                     temperature: 0.7,
                     top_p: 0.7,
                     top_k: 50,
@@ -74,8 +74,20 @@ export const chatService = {
                             }
                         }
                         // 检查是否完成
-                        if (json.choices[0].finish_reason === "stop") {
-                            break;
+                        if (json.choices && json.choices[0] && json.choices[0].finish_reason) {
+                            if (json.choices[0].finish_reason === "stop") {
+                                console.log("回答生成完成");
+                                break;
+                            } else if (json.choices[0].finish_reason === "length") {
+                                console.warn("回答长度超过限制，已被截断");
+                                break;
+                            } else if (json.choices[0].finish_reason === "content_filter") {
+                                console.warn("部分内容因内容过滤而被截断");
+                                break;
+                            } else {
+                                console.warn(`回答因 ${json.choices[0].finish_reason} 原因结束`);
+                                break;
+                            }
                         }
                     } catch (e) {
                         console.error("解析流数据失败:", e, line);
