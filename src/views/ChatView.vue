@@ -31,6 +31,7 @@
 
 <script>
 import { chatService } from '@/services/aiService';
+import '@/assets/styles/views/chat.css';
 export default {
   name: 'ChatView',
   data() {
@@ -129,100 +130,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.chat-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-}
-
-.messages-container {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  background: #f5f5f5;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  min-height: 300px;
-}
-
-.message {
-  max-width: 80%;
-  padding: 12px 16px;
-  border-radius: 18px;
-  word-break: break-word;
-}
-
-.user-message {
-  align-self: flex-end;
-  background: #1677ff;
-  color: white;
-}
-
-.ai-message {
-  align-self: flex-start;
-  background: white;
-  color: #333;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.message-content {
-  white-space: pre-wrap;
-  word-break: break-word;
-  line-height: 1.5;
-}
-
-.input-container {
-  display: flex;
-  gap: 10px;
-}
-
-textarea {
-  flex-grow: 1;
-  min-height: 80px;
-  padding: 12px;
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  resize: none;
-  font-family: inherit;
-}
-
-button {
-  padding: 0 20px;
-  background: #1677ff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-button:disabled {
-  background: #ccc;
-}
-
-.thinking-message {
-  background-color: rgba(230, 230, 230, 0.3);
-  font-style: italic;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-.thinking-content {
-  white-space: pre-wrap;
-  color: #555;
-  line-height: 1.5;
-  font-family: 'Courier New', monospace;
-  background-color: rgba(0, 0, 0, 0.02);
-  padding: 8px;
-  border-radius: 4px;
-}
-
-.ai-response {
-  margin-top: 4px;
-}
-</style>
