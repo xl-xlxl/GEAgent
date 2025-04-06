@@ -11,20 +11,17 @@
         <div v-if="message.role === 'user'" class="message-content">
           {{ message.content }}
         </div>
-
         <!-- 思考过程消息 -->
         <div v-else-if="message.role === 'thinking'" class="thinking-process">
           <div class="thinking-indicator">思考中</div>
           <div class="thinking-content">{{ message.thinking }}</div>
         </div>
-
-        <!-- AI回复 -->
+        <!-- AI回复消息 -->
         <div v-else-if="message.role === 'assistant'" class="ai-response">
           <div class="message-content">{{ message.content }}</div>
         </div>
       </div>
     </div>
-
     <div class="input-container">
       <textarea v-model="userInput" placeholder="请输入您的问题..." @keydown="handleKeyDown"></textarea>
       <button @click="sendMessage" :disabled="loading">发送</button>
@@ -34,7 +31,6 @@
 
 <script>
 import { chatService } from '@/services/aiService';
-
 export default {
   name: 'ChatView',
   data() {
@@ -77,6 +73,14 @@ export default {
       };
       this.messages.push(thinkingMessage);
 
+      //ai回复消息
+      const aiMessage = {
+        id: Date.now() + '-assistant',
+        role: 'assistant',
+        content: ''
+      };
+      this.messages.push(aiMessage);
+
       try {
         const messagesToSend = this.messages
           .filter(msg => msg.role !== 'thinking')
@@ -85,28 +89,34 @@ export default {
             content: msg.content
           }));
 
-        const aiResponse = await chatService.sendMessage(messagesToSend, (thinkingDelta) => {
-          const index = this.messages.findIndex(msg => msg.id === thinkingMessage.id);
-          if (index !== -1) {
-            const currentThinking = this.messages[index].thinking || '';
-            const newThinking = currentThinking + thinkingDelta;
-            this.messages[index].thinking = newThinking;
+        const aiResponse = await chatService.sendMessage(
+          messagesToSend,
+          // 思考过程回调
+          (reasoning) => {
+            const thinkingIndex = this.messages.findIndex(msg => msg.id === thinkingMessage.id);
+            if (thinkingIndex !== -1) {
+              const currentThinking = this.messages[thinkingIndex].thinking || '';
+              const newThinking = currentThinking + reasoning;
+              this.messages[thinkingIndex].thinking = newThinking;
+            }
+          },
+          // 回答内容回调
+          (reply) => {
+            const aiIndex = this.messages.findIndex(msg => msg.id === aiMessage.id);
+            if (aiIndex !== -1) {
+              const currentContent = this.messages[aiIndex].content || '';
+              const newContent = currentContent + reply;
+              this.messages[aiIndex].content = newContent;
+            }
           }
-        });
+        );
 
-        // AI回复消息
-        this.messages.push({
-          ...aiResponse,
-          id: Date.now() + '-assistant'
-        });
       } catch (error) {
         console.error('AI响应错误:', error);
-
         const thinkingIndex = this.messages.findIndex(msg => msg.id === thinkingMessage.id);
         if (thinkingIndex !== -1) {
           this.messages[thinkingIndex].thinking = '思考过程中断: ' + error.message;
         }
-
         this.messages.push({
           id: Date.now() + '-error',
           role: 'assistant',
@@ -118,7 +128,6 @@ export default {
     }
   }
 };
-
 </script>
 
 <style scoped>
