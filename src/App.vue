@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import '@/assets/styles/views/app.css';
+// import '@/assets/styles/views/app.css';
 import ChatView from '@/views/ChatView.vue';
 import HistoryView from '@/views/HistoryView.vue';
 import SettingView from '@/views/SettingView.vue';
@@ -50,3 +50,7 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+@import url('./assets/styles/views/app.css');
+</style>
