@@ -66,10 +66,7 @@ export default {
     },
 
     switchModel() {
-      const currentIndex = this.models.indexOf(this.currentModel);
-      const nextIndex = (currentIndex + 1) % this.models.length; // 在模型数组中循环切换
-      this.currentModel = this.models[nextIndex]; // 切换到下一个模型
-      console.log(this.currentModel);
+      this.currentModel = this.models[(this.models.indexOf(this.currentModel) + 1) % this.models.length];
     },
 
     async sendMessage() {
