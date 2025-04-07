@@ -59,7 +59,7 @@ textarea {
 }
 
 button {
-    padding:0 20px;
+    padding: 0 20px;
     background: #1677ff;
     color: white;
     border: none;
@@ -69,6 +69,16 @@ button {
 
 button:disabled {
     background: #ccc;
+}
+
+.switch-model.gray {
+    background-color: #ccc;
+    color: #333;
+}
+
+.switch-model.blue {
+    background-color: #1677ff;
+    color: white;
 }
 
 .thinking-message {

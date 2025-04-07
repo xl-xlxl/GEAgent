@@ -24,6 +24,7 @@
     </div>
     <div class="input-container">
       <textarea v-model="userInput" placeholder="请输入您的问题..." @keydown="handleKeyDown"></textarea>
+      <button :class="['switch-model', currentModel === models[0] ? 'gray' : 'blue']" @click="switchModel">深度思考</button>
       <button class="mr-4" @click="sendMessage" :disabled="loading">发送</button>
     </div>
   </div>
@@ -41,7 +42,9 @@ export default {
     return {
       messages: [],
       userInput: '',
-      loading: false
+      loading: false,
+      currentModel: "deepseek-ai/DeepSeek-V3",
+      models: ["deepseek-ai/DeepSeek-V3", "deepseek-ai/DeepSeek-R1"],
     };
   },
   methods: {
@@ -60,6 +63,13 @@ export default {
       if (!text) return '';
       const rawHtml = marked.parse(text);
       return DOMPurify.sanitize(rawHtml);
+    },
+
+    switchModel() {
+      const currentIndex = this.models.indexOf(this.currentModel);
+      const nextIndex = (currentIndex + 1) % this.models.length; // 在模型数组中循环切换
+      this.currentModel = this.models[nextIndex]; // 切换到下一个模型
+      console.log(this.currentModel);
     },
 
     async sendMessage() {
@@ -98,9 +108,9 @@ export default {
             role: msg.role,
             content: msg.content
           }));
-
         const aiResponse = await chatService.sendMessage(
           messagesToSend,
+          this.currentModel,
           // 思考过程回调
           (reasoning) => {
             const thinkingIndex = this.messages.findIndex(msg => msg.id === thinkingMessage.id);

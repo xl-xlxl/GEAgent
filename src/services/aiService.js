@@ -1,7 +1,7 @@
 const API_KEY = import.meta.env.VITE_SILICON_FLOW_API_KEY || "<token>";
 
 export const chatService = {
-    async sendMessage(messages, onThinking, onReply) {
+    async sendMessage(messages, model, onThinking, onReply) {
         try {
             const options = {
                 method: "POST",
@@ -10,7 +10,7 @@ export const chatService = {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    model: "deepseek-ai/DeepSeek-R1",
+                    model: model,
                     messages: messages,
                     stream: true,
                     max_tokens: 4096,
