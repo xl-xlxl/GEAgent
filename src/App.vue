@@ -18,9 +18,9 @@
     </aside>
     <!-- 主内容区域 -->
     <main class="main-content">
-      <ChatView v-if="view === 'chat'" />
-      <HistoryView v-else-if="view === 'history'" />
-      <SettingView v-else-if="view === 'setting'" />
+      <ChatView v-show="view === 'chat'" />
+      <HistoryView v-if="view === 'history'" />
+      <SettingView v-if="view === 'setting'" />
     </main>
   </div>
 </template>
