@@ -32,7 +32,6 @@
 
 <script>
 import { chatService } from '@/services/aiService';
-import '@/assets/styles/views/chat.css';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
@@ -146,3 +145,7 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+@import '@/assets/styles/views/chat.css';
+</style>

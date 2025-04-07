@@ -21,27 +21,30 @@
       <ChatView v-show="view === 'chat'" />
       <HistoryView v-if="view === 'history'" />
       <SettingView v-if="view === 'setting'" />
+      <HomeView v-if="view === 'home'" />
     </main>
   </div>
 </template>
 
 <script>
-// import '@/assets/styles/views/app.css';
 import ChatView from '@/views/ChatView.vue';
 import HistoryView from '@/views/HistoryView.vue';
 import SettingView from '@/views/SettingView.vue';
+import HomeView from '@/views/HomeView.vue';
 
 export default {
   name: 'App',
   components: {
+    HomeView,
     ChatView,
     HistoryView,
     SettingView
   },
   data() {
     return {
-      view: 'chat',
+      view: 'home',
       menuItems: [
+        { id: 'home', title: '首页' },
         { id: 'chat', title: '聊天' },
         { id: 'history', title: '历史' },
         { id: 'setting', title: '设置' }
