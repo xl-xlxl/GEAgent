@@ -24,7 +24,7 @@
     </div>
     <div class="input-container">
       <textarea v-model="userInput" placeholder="请输入您的问题..." @keydown="handleKeyDown"></textarea>
-      <button @click="sendMessage" :disabled="loading">发送</button>
+      <button class="mr-4" @click="sendMessage" :disabled="loading">发送</button>
     </div>
   </div>
 </template>
