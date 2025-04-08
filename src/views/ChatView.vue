@@ -24,6 +24,7 @@
     </div>
     <div class="input-container">
       <textarea v-model="userInput" placeholder="请输入您的问题..." @keydown="handleKeyDown"></textarea>
+      <button :class="['network', useWebSearch ? 'blue' : 'gray']" @click="toggleWebSearch">联网搜索</button>
       <button :class="['switch-model', currentModel === models[0] ? 'gray' : 'blue']" @click="switchModel">深度思考</button>
       <button class="mr-4" @click="sendMessage" :disabled="loading">发送</button>
     </div>
@@ -32,6 +33,7 @@
 
 <script>
 import { chatService } from '@/services/aiService';
+import { qianfanService } from '@/services/qianfanService'; // 导入千帆服务
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
@@ -44,9 +46,16 @@ export default {
       loading: false,
       currentModel: "deepseek-ai/DeepSeek-V3",
       models: ["deepseek-ai/DeepSeek-V3", "deepseek-ai/DeepSeek-R1"],
+      useWebSearch: false, // 是否使用联网功能
+      conversationId: null, // 千帆会话ID
     };
   },
   methods: {
+
+    toggleWebSearch() {
+      this.useWebSearch = !this.useWebSearch;
+      console.log(`联网模式: ${this.useWebSearch ? '开启' : '关闭'}`);
+    },// 切换联网功能
 
     handleKeyDown(event) {
       if (event.key === 'Enter') {
@@ -78,8 +87,9 @@ export default {
         content: this.userInput
       };
       this.messages.push(userMessage);
-      this.userInput = '';
       this.loading = true;
+      const userQuery = this.userInput;// 添加用户消息到聊天记录
+      this.userInput = '';
 
       //思考过程消息
       const thinkingMessage = {
@@ -98,12 +108,53 @@ export default {
       this.messages.push(aiMessage);
 
       try {
-        const messagesToSend = this.messages
-          .filter(msg => msg.role !== 'thinking')
-          .map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }));
+        let messagesToSend = [];
+        
+        // 如果启用了联网功能，先通过千帆API获取信息
+        if (this.useWebSearch) {
+          try {
+            // 确保有会话ID
+            if (!this.conversationId) {
+              this.conversationId = await qianfanService.getConversationId();
+            }
+            
+            // 调用千帆API获取联网信息
+            const qianfanResponse = await qianfanService.sendMessage(userQuery, this.conversationId);
+            console.log('千帆API返回结果:', qianfanResponse);
+            
+            // 构建包含联网信息的消息
+            messagesToSend = [
+              ...this.messages
+                .filter(msg => msg.role !== 'thinking')
+                .map(msg => ({
+                  role: msg.role,
+                  content: msg.content
+                })),
+              {
+                role: 'system',
+                content: `以下是来自互联网查询的结果，请基于这些信息回答用户的问题：\n\n${qianfanResponse}`
+              }
+            ];
+          } catch (error) {
+            console.error('联网查询失败:', error);
+            // 联网失败时回退到常规模式
+            messagesToSend = this.messages
+              .filter(msg => msg.role !== 'thinking')
+              .map(msg => ({
+                role: msg.role,
+                content: msg.content
+              }));
+          }
+        } else {
+          // 不使用联网功能，直接构建消息
+          messagesToSend = this.messages
+            .filter(msg => msg.role !== 'thinking')
+            .map(msg => ({
+              role: msg.role,
+              content: msg.content
+            }));
+        }
+        
         const aiResponse = await chatService.sendMessage(
           messagesToSend,
           this.currentModel,

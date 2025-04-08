@@ -81,6 +81,16 @@ button:disabled {
     color: white;
 }
 
+.network.gray {
+    background-color: #ccc;
+    color: #333;
+}
+
+.network.blue {
+    background-color: #1677ff;
+    color: white;
+}
+
 .thinking-message {
     background-color: rgba(230, 230, 230, 0.3);
     font-style: italic;

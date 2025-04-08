@@ -16,7 +16,7 @@ export default {
         BlueBox,// 注册组件
     },
     data() {
-
+        return {};
     },
 };
 </script>
