@@ -24,7 +24,7 @@
     </div>
     <div class="input-container">
       <textarea v-model="userInput" placeholder="请输入您的问题..." @keydown="handleKeyDown"></textarea>
-      <button :class="['switch-model', currentModel === models[0] ? 'gray' : 'blue']" @click="switchModel">深度思考</button>
+      <button :class="['network', webSearch ? 'blue' : 'gray']" @click="switchWebSearch">联网搜索</button>
       <button class="mr-4" @click="sendMessage" :disabled="loading">发送</button>
     </div>
   </div>
@@ -32,21 +32,37 @@
 
 <script>
 import { chatService } from '@/services/aiService';
+import { qianfanService } from '@/services/qianfanService'; 
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import { useModelStore } from "@/stores/modelStore";
 
 export default {
   name: 'ChatView',
   data() {
+    const modelStore = useModelStore();
     return {
       messages: [],
       userInput: '',
       loading: false,
-      currentModel: "deepseek-ai/DeepSeek-V3",
-      models: ["deepseek-ai/DeepSeek-V3", "deepseek-ai/DeepSeek-R1"],
+      webSearch: false,
+      conversationId: null,
     };
   },
+
+  computed: {
+    currentModel() {
+      const modelStore = useModelStore();
+      return modelStore.currentModel;
+    }
+  },
+
   methods: {
+
+    switchWebSearch() {
+      this.webSearch = !this.webSearch;
+      console.log('联网模式: ' + (this.webSearch ? '开启' : '关闭'));
+    },
 
     handleKeyDown(event) {
       if (event.key === 'Enter') {
@@ -64,10 +80,6 @@ export default {
       return DOMPurify.sanitize(rawHtml);
     },
 
-    switchModel() {
-      this.currentModel = this.models[(this.models.indexOf(this.currentModel) + 1) % this.models.length];
-    },
-
     async sendMessage() {
       if (!this.userInput.trim() || this.loading) return;
 
@@ -78,8 +90,9 @@ export default {
         content: this.userInput
       };
       this.messages.push(userMessage);
-      this.userInput = '';
       this.loading = true;
+      const userQuery = this.userInput;
+      this.userInput = '';
 
       //思考过程消息
       const thinkingMessage = {
@@ -98,12 +111,50 @@ export default {
       this.messages.push(aiMessage);
 
       try {
-        const messagesToSend = this.messages
-          .filter(msg => msg.role !== 'thinking')
-          .map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }));
+        let messagesToSend = [];
+        // 如果启用了联网功能，先通过千帆API获取信息
+        if (this.webSearch) {
+          try {
+            if (!this.conversationId) {
+              this.conversationId = await qianfanService.getConversationId();
+            }
+            const qianfanResponse = await qianfanService.sendMessage(userQuery, this.conversationId);
+            // 构建包含联网信息的消息
+            messagesToSend = [
+              ...this.messages
+                .slice(-5)
+                .filter(msg => msg.role !== 'thinking')
+                .map(msg => ({
+                  role: msg.role,
+                  content: msg.content
+                })),
+              {
+                role: 'system',
+                content: `以下是来自互联网查询的结果，请基于这些信息回答用户的问题：\n${qianfanResponse}`
+              }
+            ];
+          } 
+          catch (error) {
+            // 联网失败时回退到常规模式
+            messagesToSend = this.messages
+              .slice(-5)
+              .filter(msg => msg.role !== 'thinking')
+              .map(msg => ({
+                role: msg.role,
+                content: msg.content
+              }));
+          }
+        } 
+        else {
+          // 不使用联网功能
+          messagesToSend = this.messages
+            .filter(msg => msg.role !== 'thinking')
+            .map(msg => ({
+              role: msg.role,
+              content: msg.content
+            }));
+        }
+        
         const aiResponse = await chatService.sendMessage(
           messagesToSend,
           this.currentModel,

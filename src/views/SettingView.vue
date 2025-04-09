@@ -1,29 +1,38 @@
 <template>
-    <div class="history-container">
-        <h1>设置页面</h1>
+    <div class="settings-container">
+        <div class="model-selection">
+            <label>选择模型：</label>
+            <select v-model="currentModel"  @change="updateModel">
+                <option v-for="model in models" :key="model" :value="model">
+                    {{ model }}
+                </option>
+            </select>
+        </div>
     </div>
 </template>
 
 <script>
+import { useModelStore } from "@/stores/modelStore";
+
 export default {
-    name: 'HistoryView',
+    name: "SettingsView",
     data() {
+        const modelStore = useModelStore();
         return {
-            // 在此处添加数据属性
-        }
+            currentModel: modelStore.currentModel,
+            models: modelStore.models,
+            modelStore,
+        };
     },
     methods: {
-        // 在此处添加方法
+        updateModel() {
+            console.log("当前模型：", this.currentModel);
+            this.modelStore.switchModel(this.currentModel);
+        },
     },
-    mounted() {
-        // 组件挂载后的逻辑
-    }
-}
+};
 </script>
 
 <style scoped>
-/* 在此处添加组件样式 */
-.history-container {
-    padding: 20px;
-}
+@import "@/assets/styles/views/setting.css";
 </style>

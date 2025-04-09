@@ -71,12 +71,12 @@ button:disabled {
     background: #ccc;
 }
 
-.switch-model.gray {
+.network.gray {
     background-color: #ccc;
     color: #333;
 }
 
-.switch-model.blue {
+.network.blue {
     background-color: #1677ff;
     color: white;
 }
