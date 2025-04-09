@@ -25,7 +25,6 @@
     <div class="input-container">
       <textarea v-model="userInput" placeholder="请输入您的问题..." @keydown="handleKeyDown"></textarea>
       <button :class="['network', webSearch ? 'blue' : 'gray']" @click="switchWebSearch">联网搜索</button>
-      <button :class="['switch-model', currentModel === models[0] ? 'gray' : 'blue']" @click="switchModel">深度思考</button>
       <button class="mr-4" @click="sendMessage" :disabled="loading">发送</button>
     </div>
   </div>
@@ -36,19 +35,26 @@ import { chatService } from '@/services/aiService';
 import { qianfanService } from '@/services/qianfanService'; 
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import { useModelStore } from "@/stores/modelStore";
 
 export default {
   name: 'ChatView',
   data() {
+    const modelStore = useModelStore();
     return {
       messages: [],
       userInput: '',
       loading: false,
-      currentModel: "deepseek-ai/DeepSeek-V3",
-      models: ["deepseek-ai/DeepSeek-V3", "deepseek-ai/DeepSeek-R1"],
       webSearch: false,
       conversationId: null,
     };
+  },
+
+  computed: {
+    currentModel() {
+      const modelStore = useModelStore();
+      return modelStore.currentModel;
+    }
   },
 
   methods: {
@@ -72,11 +78,6 @@ export default {
       if (!text) return '';
       const rawHtml = marked.parse(text);
       return DOMPurify.sanitize(rawHtml);
-    },
-
-    switchModel() {
-      this.currentModel = this.models[(this.models.indexOf(this.currentModel) + 1) % this.models.length];
-      console.log('当前模型:' + this.currentModel);
     },
 
     async sendMessage() {
@@ -121,6 +122,7 @@ export default {
             // 构建包含联网信息的消息
             messagesToSend = [
               ...this.messages
+                .slice(-5)
                 .filter(msg => msg.role !== 'thinking')
                 .map(msg => ({
                   role: msg.role,
@@ -128,13 +130,14 @@ export default {
                 })),
               {
                 role: 'system',
-                content: `以下是来自互联网查询的结果，请基于这些信息回答用户的问题：\n\n${qianfanResponse}`
+                content: `以下是来自互联网查询的结果，请基于这些信息回答用户的问题：\n${qianfanResponse}`
               }
             ];
           } 
           catch (error) {
             // 联网失败时回退到常规模式
             messagesToSend = this.messages
+              .slice(-5)
               .filter(msg => msg.role !== 'thinking')
               .map(msg => ({
                 role: msg.role,

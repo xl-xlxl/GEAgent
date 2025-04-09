@@ -4,7 +4,7 @@ const TOKEN = import.meta.env.VITE_QIANFAN_TOKEN;
 const APP_ID = import.meta.env.VITE_QIANFAN_APP_ID;
 
 export const qianfanService = {
-    
+
     async getConversationId() {
         try {
             const options = {
@@ -44,7 +44,8 @@ export const qianfanService = {
             const response = await axios(options);
             return response.data.response;
         } catch (error) {
-            return '联网服务请求失败:' + error.message;
+            console.error("联网请求失败:", error.message);
+            return null;
         }
     }
 };

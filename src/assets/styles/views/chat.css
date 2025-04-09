@@ -71,16 +71,6 @@ button:disabled {
     background: #ccc;
 }
 
-.switch-model.gray {
-    background-color: #ccc;
-    color: #333;
-}
-
-.switch-model.blue {
-    background-color: #1677ff;
-    color: white;
-}
-
 .network.gray {
     background-color: #ccc;
     color: #333;
