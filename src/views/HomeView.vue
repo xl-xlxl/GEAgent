@@ -21,6 +21,7 @@
                     <template #actions>
                         <div class="sender-actions">
                             <a-select 
+                                :defaultValue="currentModel"
                                 v-model="currentModel"
                                 @change="updateModel" 
                                 style="width: 120px" 
