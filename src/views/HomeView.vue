@@ -21,13 +21,14 @@
                     <template #actions>
                         <div class="sender-actions">
                             <a-select 
-                                v-model:value="selectedModel" 
+                                v-model="currentModel"
+                                @change="updateModel" 
                                 style="width: 120px" 
                                 size="small"
                                 :disabled="loading"
                             >
-                                <a-select-option v-for="model in models" :key="model.value" :value="model.value">
-                                    {{ model.label }}
+                                <a-select-option v-for="model in models" :key="model" :value="model">
+                                    {{ model }}
                                 </a-select-option>
                             </a-select>
                             <a-button 
@@ -59,23 +60,33 @@ import {SendOutlined} from '@ant-design/icons-vue';
 import { Sender } from 'ant-design-x-vue';
 import { onWatcherCleanup, ref, watch } from 'vue';
 import LoginCard from '@/components/LoginCard.vue';
+import { useModelStore } from '@/stores/modelStore';
 
 defineOptions({ name: 'AXSenderBasicSetup' });
 
 const [messageApi, contextHolder] = message.useMessage();
-
 const value = ref<any>('');
 const loading = ref<boolean>(false);
 const showLoginCard = ref<boolean>(false);
 
-// 添加模型选择相关数据
-const selectedModel = ref('gpt-3.5-turbo');
-const models = [
-  { value: 'gpt-3.5-turbo', label: 'GPT-3.5' },
-  { value: 'gpt-4', label: 'GPT-4' },
-  { value: 'claude-3', label: 'Claude 3' },
-  { value: 'gemini-pro', label: 'Gemini Pro' }
-];
+// 使用 modelStore
+const modelStore = useModelStore();
+const models = modelStore.models;
+const currentModel =ref(modelStore.currentModel)
+
+// 创建假数据并存储 token
+const createMockData = () => {
+  // 创建一个模拟的 token 并存储到 localStorage
+  const mockToken = 'mock-token-' + Date.now();
+  localStorage.setItem('token', mockToken);
+  console.log('已创建模拟 token:', mockToken);
+};
+
+
+// 更新模型选择
+const updateModel = (model: string) => {
+  modelStore.switchModel(model);
+};
 
 // 处理提交
 const handleSubmit = () => {
@@ -83,25 +94,41 @@ const handleSubmit = () => {
   const token = localStorage.getItem('token');
   console.log(token)
   
+  if (!token) {
     // 用户未登录，显示登录卡片
-    showLoginCard.value = true;
-    messageApi.warning('请先登录后再发送消息');
-    return;
+  showLoginCard.value = true;
+  messageApi.warning('请先登录后再发送消息');
+  return;
+  } else {
+    // 用户已登录，继续发送消息
+    messageApi.info(`使用 ${modelStore.currentModel} 发送消息`);
+    value.value = '';
+    loading.value = true;
+
+    // 模拟发送成功
+    setTimeout(() => {
+      loading.value = false;
+      messageApi.success('消息发送成功！');
+    }, 2000);}
+  
 };
 
-// 处理登录成功
-const handleLoginSuccess = () => {
+  const handleLoginSuccess = () => {
   showLoginCard.value = false;
+  createMockData();
   // 登录成功后自动发送消息
   
-  const modelName = models.find(m => m.value === selectedModel.value)?.label || selectedModel.value;
-  messageApi.info(`使用 ${modelName} 发送消息`);
+  messageApi.info(`使用 ${modelStore.currentModel} 发送消息`);
   value.value = '';
   loading.value = true;
+
+  //模拟发送成功
+ 
+  setTimeout(() => {
+    loading.value = false;
+    messageApi.success('消息发送成功！');
+  }, 2000);
 };
-
-//mock假数据
-
 
 </script>
 
