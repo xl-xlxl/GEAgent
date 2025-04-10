@@ -1,12 +1,22 @@
 <template>
     <div class="settings-container">
-        <div class="model-selection">
-            <label>选择模型：</label>
-            <select v-model="currentModel"  @change="updateModel">
-                <option v-for="model in models" :key="model" :value="model">
-                    {{ model }}
-                </option>
-            </select>
+        <div class="parameter-settings">
+            <label>
+                最大 Token 数:
+                <input type="number" v-model.number="max_tokens" @change="switchSettings" />
+            </label>
+            <label>
+                温度 (temperature):
+                <input type="number" step="0.1" v-model.number="temperature" @change="switchSettings" />
+            </label>
+            <label>
+                Top P:
+                <input type="number" step="0.1" v-model.number="top_p" @change="switchSettings" />
+            </label>
+            <label>
+                Top K:
+                <input type="number" v-model.number="top_k" @change="switchSettings" />
+            </label>
         </div>
     </div>
 </template>
@@ -19,15 +29,21 @@ export default {
     data() {
         const modelStore = useModelStore();
         return {
-            currentModel: modelStore.currentModel,
-            models: modelStore.models,
+            max_tokens: modelStore.max_tokens,
+            temperature: modelStore.temperature,
+            top_p: modelStore.top_p,
+            top_k: modelStore.top_k,
             modelStore,
         };
     },
     methods: {
-        updateModel() {
-            console.log("当前模型：", this.currentModel);
-            this.modelStore.switchModel(this.currentModel);
+        switchSettings() {
+            this.modelStore.switchSettings({
+                max_tokens: this.max_tokens,
+                temperature: this.temperature,
+                top_p: this.top_p,
+                top_k: this.top_k,
+            });
         },
     },
 };

@@ -24,6 +24,14 @@
     </div>
     <div class="input-container">
       <textarea v-model="userInput" placeholder="请输入您的问题..." @keydown="handleKeyDown"></textarea>
+      <div class="model-selection">
+        <label>选择模型：</label>
+        <select v-model="currentModel" @change="switchModel">
+          <option v-for="model in models" :key="model" :value="model">
+            {{ model }}
+          </option>
+        </select>
+      </div>
       <button :class="['network', webSearch ? 'blue' : 'gray']" @click="switchWebSearch">联网搜索</button>
       <button class="mr-4" @click="sendMessage" :disabled="loading">发送</button>
     </div>
@@ -32,7 +40,7 @@
 
 <script>
 import { chatService } from '@/services/aiService';
-import { qianfanService } from '@/services/qianfanService'; 
+import { qianfanService } from '@/services/qianfanService';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useModelStore } from "@/stores/modelStore";
@@ -47,17 +55,31 @@ export default {
       loading: false,
       webSearch: false,
       conversationId: null,
+      currentModel: modelStore.currentModel,
+      models: modelStore.models,
+      modelStore,
     };
   },
 
   computed: {
-    currentModel() {
-      const modelStore = useModelStore();
-      return modelStore.currentModel;
-    }
+    max_tokens() {
+      return useModelStore().max_tokens;
+    },
+    temperature() {
+      return useModelStore().temperature;
+    },
+    top_p() {
+      return useModelStore().top_p;
+    },
+    top_k() {
+      return useModelStore().top_k;
+    },
   },
 
   methods: {
+    switchModel() {
+      this.modelStore.switchModel(this.currentModel);
+    },
 
     switchWebSearch() {
       this.webSearch = !this.webSearch;
@@ -111,6 +133,12 @@ export default {
       this.messages.push(aiMessage);
 
       try {
+        console.log('当前模型:', this.currentModel);
+        console.log('现在的最大token数:', this.max_tokens);
+        console.log('现在的temperature:', this.temperature);
+        console.log('现在的top_p:', this.top_p);
+        console.log('现在的top_k:', this.top_k);
+
         let messagesToSend = [];
         // 如果启用了联网功能，先通过千帆API获取信息
         if (this.webSearch) {
@@ -133,7 +161,7 @@ export default {
                 content: `以下是来自互联网查询的结果，请基于这些信息回答用户的问题：\n${qianfanResponse}`
               }
             ];
-          } 
+          }
           catch (error) {
             // 联网失败时回退到常规模式
             messagesToSend = this.messages
@@ -144,7 +172,7 @@ export default {
                 content: msg.content
               }));
           }
-        } 
+        }
         else {
           // 不使用联网功能
           messagesToSend = this.messages
@@ -154,10 +182,9 @@ export default {
               content: msg.content
             }));
         }
-        
+
         const aiResponse = await chatService.sendMessage(
           messagesToSend,
-          this.currentModel,
           // 思考过程回调
           (reasoning) => {
             const thinkingIndex = this.messages.findIndex(msg => msg.id === thinkingMessage.id);

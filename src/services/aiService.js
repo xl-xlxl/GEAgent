@@ -1,8 +1,17 @@
-const API_KEY = import.meta.env.VITE_SILICON_FLOW_API_KEY || "<token>";
+import { useModelStore } from "@/stores/modelStore.js";
+const API_KEY = import.meta.env.VITE_SILICON_FLOW_API_KEY;
 
 export const chatService = {
-    async sendMessage(messages, model, onThinking, onReply) {
+    async sendMessage(messages, onThinking, onReply) {
         try {
+            // 从 Pinia Store 获取动态参数
+            const modelStore = useModelStore();
+            const model = modelStore.currentModel;
+            const max_tokens = modelStore.max_tokens;
+            const temperature = modelStore.temperature;
+            const top_p = modelStore.top_p;
+            const top_k = modelStore.top_k;
+            //模型参数
             const options = {
                 method: "POST",
                 headers: {
@@ -13,10 +22,10 @@ export const chatService = {
                     model: model,
                     messages: messages,
                     stream: true,
-                    max_tokens: 4096,
-                    temperature: 0.7,
-                    top_p: 0.7,
-                    top_k: 50,
+                    max_tokens: max_tokens,
+                    temperature: temperature, 
+                    top_p: top_p,
+                    top_k: top_k,
                     include_reasoning: true,
                     frequency_penalty: 0.5,
                     n: 1,
