@@ -9,8 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons-vue": "^7.0.1",
     "@tailwindcss/vite": "^4.1.3",
+    "ant-design": "^1.0.0",
+    "ant-design-vue": "^4.2.6",
     "ant-design-x-vue": "^1.0.8",
+    "antd": "^5.24.6",
     "axios": "^1.8.4",
     "dompurify": "^3.2.5",
     "marked": "^15.0.7",
