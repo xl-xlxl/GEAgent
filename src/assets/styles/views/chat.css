@@ -102,3 +102,41 @@ button:disabled {
 .ai-response {
     margin-top: 4px;
 }
+
+/* 联网按钮图标样式 */
+.image-button {
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.button-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.image-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 发送区域样式 */
+.sender-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 发送按钮样式 */
+.send-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.send-button .anticon {
+    margin: 0 auto;
+}

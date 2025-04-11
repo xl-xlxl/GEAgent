@@ -54,20 +54,6 @@
         </Sender>
       </div>
     </Flex>
-    
-    <div class="input-container">
-      <textarea v-model="userInput" placeholder="请输入您的问题..." @keydown="handleKeyDown"></textarea>
-      <div class="model-selection">
-        <label>选择模型：</label>
-        <select v-model="currentModel" @change="switchModel">
-          <option v-for="model in models" :key="model" :value="model">
-            {{ model }}
-          </option>
-        </select>
-      </div>
-      <button :class="['network', webSearch ? 'blue' : 'gray']" @click="switchWebSearch">联网搜索</button>
-      <button class="mr-4" @click="sendMessage" :disabled="loading">发送</button>
-    </div>
   </div>
 </template>
 
@@ -77,9 +63,17 @@ import { qianfanService } from '@/services/qianfanService';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useModelStore } from "@/stores/modelStore";
+import { Flex, Select, Button } from 'ant-design-vue';
+import { Sender } from 'ant-design-x-vue';
 
 export default {
   name: 'ChatView',
+  components: {
+    Flex,
+    Select,
+    Button,
+    Sender
+  },
   data() {
     const modelStore = useModelStore();
     return {
@@ -110,8 +104,9 @@ export default {
   },
 
   methods: {
-    switchModel() {
-      this.modelStore.switchModel(this.currentModel);
+    switchModel(value) {
+      this.currentModel = value;
+      this.modelStore.switchModel(value);
     },
 
     switchWebSearch() {
