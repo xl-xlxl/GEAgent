@@ -13,7 +13,6 @@
         </div>
         <!-- 思考过程消息 -->
         <div v-else-if="message.role === 'thinking'" class="thinking-process">
-          <div class="thinking-indicator">思考中</div>
           <div class="thinking-content">{{ message.thinking }}</div>
         </div>
         <!-- AI回复消息 -->
@@ -41,7 +40,7 @@
               </a-select>
               <a-button :class="['network', webSearch ? 'blue' : 'gray']" @click="switchWebSearch" size="small"
                 :disabled="loading" class="image-button">
-                <img :src="webSearch ? '/public/联网图标白.svg' : '/public/联网图标灰.svg'" alt="联网搜索" class="button-icon" />
+                <img :src="webSearch ? '/联网图标白.svg' : '/联网图标灰.svg'" alt="联网搜索" class="button-icon" />
               </a-button>
               <a-button type="primary" @click="handleSubmit" :loading="loading" :disabled="!userInput.trim()"
                 size="small" class="send-button">
@@ -65,6 +64,10 @@ import DOMPurify from 'dompurify';
 import { useModelStore } from "@/stores/modelStore";
 import { Flex, Select, Button } from 'ant-design-vue';
 import { Sender } from 'ant-design-x-vue';
+import { SendOutlined } from '@ant-design/icons-vue';//
+import { Avatar } from 'ant-design-vue';//
+import { AntDesignOutlined } from '@ant-design/icons-vue';//
+
 
 export default {
   name: 'ChatView',
@@ -72,7 +75,10 @@ export default {
     Flex,
     Select,
     Button,
-    Sender
+    Sender,
+    SendOutlined,//
+    Avatar,//
+    AntDesignOutlined,//
   },
   data() {
     const modelStore = useModelStore();

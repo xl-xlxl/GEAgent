@@ -9,12 +9,10 @@
 .messages-container {
     flex: 1;
     overflow-y: auto;
-    padding-right: 5px;
     display: flex;
     flex-direction: column;
     background: #f5f5f5;
     border-radius: 8px;
-    margin-bottom: 20px;
     min-height: 300px;
 }
 
@@ -42,6 +40,17 @@
     white-space: pre-wrap;
     word-break: break-word;
     line-height: 1.5;
+}
+
+.thinking-message {
+    background-color: rgba(230, 230, 230, 0.3);
+    font-style: italic;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.ai-response {
+    margin-top: 4px;
 }
 
 .input-container {
@@ -80,27 +89,6 @@ button:disabled {
 .network.blue {
     background-color: #1677ff;
     color: white;
-}
-
-.thinking-message {
-    background-color: rgba(230, 230, 230, 0.3);
-    font-style: italic;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-
-.thinking-content {
-    white-space: pre-wrap;
-    color: #555;
-    line-height: 1.5;
-    font-family: 'Courier New', monospace;
-    background-color: rgba(0, 0, 0, 0.02);
-    padding: 8px;
-    border-radius: 4px;
-}
-
-.ai-response {
-    margin-top: 4px;
 }
 
 /* 联网按钮图标样式 */
