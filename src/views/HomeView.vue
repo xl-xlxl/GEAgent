@@ -21,7 +21,6 @@
                     <template #actions>
                         <div class="sender-actions">
                             <a-select 
-                                :defaultValue="currentModel"
                                 v-model="currentModel"
                                 @change="updateModel" 
                                 style="width: 120px" 
@@ -62,6 +61,7 @@ import { Sender } from 'ant-design-x-vue';
 import { onWatcherCleanup, ref, watch } from 'vue';
 import LoginCard from '@/components/LoginCard.vue';
 import { useModelStore } from '@/stores/modelStore';
+import * as userService from '@/services/userService';
 
 defineOptions({ name: 'AXSenderBasicSetup' });
 
@@ -75,15 +75,6 @@ const modelStore = useModelStore();
 const models = modelStore.models;
 const currentModel =ref(modelStore.currentModel)
 
-// 创建假数据并存储 token
-const createMockData = () => {
-  // 创建一个模拟的 token 并存储到 localStorage
-  const mockToken = 'mock-token-' + Date.now();
-  localStorage.setItem('token', mockToken);
-  console.log('已创建模拟 token:', mockToken);
-};
-
-
 // 更新模型选择
 const updateModel = (model: string) => {
   modelStore.switchModel(model);
@@ -91,6 +82,8 @@ const updateModel = (model: string) => {
 
 // 处理提交
 const handleSubmit = () => {
+
+
   // 检查登录状态，这里假设从localStorage获取
   const token = localStorage.getItem('token');
   console.log(token)
@@ -102,6 +95,8 @@ const handleSubmit = () => {
   return;
   } else {
     // 用户已登录，继续发送消息
+    const newToken=userService.refreshToken();
+    console.log(newToken)
     messageApi.info(`使用 ${modelStore.currentModel} 发送消息`);
     value.value = '';
     loading.value = true;
@@ -115,8 +110,9 @@ const handleSubmit = () => {
 };
 
   const handleLoginSuccess = () => {
+
   showLoginCard.value = false;
-  createMockData();
+  
   // 登录成功后自动发送消息
   
   messageApi.info(`使用 ${modelStore.currentModel} 发送消息`);
