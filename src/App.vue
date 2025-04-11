@@ -1,16 +1,18 @@
 <template>
   <div class="app-container">
-    <HomeView />
+    <ChatView />
   </div>
 </template>
 
 <script>
 import HomeView from '@/views/HomeView.vue';
+import ChatView from './views/ChatView.vue';
 
 export default {
   name: 'App',
   components: {
-    HomeView
+    HomeView,
+    ChatView,
   }
 }
 </script>
