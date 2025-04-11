@@ -1,58 +1,72 @@
 <template>
   <div class="chat-container">
-    <div class="messages-container">
-      <div v-for="message in messages" :key="message.id" :class="{
-        'message': true,
-        'user-message': message.role === 'user',
-        'ai-message': message.role === 'assistant',
-        'thinking-message': message.role === 'thinking'
-      }">
-        <!-- 用户消息 -->
-        <div v-if="message.role === 'user'" class="message-content">
-          {{ message.content }}
-        </div>
-        <!-- 思考过程消息 -->
-        <div v-else-if="message.role === 'thinking'" class="thinking-process">
-          <div class="thinking-content">{{ message.thinking }}</div>
-        </div>
-        <!-- AI回复消息 -->
-        <div v-else-if="message.role === 'assistant'" class="ai-response">
-          <div class="message-content" v-html="renderMarkdown(message.content)"></div>
-        </div>
-      </div>
-    </div>
-    <!-- 输入框和按钮 -->
-    <Flex vertical gap="large">
-      <div class="sender-container">
-        <Sender v-model:value="userInput" :loading="loading" :auto-size="{ minRows: 3, maxRows: 8 }"
-          placeholder="请输入您的问题..." @keydown="handleKeyDown" @submit="handleSubmit" @cancel="() => {
-            loading = false
-            messageApi.error('Cancel sending!');
-          }">
-          <!-- 模型选择栏 -->
-          <template #actions>
-            <div class="sender-actions">
-              <a-select :default-value="currentModel" v-model="currentModel" @change="switchModel" style="width: 120px"
-                size="small" :disabled="loading">
-                <a-select-option v-for="model in models" :key="model" :value="model">
-                  {{ model }}
-                </a-select-option>
-              </a-select>
-              <a-button :class="['network', webSearch ? 'blue' : 'gray']" @click="switchWebSearch" size="small"
-                :disabled="loading" class="image-button">
-                <img :src="webSearch ? '/联网图标白.svg' : '/联网图标灰.svg'" alt="联网搜索" class="button-icon" />
-              </a-button>
-              <a-button type="primary" @click="handleSubmit" :loading="loading" :disabled="!userInput.trim()"
-                size="small" class="send-button">
-                <template #icon>
-                  <SendOutlined />
-                </template>
-              </a-button>
+    <!-- 消息区域 -->
+    <div class="messages-area">
+      <template v-for="message in messages" :key="message.id">
+        <div v-if="message.role === 'user' ||
+          (message.role === 'thinking' && message.thinking && message.thinking.trim().length > 0) ||
+          (message.role === 'assistant' && message.content)" :class="{
+          'message': true,
+          'user-message': message.role === 'user',
+          'ai-message': message.role === 'assistant',
+          'thinking-message': message.role === 'thinking'
+        }">
+          <!-- 用户消息 -->
+          <div v-if="message.role === 'user'" class="user-message-container">
+            <div class="message-content user-bubble">
+              {{ message.content }}
             </div>
-          </template>
-        </Sender>
-      </div>
-    </Flex>
+            <div class="avatar-container">
+              <a-avatar class="user-avatar" :size="40" src="">
+              </a-avatar>
+            </div>
+          </div>
+          <!-- 思考过程消息 -->
+          <div v-else-if="message.role === 'thinking' && message.thinking && message.thinking.trim().length > 0"
+            class="thinking-process">
+            <div class="thinking-content">{{ message.thinking }}</div>
+          </div>
+          <!-- AI回复消息 -->
+          <div v-else-if="message.role === 'assistant'" class="ai-response">
+            <div class="message-content" v-html="renderMarkdown(message.content)"></div>
+          </div>
+        </div>
+      </template>
+    </div>
+    <!-- 输入框区域 -->
+    <div class="input-area">
+      <Flex vertical gap="large">
+        <div class="sender-container">
+          <Sender v-model:value="userInput" :loading="loading" :auto-size="{ minRows: 3, maxRows: 8 }"
+            placeholder="请输入您的问题..." @keydown="handleKeyDown" @submit="handleSubmit" @cancel="() => {
+              loading = false
+              messageApi.error('Cancel sending!');
+            }">
+            <!-- 模型选择栏 -->
+            <template #actions>
+              <div class="sender-actions">
+                <a-select :default-value="currentModel" v-model="currentModel" @change="switchModel"
+                  style="width: 120px" size="small" :disabled="loading">
+                  <a-select-option v-for="model in models" :key="model" :value="model">
+                    {{ model }}
+                  </a-select-option>
+                </a-select>
+                <a-button :class="['network', webSearch ? 'blue' : 'gray']" @click="switchWebSearch" size="small"
+                  :disabled="loading" class="image-button">
+                  <img :src="webSearch ? '/联网图标白.svg' : '/联网图标灰.svg'" alt="联网搜索" class="button-icon" />
+                </a-button>
+                <a-button type="primary" @click="handleSubmit" :loading="loading" :disabled="!userInput.trim()"
+                  size="small" class="send-button">
+                  <template #icon>
+                    <SendOutlined />
+                  </template>
+                </a-button>
+              </div>
+            </template>
+          </Sender>
+        </div>
+      </Flex>
+    </div>
   </div>
 </template>
 
@@ -225,6 +239,10 @@ export default {
               const currentThinking = this.messages[thinkingIndex].thinking || '';
               const newThinking = currentThinking + reasoning;
               this.messages[thinkingIndex].thinking = newThinking;
+              // 调试输出
+              console.log("思考内容字节长度:", newThinking.length);
+              console.log("思考内容字符编码:", Array.from(newThinking).map(c => c.charCodeAt(0)));
+              console.log("思考内容转义后:", JSON.stringify(newThinking));
             }
           },
           // 回答内容回调
@@ -235,7 +253,7 @@ export default {
               const newContent = currentContent + reply;
               this.messages[aiIndex].content = newContent;
             }
-          }
+          },
         );
 
       } catch (error) {

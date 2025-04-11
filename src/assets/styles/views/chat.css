@@ -25,8 +25,6 @@
 
 .user-message {
     align-self: flex-end;
-    background: #1677ff;
-    color: white;
 }
 
 .ai-message {
@@ -43,7 +41,7 @@
 }
 
 .thinking-message {
-    background-color: rgba(230, 230, 230, 0.3);
+    background-color: rgba(181, 46, 46, 0.3);
     font-style: italic;
     padding: 10px;
     margin-bottom: 10px;
@@ -127,4 +125,79 @@ button:disabled {
 
 .send-button .anticon {
     margin: 0 auto;
+}
+
+/* 头像容器 */
+.avatar-container {
+    display: flex;
+    flex-shrink: 0;
+}
+
+/* 用户消息容器 */
+.user-message-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 12px 0;
+    width: 100%;
+}
+
+/* 用户头像 */
+.user-avatar {
+    background-color: #1677ff;
+}
+
+/* 用户气泡 */
+.user-bubble {
+    
+    max-width: 75%;
+    background: linear-gradient(135deg, #A3C1AD, #7C9EB2, #9E8FB2);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 18px;
+    word-break: break-word;
+}
+
+/* AI消息容器 */
+.ai-message-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 12px 0;
+    width: 100%;
+}
+
+/* AI头像 */
+.ai-avatar {
+    background-color: #00a854;
+}
+
+/* AI气泡 */
+.ai-bubble {
+    max-width: 75%;
+    background: white;
+    color: #333;
+    padding: 12px 16px;
+    border-radius: 18px 18px 18px 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    word-break: break-word;
+}
+
+.chat-container {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.messages-area {
+    flex: 1;
+    overflow-y: auto;
+    background: #f5f5f5;
+    border-radius: 8px;
+}
+
+.input-area {
+    border-radius: 8px;
 }
