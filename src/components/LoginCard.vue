@@ -47,7 +47,8 @@
 import { ref } from 'vue';
 import { message, Form, Input, Button, Checkbox, Card, Row, Col } from 'ant-design-vue';
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
-
+import * as userService from '@/services/userService';
+import authApi from '@/assets/api/auth';
 defineOptions({ name: 'LoginCard' });
 
 const [messageApi, contextHolder] = message.useMessage();
@@ -62,19 +63,32 @@ const loginForm = ref({
 const emit = defineEmits(['login-success', 'cancel']);
 
 // 处理登录
-const handleLogin = (values: any) => {
+const handleLogin = async (values:any) => {
   loading.value = true;
-  // 模拟登录请求
-  setTimeout(() => {
-    loading.value = false;
-    if (values.username === 'admin' && values.password === 'admin') {
-      localStorage.setItem('token', 'mock-token-value');
+  const Credential = {
+    credential: values.username,
+    password: values.password 
+  }
+  
+  try {
+    const loginRes = await userService.login(Credential);
+    console.log(loginRes);
+    if (loginRes.success === true) {
+       // 登录成功
       messageApi.success('登录成功！');
+      
       emit('login-success'); // 触发登录成功事件
-    } else {
-      messageApi.error('用户名或密码错误！');
+    }else{
+      // 登录失败
+      messageApi.error(loginRes.message);
     }
-  }, 1500);
+  } catch (error) {
+    // 处理请求异常
+    messageApi.error('服务器错误');
+    
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 
