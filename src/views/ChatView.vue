@@ -68,7 +68,6 @@ import { SendOutlined } from '@ant-design/icons-vue';//
 import { Avatar } from 'ant-design-vue';//
 import { AntDesignOutlined } from '@ant-design/icons-vue';//
 
-
 export default {
   name: 'ChatView',
   components: {
