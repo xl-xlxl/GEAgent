@@ -85,7 +85,7 @@ const handleLogin = (values: any) => {
 
 .login-card {
   width: 380px;
-  border-radius: 8px;
+  border-radius: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -96,7 +96,7 @@ const handleLogin = (values: any) => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border-radius: 8px 8px 0 0;
+  border-radius: 20px 8px 0 0;
 }
 
 .website-title {

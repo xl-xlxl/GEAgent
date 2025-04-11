@@ -1,37 +1,51 @@
 <template>
   <div class="chat-container">
-    <!-- 消息区域 -->
-    <div class="messages-area">
-      <template v-for="message in messages" :key="message.id">
-        <div v-if="message.role === 'user' ||
-          (message.role === 'thinking' && message.thinking && message.thinking.trim().length > 0) ||
-          (message.role === 'assistant' && message.content)" :class="{
-          'message': true,
-          'user-message': message.role === 'user',
-          'ai-message': message.role === 'assistant',
-          'thinking-message': message.role === 'thinking'
-        }">
-          <!-- 用户消息 -->
-          <div v-if="message.role === 'user'" class="user-message-container">
-            <div class="message-content user-bubble">
-              {{ message.content }}
+    <div class="chat-header">
+      <h1>title</h1>
+    </div>
+    <div class="scroll-container">
+      <!-- 消息区域 -->
+      <div class="messages-area" ref="messagesArea" @scroll="handleScroll">
+        <template v-for="message in messages" :key="message.id">
+          <div v-if="message.role === 'user' ||
+            (message.role === 'thinking') ||
+            (message.role === 'assistant' && message.content)" :class="{
+            'message': true,
+            'user-message': message.role === 'user',
+            'ai-message': message.role === 'assistant',
+            'thinking-message': message.role === 'thinking'
+          }">
+            <!-- 用户消息 -->
+            <div v-if="message.role === 'user'" class="user-message-container">
+              <div class="user-bubble">
+                {{ message.content }}
+              </div>
+              <div class="avatar-container">
+                <a-avatar :size="40" src=""></a-avatar>
+              </div>
             </div>
-            <div class="avatar-container">
-              <a-avatar class="user-avatar" :size="40" src="">
-              </a-avatar>
+            <!-- 思考过程消息 -->
+            <div v-if="message.role === 'thinking' && message.thinking && message.thinking.trim().length > 0"
+              class="thinking-message-container">
+              <div class="avatar-container">
+                <a-avatar :size="40"
+                  src="/path/to/avatar.jpg"></a-avatar>
+              </div>
+              <div class="thinking-bubble" v-html="renderMarkdown(message.thinking)"></div>
+            </div>
+            <!-- AI回复消息 -->
+            <div v-if="message.role === 'assistant'" class="ai-message-container">
+              <div class="avatar-container">
+                <!-- 如果没有头像，保留占位符 -->
+                <a-avatar v-if="!hasThinkingBefore(message)" :size="40"
+                  src="/path/to/avatar.jpg"></a-avatar>
+                <div v-else class="avatar-placeholder"></div>
+              </div>
+              <div class="ai-bubble" v-html="renderMarkdown(message.content)"></div>
             </div>
           </div>
-          <!-- 思考过程消息 -->
-          <div v-else-if="message.role === 'thinking' && message.thinking && message.thinking.trim().length > 0"
-            class="thinking-process">
-            <div class="thinking-content">{{ message.thinking }}</div>
-          </div>
-          <!-- AI回复消息 -->
-          <div v-else-if="message.role === 'assistant'" class="ai-response">
-            <div class="message-content" v-html="renderMarkdown(message.content)"></div>
-          </div>
-        </div>
-      </template>
+        </template>
+      </div>
     </div>
     <!-- 输入框区域 -->
     <div class="input-area">
@@ -78,9 +92,8 @@ import DOMPurify from 'dompurify';
 import { useModelStore } from "@/stores/modelStore";
 import { Flex, Select, Button } from 'ant-design-vue';
 import { Sender } from 'ant-design-x-vue';
-import { SendOutlined } from '@ant-design/icons-vue';//
-import { Avatar } from 'ant-design-vue';//
-import { AntDesignOutlined } from '@ant-design/icons-vue';//
+import { SendOutlined } from '@ant-design/icons-vue';
+import { Avatar } from 'ant-design-vue';
 
 export default {
   name: 'ChatView',
@@ -89,9 +102,8 @@ export default {
     Select,
     Button,
     Sender,
-    SendOutlined,//
-    Avatar,//
-    AntDesignOutlined,//
+    SendOutlined,
+    Avatar,
   },
   data() {
     const modelStore = useModelStore();
@@ -104,7 +116,17 @@ export default {
       currentModel: modelStore.currentModel,
       models: modelStore.models,
       modelStore,
+      autoScroll: true, // 是否自动滚动到底部
     };
+  },
+
+  watch: {
+    messages: {
+      handler() {
+        this.scrollToBottom();
+      },
+      deep: true,
+    },
   },
 
   computed: {
@@ -123,6 +145,43 @@ export default {
   },
 
   methods: {
+    handleScroll() {
+      const messagesArea = this.$refs.messagesArea;
+      if (!messagesArea) return;
+
+      // 判断是否滚动到底部
+      const isAtBottom = messagesArea.scrollHeight - messagesArea.scrollTop === messagesArea.clientHeight;
+
+      // 如果用户滚动到顶部或中间，关闭自动滚动
+      this.autoScroll = isAtBottom;
+    },
+
+    scrollToBottom() {
+      if (this.autoScroll) {
+        this.$nextTick(() => {
+          const messagesArea = this.$refs.messagesArea;
+          if (messagesArea) {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+          }
+        });
+      }
+    },
+
+    hasThinkingBefore(currentMessage) {
+      const currentIndex = this.messages.findIndex(msg => msg.id === currentMessage.id);
+      if (currentIndex === -1) return false;
+      for (let i = currentIndex - 1; i >= 0; i--) {
+        const msg = this.messages[i];
+        if (msg.role === 'user') {
+          return false;
+        }
+        if (msg.role === 'thinking' && msg.thinking && msg.thinking.trim().length > 0) {
+          return true;
+        }
+      }
+      return false;
+    },
+
     switchModel(value) {
       this.currentModel = value;
       this.modelStore.switchModel(value);
