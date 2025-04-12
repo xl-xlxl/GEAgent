@@ -1,17 +1,17 @@
 <template>
   <a-layout style="min-height: 100vh; user-select: none;">
-    <a-layout-sider v-model:collapsed="collapsed" collapsible :width="260" :collapsedWidth="70">
+    <a-layout-sider v-model:collapsed="collapsed" collapsible :width="260" :collapsedWidth="70" style=" padding: 0;">
 
-      <div>
+      <div class="close-container" style="height: 10%;">
         <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
           <!-- 展开时显示文字 -->
           <span v-if="!collapsed" class="title">GESeek</span>
-          <img src="/收起.svg" alt="close" class="icon -mb-1" />
+          <img src="/收起.svg" alt="close" class="icon" />
         </div>
       </div>
 
-      <div>
-        <!-- 新增按钮 -->
+      <div class="add-container" style="height:7%;">
+        <!-- 新增对话按钮 -->
         <div v-if="!collapsed">
           <div class="bubble icon-container" :class="{ collapsed: collapsed }">
             开启新的对话
@@ -25,12 +25,12 @@
         </div>
       </div>
 
-      <div>
+      <div class="history-container" style="height:68%;">
 
       </div>
 
-      <div>
-        <a-popover trigger="click" class="fixed-bottom settings">
+      <div class="setting-container" style="height: 7%;">
+        <a-popover trigger="click" >
           <template #content>
             <div class="no-select">
               <h1 style=" font-weight: bold; margin-bottom: 15px;">模型设置</h1>
@@ -79,8 +79,8 @@
         </a-popover>
       </div>
 
-      <div>
-        <a-popover trigger="click" class="fixed-bottom user">
+      <div class="user-container" style="height: 8%; align-items: center;">
+        <a-popover trigger="click">
           <template #content>
             <div class="no-select">
               <h1 style=" font-weight: bold; margin-bottom: 15px;">修改信息</h1>
@@ -195,27 +195,6 @@ export default {
   font-size: 30px;
   font-weight: bold;
   color: #777777;
-}
-
-/* 固定在底部的样式 */
-.fixed-bottom {
-  position: absolute;
-  width: 100%;
-  /* 占满宽度 */
-  justify-content: center;
-  /* 居中对齐 */
-}
-
-/* 设置按钮样式 */
-.fixed-bottom.settings {
-  bottom: 60px;
-  /* 设置按钮距离底部的间距 */
-}
-
-/* 用户按钮样式 */
-.fixed-bottom.user {
-  bottom: 1px;
-  /* 用户按钮距离底部的间距 */
 }
 
 ::v-deep(.ant-layout-sider) {
