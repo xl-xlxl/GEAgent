@@ -3,9 +3,9 @@
     <div class="chat-header" style=" user-select: none;">
       <h1>title</h1>
     </div>
-    <div class="scroll-container">
+    <div class="scroll-container" ref="scrollArea" @scroll="handleScroll">
       <!-- 消息区域 -->
-      <div class="messages-area" ref="messagesArea" @scroll="handleScroll">
+      <div class="messages-area">
         <template v-for="message in messages" :key="message.id">
           <div v-if="message.role === 'user' ||
             (message.role === 'thinking') ||
@@ -143,11 +143,11 @@ export default {
 
   methods: {
     handleScroll() {
-      const messagesArea = this.$refs.messagesArea;
-      if (!messagesArea) return;
+      const scrollArea = this.$refs.scrollArea;
+      if (!scrollArea) return;
 
       // 判断是否滚动到底部
-      const isAtBottom = messagesArea.scrollHeight - messagesArea.scrollTop === messagesArea.clientHeight;
+      const isAtBottom = Math.abs(scrollArea.scrollHeight - scrollArea.scrollTop - scrollArea.clientHeight) < 5;
 
       // 如果用户滚动到顶部或中间，关闭自动滚动
       this.autoScroll = isAtBottom;
@@ -156,9 +156,9 @@ export default {
     scrollToBottom() {
       if (this.autoScroll) {
         this.$nextTick(() => {
-          const messagesArea = this.$refs.messagesArea;
-          if (messagesArea) {
-            messagesArea.scrollTop = messagesArea.scrollHeight;
+          const scrollArea = this.$refs.scrollArea;
+          if (scrollArea) {
+            scrollArea.scrollTop = scrollArea.scrollHeight;
           }
         });
       }
