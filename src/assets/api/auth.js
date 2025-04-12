@@ -35,7 +35,7 @@ const authApi = {
             }
             errorMessage = SelectMessageError(error);
             // 返回统一格式的错误
-            return {
+            throw {
                 success: false,
                 head,
                 message: errorMessage
@@ -45,14 +45,18 @@ const authApi = {
 
     async register(userData) {
         try {
-            return await api.post('/user/register', userData)
+            console.log(userData);
+            const registerRes= await api.post('/user/register', userData,)
+            console.log(111);
+            return registerRes
         } catch (error) {
             let head = '注册失败';
             let errorMessage = '注册失败，请稍后重试';
             errorMessage = SelectMessageError(error);
-
+            console.log(error);
+            console.log(errorMessage);
             // 返回统一格式的错误
-            return {
+            throw {
                 success: false,
                 head,
                 message: errorMessage
@@ -64,12 +68,12 @@ const authApi = {
         try {
             return await api.get('/user/me') 
         }catch (error) {
+            console.log(error);
             let head = '获取用户信息失败';
             let errorMessage = '获取用户信息失败，请稍后重试';
             errorMessage = SelectMessageError(error);
-            
             // 返回统一格式的错误
-            return {
+            throw {
                 success: false,
                 head,
                 message: errorMessage
@@ -89,9 +93,9 @@ const authApi = {
             }else if (error.response.status === 403) {
                 head = '刷新失败';
             }
-
+            
             // 返回统一格式的错误
-            return {
+            throw {
                 success: false,
                 head,
                 message: errorMessage

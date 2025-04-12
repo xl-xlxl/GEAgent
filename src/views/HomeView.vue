@@ -33,7 +33,12 @@
 
         <!-- 登录卡片弹层 -->
         <div class="login-overlay" v-if="showLoginCard">
-            <LoginCard @login-success="handleLoginSuccess" @cancel="showLoginCard = false" />
+            <LoginCard @login-success="handleLoginSuccess" @cancel="showLoginCard = false" @switch-to-register="switchToRegister" />
+        </div>
+
+        <!-- 注册卡片弹层 -->
+        <div class="login-overlay" v-if="showRegisterCard">
+            <RegisterCard @register-success="handleRegisterSuccess" @cancel="showRegisterCard = false" @switch-to-login="switchToLogin" />
         </div>
     </div>
 </template>
@@ -44,6 +49,7 @@ import { SendOutlined } from '@ant-design/icons-vue';
 import { Sender } from 'ant-design-x-vue';
 import { onWatcherCleanup, ref, watch } from 'vue';
 import LoginCard from '@/components/LoginCard.vue';
+import RegisterCard from '@/components/RegisterCard.vue';
 import { useModelStore } from '@/stores/modelStore';
 import * as userService from '@/services/userService';
 
@@ -53,6 +59,7 @@ const [messageApi, contextHolder] = message.useMessage();
 const value = ref<any>('');
 const loading = ref<boolean>(false);
 const showLoginCard = ref<boolean>(false);
+const showRegisterCard = ref<boolean>(false);
 
 // 使用 modelStore
 const modelStore = useModelStore();
@@ -94,24 +101,50 @@ const handleSubmit = () => {
 
 };
 
-const handleLoginSuccess = () => {
-
+// 修改登录成功处理函数，接收登录结果作为参数
+const handleLoginSuccess = (loginResult) => {
+  // 确保登录成功
+  if (loginResult) {
     showLoginCard.value = false;
 
     // 登录成功后自动发送消息
-
     messageApi.info(`使用 ${modelStore.currentModel} 发送消息`);
     value.value = '';
     loading.value = true;
 
-    //模拟发送成功
-
+    // 模拟发送成功
     setTimeout(() => {
-        loading.value = false;
-        messageApi.success('消息发送成功！');
+      loading.value = false;
+      messageApi.success('消息发送成功！');
     }, 2000);
+  } else {
+    messageApi.error('登录未完成，请重试');
+  }
 };
 
+// 切换到注册卡片
+const switchToRegister = () => {
+  showLoginCard.value = false;
+  showRegisterCard.value = true;
+};
+
+// 切换到登录卡片
+const switchToLogin = () => {
+  showRegisterCard.value = false;
+  showLoginCard.value = true;
+};
+
+// 处理注册成功
+const handleRegisterSuccess = (registerResult) => {
+  if (registerResult) {
+    showRegisterCard.value = false;
+    messageApi.success('注册成功，请登录');
+    // 可以选择自动显示登录卡片
+    showLoginCard.value = true;
+  } else {
+    messageApi.error('注册未完成，请重试');
+  }
+};
 </script>
 
 <style scoped>
