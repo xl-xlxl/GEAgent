@@ -1,6 +1,6 @@
 <template>
   <div class="chat-container">
-    <div class="chat-header">
+    <div class="chat-header" style=" user-select: none;">
       <h1>title</h1>
     </div>
     <div class="scroll-container">

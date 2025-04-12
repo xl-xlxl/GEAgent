@@ -1,6 +1,6 @@
 <template>
-  <a-layout style="min-height: 100vh; user-select: none;">
-    <a-layout-sider v-model:collapsed="collapsed" collapsible :width="260" :collapsedWidth="70" style=" padding: 0;">
+  <a-layout style="min-height: 100vh;">
+    <a-layout-sider v-model:collapsed="collapsed" collapsible :width="260" :collapsedWidth="70" style=" padding: 0; user-select: none;">
 
       <div class="close-container" style="height: 10%;">
         <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
