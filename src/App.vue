@@ -1,6 +1,7 @@
 <template>
   <a-layout style="min-height: 100vh;">
-    <a-layout-sider v-model:collapsed="collapsed" collapsible :width="260" :collapsedWidth="70" style=" padding: 0; user-select: none;">
+    <a-layout-sider v-model:collapsed="collapsed" collapsible :width="260" :collapsedWidth="70"
+      style=" padding: 0; user-select: none;">
 
       <div class="close-container" style="height: 10%;">
         <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
@@ -30,18 +31,22 @@
       </div>
 
       <div class="setting-container" style="height: 7%;">
-        <a-popover trigger="click" >
+        <a-popover trigger="click">
           <template #content>
             <div class="no-select">
               <h1 style=" font-weight: bold; margin-bottom: 15px;">模型设置</h1>
-              <label>
-                <a-tooltip title="数值越高，模型可输入与输出文本长度越长；数值越低，模型可输入与输出文本长度越短">
-                  <span style="cursor: pointer; color: #1890ff;">!</span>
-                </a-tooltip>
-                最大生成长度:
-                <a-slider v-model:value="max_tokens" :step="1" :min="1000" :max="10000" @change="switchSettings"
-                  style="width: 250px;" />
-              </label>
+              <div v-for="model in modelStore.models" :key="model.value">
+                <div v-if="modelStore.currentModel === model.value">
+                  <label>
+                    <a-tooltip title="数值越高，模型可输入与输出文本长度越长；数值越低，模型可输入与输出文本长度越短（该值过低与生成文本不匹配时会导致生成终止）">
+                      <span style="cursor: pointer; color: #1890ff;">!</span>
+                    </a-tooltip>
+                    最大生成长度:
+                    <a-slider v-model:value="max_tokens" :step="1" :min="1024" :max="model.maxTokens"
+                      @change="switchSettings" style="width: 250px;" />
+                  </label>
+                </div>
+              </div>
               <label>
                 <a-tooltip title="数值越高，模型输出越随机，创造力越强；数值越低，输出越确定">
                   <span style="cursor: pointer; color: #1890ff;">!</span>
@@ -112,7 +117,6 @@
 <script>
 // import HomeView from '@/views/HomeView.vue';
 import ChatView from './views/ChatView.vue';
-import { ref } from 'vue';
 import { useModelStore } from "@/stores/modelStore";
 
 export default {
@@ -131,6 +135,7 @@ export default {
       top_p: modelStore.top_p,
       top_k: modelStore.top_k,
       modelStore,
+      currentModel: modelStore.currentModel,
     };
   },
   methods: {

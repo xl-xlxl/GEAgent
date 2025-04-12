@@ -4,11 +4,11 @@ export const useModelStore = defineStore("modelStore", {
   state: () => ({
     currentModel: "deepseek-ai/DeepSeek-R1",
     models: [
-      "deepseek-ai/DeepSeek-R1",
-      "deepseek-ai/DeepSeek-V3",
-      "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
-      "Qwen/QwQ-32B",
-      "Qwen/Qwen2.5-72B-Instruct-128K",
+      { value: 'deepseek-ai/DeepSeek-R1', alias: 'DeepSeek-R1', maxTokens: 16384},
+      { value: 'deepseek-ai/DeepSeek-V3', alias: 'DeepSeek-V3', maxTokens: 8192},
+      { value: 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B', alias: 'DS-R1-D-QW-32B', maxTokens: 16384},
+      { value: 'Qwen/QwQ-32B', alias: 'QwQ-32B', maxTokens: 32568},
+      { value: 'Qwen/Qwen2.5-72B-Instruct-128K', alias: 'QW2.5-72B-I-128K', maxTokens: 4096},
     ],
     max_tokens: 4096,
     temperature: 0.7,

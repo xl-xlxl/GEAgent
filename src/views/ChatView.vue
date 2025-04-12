@@ -10,11 +10,11 @@
           <div v-if="message.role === 'user' ||
             (message.role === 'thinking') ||
             (message.role === 'assistant' && message.content)" :class="{
-            'message': true,
-            'user-message': message.role === 'user',
-            'ai-message': message.role === 'assistant',
-            'thinking-message': message.role === 'thinking'
-          }">
+              'message': true,
+              'user-message': message.role === 'user',
+              'ai-message': message.role === 'assistant',
+              'thinking-message': message.role === 'thinking'
+            }">
             <!-- 用户消息 -->
             <div v-if="message.role === 'user'" class="user-message-container">
               <div class="user-bubble">
@@ -46,37 +46,35 @@
     </div>
     <!-- 输入框区域 -->
     <div class="input-area">
-      <Flex vertical gap="large">
-        <div class="sender-container">
-          <Sender v-model:value="userInput" :loading="loading" :auto-size="{ minRows: 3, maxRows: 8 }"
-            placeholder="请输入您的问题..." @keydown="handleKeyDown" @submit="handleSubmit" @cancel="() => {
-              loading = false
-              messageApi.error('Cancel sending!');
-            }">
-            <!-- 模型选择栏 -->
-            <template #actions>
-              <div class="sender-actions">
-                <a-select :default-value="currentModel" v-model="currentModel" @change="switchModel"
-                  style="width: 120px" size="small" :disabled="loading">
-                  <a-select-option v-for="model in models" :key="model" :value="model">
-                    {{ model }}
-                  </a-select-option>
-                </a-select>
-                <a-button :class="['network', webSearch ? 'blue' : 'gray']" @click="switchWebSearch" size="small"
-                  :disabled="loading" class="image-button">
-                  <img :src="webSearch ? '/联网图标白.svg' : '/联网图标灰.svg'" alt="联网搜索" class="button-icon" />
-                </a-button>
-                <a-button type="primary" @click="handleSubmit" :loading="loading" :disabled="!userInput.trim()"
-                  size="small" class="send-button">
-                  <template #icon>
-                    <SendOutlined />
-                  </template>
-                </a-button>
-              </div>
-            </template>
-          </Sender>
+      <div class="input-container">
+        <!-- 输入框 -->
+        <textarea class="message-input" placeholder="给 GESeek 发送消息" v-model="userInput" @keydown="handleKeyDown"
+          :disabled="loading" :rows="1"></textarea>
+
+        <div style="display: flex;justify-content: space-between;">
+          <div class="model-select">
+            <!-- 模型选择 -->
+            <a-select :default-value="currentModel" v-model="currentModel" @change="switchModel" style="width: 150px"
+              size="big" :disabled="loading">
+              <a-select-option v-for="model in models" :key="model.value" :value="model.value">
+                {{ model.alias }}
+              </a-select-option>
+            </a-select>
+          </div>
+          <div class="input-actions">
+            <!-- 联网搜索按钮 -->
+            <button class="webServe-button" :class="{ 'active-search': webSearch }" @click="switchWebSearch"
+              :disabled="loading">
+              <span class="webServe-icon"><img src="/互联网搜索.svg"></span>
+              联网搜索
+            </button>
+            <!-- 发送按钮 -->
+            <button class="send-button" @click="sendMessage" :disabled="!userInput.trim() || loading">
+              <span class="send-icon"><img src="/发送.svg"></span>
+            </button>
+          </div>
         </div>
-      </Flex>
+      </div>
     </div>
   </div>
 </template>
@@ -105,12 +103,12 @@ export default {
   data() {
     const modelStore = useModelStore();
     return {
+      currentModel: modelStore.currentModel,
       messages: [],
       userInput: '',
       loading: false,
       webSearch: false,
       conversationId: null,
-      currentModel: modelStore.currentModel,
       models: modelStore.models,
       modelStore,
       autoScroll: true, // 是否自动滚动到底部

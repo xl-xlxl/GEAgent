@@ -9,6 +9,7 @@
     .avatar-container {
         display: none;
     }
+
     .avatar-placeholder {
         display: none;
     }
@@ -153,52 +154,102 @@
     align-self: flex-start;
 }
 
-button:disabled {
-    background: #ccc;
+/* 输入框容器 */
+.input-container {
+    padding: 10px;
+    margin: 5px;
+    background-color: #f0f0f0;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.network.gray {
-    background: #ccc;
+/* 输入框 */
+.message-input {
+    width: 100%;
+    min-height: 40px;
+    max-height: 200px;
+    border: none;
+    background-color: transparent;
+    resize: none;
+    outline: none;
+    font-size: 16px;
+    color: #333;
+    line-height: 1.5;
+    padding: 0;
+    overflow-y: auto;
+    overflow: hidden;
 }
 
-.network.blue {
+.message-input::placeholder {
+    color: #777777;
+}
+
+/* 按钮区域 */
+.input-actions {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+/* 联网按钮 */
+.webServe-button {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #777777;
+    font-weight: bold;
+
+}
+
+.webServe-button:disabled {
+    cursor: not-allowed;
+}
+
+.active-search {
     background: linear-gradient(135deg, #FFECE8, #E8F8FF, #F4FFE8);
 }
 
-/* 联网按钮图标样式 */
-.image-button {
-    padding: 0;
+.webServe-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+
+/* 图标按钮 */
+.send-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    background-color: white;
 }
 
-.button-icon {
+.send-button:disabled {
+    cursor: not-allowed;
+}
+
+.send-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #FFECE8, #E8F8FF, #F4FFE8);
+}
+
+.send-icon {
     width: 16px;
     height: 16px;
 }
 
-.image-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* 发送区域样式 */
-.sender-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* 发送按钮样式 */
-.send-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.send-button .anticon {
-    margin: 0 auto;
+/* 模型选择下拉框 */
+.model-select {
+    min-width: 120px;
+    border-radius: 16px;
+    justify-content: flex-start;
 }
