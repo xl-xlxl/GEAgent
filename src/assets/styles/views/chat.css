@@ -29,23 +29,13 @@
     margin-bottom: 20px;
 }
 
-/* 用户头像 */
-.user-avatar {
-    background-color: #E0D6FF;
-}
-
 /* 用户气泡 */
 .user-bubble {
     max-width: 80%;
-    background: linear-gradient(135deg, #D6F0FF, #D6FFE8, #E0D6FF);
+    background: linear-gradient(135deg, #FFECE8, #E8F8FF, #F4FFE8);
     padding: 8px 16px;
     border-radius: 20px;
     word-break: break-word;
-}
-
-/* AI头像 */
-.ai-avatar {
-    background-color: #00a854;
 }
 
 /* AI气泡 */
@@ -168,13 +158,11 @@ button:disabled {
 }
 
 .network.gray {
-    background-color: #ccc;
-    color: #333;
+    background: #ccc;
 }
 
 .network.blue {
-    background-color: #1677ff;
-    color: white;
+    background: linear-gradient(135deg, #FFECE8, #E8F8FF, #F4FFE8);
 }
 
 /* 联网按钮图标样式 */

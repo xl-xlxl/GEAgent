@@ -28,17 +28,14 @@
             <div v-if="message.role === 'thinking' && message.thinking && message.thinking.trim().length > 0"
               class="thinking-message-container">
               <div class="avatar-container">
-                <a-avatar :size="40"
-                  src="/path/to/avatar.jpg"></a-avatar>
+                <a-avatar :size="40" src=""></a-avatar>
               </div>
               <div class="thinking-bubble" v-html="renderMarkdown(message.thinking)"></div>
             </div>
             <!-- AI回复消息 -->
             <div v-if="message.role === 'assistant'" class="ai-message-container">
               <div class="avatar-container">
-                <!-- 如果没有头像，保留占位符 -->
-                <a-avatar v-if="!hasThinkingBefore(message)" :size="40"
-                  src="/path/to/avatar.jpg"></a-avatar>
+                <a-avatar v-if="!hasThinkingBefore(message)" :size="40" src=""></a-avatar>
                 <div v-else class="avatar-placeholder"></div>
               </div>
               <div class="ai-bubble" v-html="renderMarkdown(message.content)"></div>
@@ -298,10 +295,6 @@ export default {
               const currentThinking = this.messages[thinkingIndex].thinking || '';
               const newThinking = currentThinking + reasoning;
               this.messages[thinkingIndex].thinking = newThinking;
-              // 调试输出
-              console.log("思考内容字节长度:", newThinking.length);
-              console.log("思考内容字符编码:", Array.from(newThinking).map(c => c.charCodeAt(0)));
-              console.log("思考内容转义后:", JSON.stringify(newThinking));
             }
           },
           // 回答内容回调
