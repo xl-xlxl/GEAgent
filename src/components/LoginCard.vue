@@ -24,9 +24,6 @@
             <a-col :span="12">
               <a-checkbox v-model:checked="loginForm.remember">记住我</a-checkbox>
             </a-col>
-            <a-col :span="12" style="text-align: right">
-              <a href="#">忘记密码?</a>
-            </a-col>
           </a-row>
         </a-form-item>
         <a-form-item>
@@ -37,6 +34,11 @@
         <a-form-item>
           <a-button @click="$emit('cancel')" block>取消</a-button>
         </a-form-item>
+        
+        <!-- 添加注册链接 -->
+        <div class="register-link">
+          还没有账号？<a href="#" @click.prevent="$emit('switch-to-register')">立即注册</a>
+        </div>
       </a-form>
     </a-card>
   </div>
@@ -60,33 +62,36 @@ const loginForm = ref({
   remember: false
 });
 
-const emit = defineEmits(['login-success', 'cancel']);
+const emit = defineEmits(['login-success', 'cancel', 'switch-to-register']);
 
 // 处理登录
 const handleLogin = async (values:any) => {
-  loading.value = true;
-  const Credential = {
-    credential: values.username,
-    password: values.password 
-  }
-  
+  loading.value = true; 
   try {
+    const Credential = {
+      credential: values.username,
+      password: values.password 
+    }
+    
     const loginRes = await userService.login(Credential);
     console.log(loginRes);
     if (loginRes.success === true) {
-       // 登录成功
-      messageApi.success('登录成功！');
-      
-      emit('login-success'); // 触发登录成功事件
-    }else{
+      // 登录成功
+      await messageApi.success('登录成功！');
+      emit('login-success',loginRes); // 触发登录成功事件
+    } else if (loginRes.success === false) {
       // 登录失败
-      messageApi.error(loginRes.message);
+      messageApi.error(loginRes.error.message);
+    } else {
+      // 其他错误
+      throw new Error(loginRes);
     }
   } catch (error) {
     // 处理请求异常
     messageApi.error('服务器错误');
-    
+    console.error('登录错误:', error);
   } finally {
+    // 无论成功还是失败，都重置loading状态
     loading.value = false;
   }
 };
@@ -133,5 +138,10 @@ const handleLogin = async (values:any) => {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 16px;
 }
 </style>

@@ -9,7 +9,7 @@ const api = axios.create({
     timeout: 10000,                   // 请求超时时间：10秒
     headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer${localStorage.getItem("token")}`
+        'Authorization': `Bearer ${localStorage.getItem("token")}`,
     }
 });
 

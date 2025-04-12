@@ -108,21 +108,21 @@
 
     </a-layout-sider>
     <div class="app-container">
-      <ChatView />
-      <!-- <HomeView /> -->
+      <!-- <ChatView /> -->
+      <HomeView />
     </div>
   </a-layout>
 </template>
 
 <script>
-// import HomeView from '@/views/HomeView.vue';
+import HomeView from '@/views/HomeView.vue';
 import ChatView from './views/ChatView.vue';
 import { useModelStore } from "@/stores/modelStore";
 
 export default {
   name: 'App',
   components: {
-    // HomeView,
+    HomeView,
     ChatView,
   },
 
