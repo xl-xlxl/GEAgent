@@ -108,8 +108,8 @@
 
     </a-layout-sider>
     <div class="app-container">
-      <ChatView />
-      <!-- <HomeView /> -->
+      <!-- <ChatView /> -->
+      <HomeView />
     </div>
   </a-layout>
 </template>

@@ -53,12 +53,12 @@
       <div class="input-container">
         <!-- 输入框 -->
         <textarea class="message-input" placeholder="给 GESeek 发送消息" v-model="userInput" @keydown="handleKeyDown"
-          :disabled="loading" :rows="1"></textarea>
+          :disabled="loading" :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
         <div style="display: flex;justify-content: space-between;">
           <div class="model-select">
             <!-- 模型选择 -->
             <a-select :default-value="currentModel" v-model="currentModel" @change="switchModel" style="width: 150px"
-              size="big" :disabled="loading">
+              size="small" :disabled="loading">
               <a-select-option v-for="model in models" :key="model.value" :value="model.value">
                 {{ model.alias }}
               </a-select-option>
