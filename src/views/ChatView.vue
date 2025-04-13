@@ -31,9 +31,7 @@
                 <a-avatar :size="40" src=""></a-avatar>
               </div>
               <div class="thinking-bubble">
-                <div v-if="message.thinking && message.thinking.trim().length > 0"
-                  v-html="renderMarkdown(message.thinking)"></div>
-                <div v-else><a-spin /></div>
+                <div v-html="renderMarkdown(message.thinking)"></div>
               </div>
             </div>
             <!-- AI回复消息 -->
@@ -43,9 +41,7 @@
                 <div v-else class="avatar-placeholder"></div>
               </div>
               <div class="ai-bubble">
-                <div v-if="message.content && message.content.trim().length > 0"
-                  v-html="renderMarkdown(message.content)"></div>
-                <div v-else><a-spin /></div>
+                <div v-html="renderMarkdown(message.content)"></div>
               </div>
             </div>
           </div>
