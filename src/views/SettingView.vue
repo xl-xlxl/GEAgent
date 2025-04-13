@@ -1,3 +1,4 @@
+<!-- 已经将设置集成在app.vue中的侧边栏，不在更新此文件 -->
 <template>
     <div class="settings-container">
         <div class="parameter-settings">

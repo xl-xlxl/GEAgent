@@ -108,8 +108,8 @@
 
     </a-layout-sider>
     <div class="app-container">
-      <!-- <ChatView /> -->
-      <HomeView />
+      <ChatView />
+      <!-- <HomeView /> -->
     </div>
   </a-layout>
 </template>
@@ -156,87 +156,4 @@ export default {
 
 <style scoped>
 @import url('./assets/styles/views/app.css');
-
-.no-select {
-  user-select: none;
-  /* 禁止用户选择文字 */
-}
-
-/* Logo容器样式 */
-.icon-container {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  /* 鼠标悬停时显示手型光标 */
-}
-
-/* 收起时的样式 */
-.icon-container.collapsed {
-  justify-content: center;
-  /* 居中对齐 */
-  padding: 8px;
-  /* 缩小内边距 */
-}
-
-/* Logo样式 */
-.icon {
-  width: 25px;
-  height: auto;
-  margin-left: auto;
-  transition: all 0.3s ease;
-  /* 添加过渡效果 */
-}
-
-/* 收起时隐藏文字的间距 */
-.icon-container.collapsed .icon {
-  margin-left: 0;
-}
-
-/* 标题样式 */
-.title {
-  font-size: 30px;
-  font-weight: bold;
-  color: #777777;
-}
-
-::v-deep(.ant-layout-sider) {
-  background-color: #f0f0f0 !important;
-}
-
-::v-deep(.ant-slider-handle) {
-  border-color: #E8F8FF !important;
-  /* 滑块的边框颜色 */
-}
-
-::v-deep(.ant-slider-handle:hover) {
-  border-color: #E8F8FF !important;
-  /* 滑块悬停时的边框颜色 */
-}
-
-::v-deep(.ant-slider-handle:focus) {
-  border-color: #E8F8FF !important;
-  /* 滑块聚焦时的边框颜色 */
-}
-
-::v-deep(.ant-slider-handle:active) {
-  border-color: #E8F8FF !important;
-  /* 滑块拖动时的边框颜色 */
-}
-
-::v-deep(.ant-slider-track) {
-  background-color: #E8F8FF !important;
-  /* 滑动条选中部分的颜色 */
-}
-
-.bubble {
-  max-width: 99%;
-  background: linear-gradient(135deg, #FFECE8, #E8F8FF, #F4FFE8);
-  padding: 8px 16px;
-  border-radius: 20px;
-  color: #777777;
-  font-weight: bold
-}
 </style>

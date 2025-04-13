@@ -30,7 +30,11 @@
               <div class="avatar-container">
                 <a-avatar :size="40" src=""></a-avatar>
               </div>
-              <div class="thinking-bubble" v-html="renderMarkdown(message.thinking)"></div>
+              <div class="thinking-bubble">
+                <div v-if="message.thinking && message.thinking.trim().length > 0"
+                  v-html="renderMarkdown(message.thinking)"></div>
+                <div v-else><a-spin /></div>
+              </div>
             </div>
             <!-- AI回复消息 -->
             <div v-if="message.role === 'assistant'" class="ai-message-container">
@@ -38,7 +42,11 @@
                 <a-avatar v-if="!hasThinkingBefore(message)" :size="40" src=""></a-avatar>
                 <div v-else class="avatar-placeholder"></div>
               </div>
-              <div class="ai-bubble" v-html="renderMarkdown(message.content)"></div>
+              <div class="ai-bubble">
+                <div v-if="message.content && message.content.trim().length > 0"
+                  v-html="renderMarkdown(message.content)"></div>
+                <div v-else><a-spin /></div>
+              </div>
             </div>
           </div>
         </template>
@@ -50,7 +58,6 @@
         <!-- 输入框 -->
         <textarea class="message-input" placeholder="给 GESeek 发送消息" v-model="userInput" @keydown="handleKeyDown"
           :disabled="loading" :rows="1"></textarea>
-
         <div style="display: flex;justify-content: space-between;">
           <div class="model-select">
             <!-- 模型选择 -->
@@ -111,7 +118,7 @@ export default {
       conversationId: null,
       models: modelStore.models,
       modelStore,
-      autoScroll: true, // 是否自动滚动到底部
+      autoScroll: true, 
     };
   },
 
@@ -143,11 +150,7 @@ export default {
     handleScroll() {
       const scrollArea = this.$refs.scrollArea;
       if (!scrollArea) return;
-
-      // 判断是否滚动到底部
       const isAtBottom = Math.abs(scrollArea.scrollHeight - scrollArea.scrollTop - scrollArea.clientHeight) < 5;
-
-      // 如果用户滚动到顶部或中间，关闭自动滚动
       this.autoScroll = isAtBottom;
     },
 
@@ -235,7 +238,7 @@ export default {
 
       try {
         console.log('当前模型:', this.currentModel);
-        console.log('现在的最大token数:', this.max_tokens);
+        console.log('现在的max_tokens:', this.max_tokens);
         console.log('现在的temperature:', this.temperature);
         console.log('现在的top_p:', this.top_p);
         console.log('现在的top_k:', this.top_k);

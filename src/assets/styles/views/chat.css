@@ -1,4 +1,3 @@
-/* 头像容器 */
 .avatar-container {
     display: flex;
     flex-shrink: 0;
@@ -9,19 +8,16 @@
     .avatar-container {
         display: none;
     }
-
     .avatar-placeholder {
         display: none;
     }
 }
 
-/* 占位符样式 */
 .avatar-placeholder {
     width: 40px;
     height: 40px;
 }
 
-/* 用户消息容器 */
 .user-message-container {
     display: flex;
     justify-content: flex-end;
@@ -30,7 +26,6 @@
     margin-bottom: 20px;
 }
 
-/* 用户气泡 */
 .user-bubble {
     max-width: 80%;
     background: linear-gradient(135deg, #FFECE8, #E8F8FF, #F4FFE8);
@@ -39,7 +34,6 @@
     word-break: break-word;
 }
 
-/* AI气泡 */
 .ai-bubble {
     max-width: 80%;
     padding: 8px 16px;
@@ -56,7 +50,6 @@
     margin-bottom: 20px;
 }
 
-/* 思考气泡 */
 .thinking-bubble {
     max-width: 80%;
     padding: 8px 16px;
@@ -88,11 +81,7 @@
 .scroll-container {
     flex: 1;
     overflow-y: auto;
-    /* 启用滚动条 */
-    scrollbar-width: thin;
-    /* 适用于 Firefox */
-    scrollbar-color: #ccc #f5f5f5;
-    /* 自定义滚动条颜色 */
+    scrollbar-width:auto;
 }
 
 .scroll-container::-webkit-scrollbar {
@@ -107,23 +96,8 @@
 }
 
 .scroll-container::-webkit-scrollbar-track {
-    background-color: #f5f5f5;
+    background-color: #f5f5f500;
     /* 滚动条轨道颜色 */
-}
-
-
-.messages-area {
-    flex: 1;
-    overflow-y: auto;
-    overflow: hidden;
-    margin-left: 10%;
-    margin-right: 10%;
-}
-
-.input-area {
-    border-radius: 20px;
-    margin-left: 10%;
-    margin-right: 10%;
 }
 
 .chat-header {
@@ -140,6 +114,15 @@
     color: #777777;
 }
 
+/* 对话区域 */
+.messages-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow: hidden;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
 .message {
     border-radius: 20px;
     line-height: 2;
@@ -154,13 +137,20 @@
     align-self: flex-start;
 }
 
-/* 输入框容器 */
+/* 以下全是跟输入框区域有关的样式 */
+/* 输入框区域 */
+.input-area {
+    border-radius: 20px;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
 .input-container {
     padding: 10px;
     margin: 5px;
     background-color: #f0f0f0;
     border-radius: 20px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: -2px 2px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* 输入框 */
@@ -184,7 +174,6 @@
     color: #777777;
 }
 
-/* 按钮区域 */
 .input-actions {
     display: flex;
     gap: 5px;
@@ -220,7 +209,7 @@
     margin-right: 5px;
 }
 
-/* 图标按钮 */
+/* 发送按钮 */
 .send-button {
     width: 36px;
     height: 36px;
@@ -250,6 +239,5 @@
 /* 模型选择下拉框 */
 .model-select {
     min-width: 120px;
-    border-radius: 16px;
     justify-content: flex-start;
 }
