@@ -11,6 +11,7 @@ export const chatService = {
             const temperature = modelStore.temperature;
             const top_p = modelStore.top_p;
             const top_k = modelStore.top_k;
+            const frequency_penalty = modelStore.frequency_penalty;
             //模型参数
             const options = {
                 method: "POST",
@@ -27,7 +28,7 @@ export const chatService = {
                     top_p: top_p,
                     top_k: top_k,
                     include_reasoning: true,
-                    frequency_penalty: 0.5,
+                    frequency_penalty: frequency_penalty,
                     n: 1,
                     response_format: { type: "text" },
                 }),

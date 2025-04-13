@@ -78,3 +78,12 @@
     background-color: #E8F8FF !important;
     /* 滑动条选中部分的颜色 */
 }
+
+/* 添加预设样式 */
+.preset-option {
+    background-color: #f0f0f080;
+}
+
+.preset-option:hover {
+    background: linear-gradient(135deg, #FFECE8, #E8F8FF, #F4FFE8);
+}

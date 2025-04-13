@@ -110,7 +110,7 @@ export default {
       messages: [],
       userInput: '',
       loading: false,
-      webSearch: false,
+      webSearch: true,
       conversationId: null,
       models: modelStore.models,
       modelStore,
@@ -139,6 +139,9 @@ export default {
     },
     top_k() {
       return useModelStore().top_k;
+    },
+    frequency_penalty() {
+      return useModelStore().frequency_penalty;
     },
   },
 
@@ -238,6 +241,7 @@ export default {
         console.log('现在的temperature:', this.temperature);
         console.log('现在的top_p:', this.top_p);
         console.log('现在的top_k:', this.top_k);
+        console.log('现在的frequency_penalty:', this.frequency_penalty);
 
         let messagesToSend = [];
         // 如果启用了联网功能，先通过千帆API获取信息

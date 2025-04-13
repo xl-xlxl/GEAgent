@@ -5,7 +5,6 @@
 
       <div class="close-container" style="height: 10%;">
         <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
-          <!-- 展开时显示文字 -->
           <span v-if="!collapsed" class="title">GESeek</span>
           <img src="/收起.svg" alt="close" class="icon" />
         </div>
@@ -14,7 +13,7 @@
       <div class="add-container" style="height:7%;">
         <!-- 新增对话按钮 -->
         <div v-if="!collapsed">
-          <div class="bubble icon-container" :class="{ collapsed: collapsed }">
+          <div class="bubble icon-container whitespace-nowrap" :class="{ collapsed: collapsed }">
             开启新的对话
             <img src="/新增对话.svg" alt="add" class="icon" />
           </div>
@@ -34,15 +33,28 @@
         <a-popover trigger="click">
           <template #content>
             <div class="no-select">
-              <h1 style=" font-weight: bold; margin-bottom: 15px;">模型设置</h1>
+              <div style="display: flex;">
+                <h1 style=" font-weight: bold; margin-bottom: 15px;">模型设置</h1>
+                <a-popover trigger="click" v-model:open="PopoverVisible">
+                  <template #content>
+                    <p class="ml-1.5" style="font-weight: bold; margin-bottom: 10px;user-select: none;">场景预设</p>
+                    <div v-for="(preset, name) in presets" :key="name" class="preset-option" @click="applyPreset(name)"
+                      style="padding: 10px; cursor: pointer; margin-bottom: 5px; border-radius: 20px; transition: all 0.3s;">
+                      {{ name }}
+                      <div style="font-size: 12px; color: #999; margin-top: 2px;">{{ preset.description }}</div>
+                    </div>
+                  </template>
+                  <div class="size-5 ml-46" style="cursor: pointer; display: flex; "><img src="/预设.svg"></div>
+                </a-popover>
+              </div>
               <div v-for="model in modelStore.models" :key="model.value">
                 <div v-if="modelStore.currentModel === model.value">
                   <label>
-                    <a-tooltip title="数值越高，模型可输入与输出文本长度越长；数值越低，模型可输入与输出文本长度越短（该值过低与生成文本不匹配时会导致生成终止）">
+                    <a-tooltip title="数值越高，模型可输入与输出文本长度越长；数值越低，模型可输入与输出文本长度越短（该值过低与文本长度不匹配时会导致生成中止）">
                       <span style="cursor: pointer; color: #1890ff;">!</span>
                     </a-tooltip>
-                    最大生成长度:
-                    <a-slider v-model:value="max_tokens" :step="1" :min="1024" :max="model.maxTokens"
+                    max_tokens:
+                    <a-slider v-model:value="max_tokens" :step="1" :min="0" :max="model.maxTokens"
                       @change="switchSettings" style="width: 250px;" />
                   </label>
                 </div>
@@ -51,22 +63,29 @@
                 <a-tooltip title="数值越高，模型输出越随机，创造力越强；数值越低，输出越确定">
                   <span style="cursor: pointer; color: #1890ff;">!</span>
                 </a-tooltip>
-                创造力:
-                <a-slider v-model:value="temperature" :step="0.1" :min="0" :max="1" @change="switchSettings" />
+                temperature:
+                <a-slider v-model:value="temperature" :step="0.1" :min="0" :max="2" @change="switchSettings" />
               </label>
               <label>
                 <a-tooltip title="数值越高，生成的文本多样性越强；数值越低，生成的文本越集中在高概率的词汇上">
                   <span style="cursor: pointer; color: #1890ff;">!</span>
                 </a-tooltip>
-                多样性:
-                <a-slider v-model:value="top_p" :step="0.1" :min="0" :max="1" @change="switchSettings" />
+                top_p:
+                <a-slider v-model:value="top_p" :step="0.1" :min="0.1" :max="1" @change="switchSettings" />
               </label>
               <label>
-                <a-tooltip title="数值越大，模型从更多候选词中选择词汇，生成的文本可能更丰富；数值越小，模型从较少候选词中选择词汇，生成的文本可能更稳定">
+                <a-tooltip title="数值越高，模型从更多候选词中选择词汇，生成的文本可能更丰富；数值越低，模型从较少候选词中选择词汇，生成的文本可能更稳定">
                   <span style="cursor: pointer; color: #1890ff;">!</span>
                 </a-tooltip>
-                候选词范围:
-                <a-slider v-model:value="top_k" :step="1" :min="10" :max="100" @change="switchSettings" />
+                top_k:
+                <a-slider v-model:value="top_k" :step="1" :min="0" :max="100" @change="switchSettings" />
+              </label>
+              <label>
+                <a-tooltip title="数值越高，模型越倾向于使用新词而不是重复已用词；数值越低，模型越倾向于重复已用词">
+                  <span style="cursor: pointer; color: #1890ff;">!</span>
+                </a-tooltip>
+                frequency_penalty:
+                <a-slider v-model:value="frequency_penalty" :step="0.1" :min="-2" :max="2" @change="switchSettings" />
               </label>
             </div>
           </template>
@@ -108,8 +127,8 @@
 
     </a-layout-sider>
     <div class="app-container">
-      <!-- <ChatView /> -->
-      <HomeView />
+      <ChatView />
+      <!-- <HomeView /> -->
     </div>
   </a-layout>
 </template>
@@ -118,6 +137,7 @@
 import HomeView from '@/views/HomeView.vue';
 import ChatView from './views/ChatView.vue';
 import { useModelStore } from "@/stores/modelStore";
+import { message } from 'ant-design-vue';
 
 export default {
   name: 'App',
@@ -134,8 +154,41 @@ export default {
       temperature: modelStore.temperature,
       top_p: modelStore.top_p,
       top_k: modelStore.top_k,
+      frequency_penalty: modelStore.frequency_penalty,
       modelStore,
       currentModel: modelStore.currentModel,
+      PopoverVisible: false,
+      // 添加预设场景配置
+      presets: {
+        "创意文本": {
+          temperature: 0.9,
+          top_p: 0.9,
+          top_k: 50,
+          frequency_penalty: 0.6,
+          description: "创造性和多样性高，适合文学创作、故事生成"
+        },
+        "问答系统": {
+          temperature: 0.4,
+          top_p: 0.7,
+          top_k: 40,
+          frequency_penalty: 0.5,
+          description: "平衡创造性和准确性，适合回答问题"
+        },
+        "代码生成": {
+          temperature: 0.2,
+          top_p: 0.9,
+          top_k: 50,
+          frequency_penalty: 0.3,
+          description: "输出更确定性和精确，适合生成代码"
+        },
+        "文本摘要": {
+          temperature: 0.4,
+          top_p: 0.8,
+          top_k: 40,
+          frequency_penalty: 0.4,
+          description: "减少重复，聚焦关键信息"
+        }
+      }
     };
   },
   methods: {
@@ -148,8 +201,20 @@ export default {
         temperature: this.temperature,
         top_p: this.top_p,
         top_k: this.top_k,
+        frequency_penalty: this.frequency_penalty,
       });
     },
+    applyPreset(presetName) {
+      const preset = this.presets[presetName];
+      if (!preset) return;
+      this.temperature = preset.temperature;
+      this.top_p = preset.top_p;
+      this.top_k = preset.top_k;
+      this.frequency_penalty = preset.frequency_penalty;
+      this.switchSettings();
+      message.success(`已应用"${presetName}"预设`);
+      this.PopoverVisible = false;
+    }
   },
 }
 </script>
