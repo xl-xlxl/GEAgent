@@ -88,7 +88,7 @@ import { qianfanService } from '@/services/qianfanService';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useModelStore } from "@/stores/modelStore";
-import { Flex, Select, Button } from 'ant-design-vue';
+import { Flex, Select, Button, message } from 'ant-design-vue';
 import { Sender } from 'ant-design-x-vue';
 import { SendOutlined } from '@ant-design/icons-vue';
 import { Avatar } from 'ant-design-vue';
@@ -114,7 +114,7 @@ export default {
       conversationId: null,
       models: modelStore.models,
       modelStore,
-      autoScroll: true, 
+      autoScroll: true,
     };
   },
 
@@ -208,6 +208,8 @@ export default {
     async sendMessage() {
       if (!this.userInput.trim() || this.loading) return;
 
+      // 显示加载消息
+      const loadHide = message.loading('正在思考中...', 0);
       //用户消息
       const userMessage = {
         id: Date.now() + '-user',
@@ -286,13 +288,18 @@ export default {
               content: msg.content
             }));
         }
-
+        // 添加标志跟踪是否已收到第一个响应
+        let firstResponseReceived = false;
         const aiResponse = await chatService.sendMessage(
           messagesToSend,
           // 思考过程回调
           (reasoning) => {
             const thinkingIndex = this.messages.findIndex(msg => msg.id === thinkingMessage.id);
             if (thinkingIndex !== -1) {
+              if (!firstResponseReceived) {
+                loadHide(); // 收到第一个思考内容时隐藏加载消息
+                firstResponseReceived = true;
+              }
               const currentThinking = this.messages[thinkingIndex].thinking || '';
               const newThinking = currentThinking + reasoning;
               this.messages[thinkingIndex].thinking = newThinking;
@@ -300,6 +307,10 @@ export default {
           },
           // 回答内容回调
           (reply) => {
+            if (!firstResponseReceived) {
+              loadHide(); // 收到第一个回答内容时隐藏加载消息
+              firstResponseReceived = true;
+            }
             const aiIndex = this.messages.findIndex(msg => msg.id === aiMessage.id);
             if (aiIndex !== -1) {
               const currentContent = this.messages[aiIndex].content || '';
