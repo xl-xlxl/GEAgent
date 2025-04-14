@@ -1,4 +1,3 @@
-import streamApi from "@/assets/api/index";
 import axios from 'axios';
 import { ref } from 'vue';
 
@@ -49,8 +48,6 @@ const conversationApi = {
                     title: params.title || "GESeek",
                     webSearch: params.webSearch || false
                 }),
-                // 移除credentials以避免CORS问题
-                // credentials: apiConfig.withCredentials ? "include" : "same-origin"
             });
 
             // 处理SSE流的代码保持不变
