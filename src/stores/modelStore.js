@@ -19,6 +19,8 @@ export const useModelStore = defineStore("modelStore", {
   actions: {
     switchModel(model) {
       this.currentModel = model;
+      this.currentModelIndex = this.models.findIndex(item => item.value === model);
+      return this.currentModelIndex;
     },
     switchSettings({ max_tokens, temperature, top_p, top_k, frequency_penalty }) {
       if (max_tokens !== undefined) this.max_tokens = max_tokens;
