@@ -29,6 +29,11 @@ export default defineConfig({
                 target: 'https://qianfan.baidubce.com',
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/api\/qianfan/, '')
+            },
+            '/api': {
+                target: 'http://localhost:3000',
+                changeOrigin: true,
+                secure: false,
             }
         }
     },
@@ -37,4 +42,4 @@ export default defineConfig({
             '@': fileURLToPath(new URL('./src', import.meta.url)),
         }
     },
-});
+})

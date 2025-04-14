@@ -1,20 +1,25 @@
 <template>
   <div class="chat-container">
-    <div class="chat-header" style=" user-select: none;">
+    <div class="chat-header" style="user-select: none">
       <h1>title</h1>
     </div>
     <div class="scroll-container" ref="scrollArea" @scroll="handleScroll">
       <!-- 消息区域 -->
       <div class="messages-area">
         <template v-for="message in messages" :key="message.id">
-          <div v-if="message.role === 'user' ||
-            (message.role === 'thinking') ||
-            (message.role === 'assistant' && message.content)" :class="{
-              'message': true,
+          <div
+            v-if="
+              message.role === 'user' ||
+              message.role === 'thinking' ||
+              (message.role === 'assistant' && message.content)
+            "
+            :class="{
+              message: true,
               'user-message': message.role === 'user',
               'ai-message': message.role === 'assistant',
-              'thinking-message': message.role === 'thinking'
-            }">
+              'thinking-message': message.role === 'thinking',
+            }"
+          >
             <!-- 用户消息 -->
             <div v-if="message.role === 'user'" class="user-message-container">
               <div class="user-bubble">
@@ -25,8 +30,14 @@
               </div>
             </div>
             <!-- 思考过程消息 -->
-            <div v-if="message.role === 'thinking' && message.thinking && message.thinking.trim().length > 0"
-              class="thinking-message-container">
+            <div
+              v-if="
+                message.role === 'thinking' &&
+                message.thinking &&
+                message.thinking.trim().length > 0
+              "
+              class="thinking-message-container"
+            >
               <div class="avatar-container">
                 <a-avatar :size="40" src=""></a-avatar>
               </div>
@@ -35,9 +46,16 @@
               </div>
             </div>
             <!-- AI回复消息 -->
-            <div v-if="message.role === 'assistant'" class="ai-message-container">
+            <div
+              v-if="message.role === 'assistant'"
+              class="ai-message-container"
+            >
               <div class="avatar-container">
-                <a-avatar v-if="!hasThinkingBefore(message)" :size="40" src=""></a-avatar>
+                <a-avatar
+                  v-if="!hasThinkingBefore(message)"
+                  :size="40"
+                  src=""
+                ></a-avatar>
                 <div v-else class="avatar-placeholder"></div>
               </div>
               <div class="ai-bubble">
@@ -52,28 +70,52 @@
     <div class="input-area">
       <div class="input-container">
         <!-- 输入框 -->
-        <textarea class="message-input" placeholder="给 GESeek 发送消息" v-model="userInput" @keydown="handleKeyDown"
-          :disabled="loading" :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
-        <div style="display: flex;justify-content: space-between;">
+        <textarea
+          class="message-input"
+          placeholder="给 GESeek 发送消息"
+          v-model="userInput"
+          @keydown="handleKeyDown"
+          :disabled="loading"
+          :auto-size="{ minRows: 3, maxRows: 8 }"
+        ></textarea>
+        <div style="display: flex; justify-content: space-between">
           <div class="model-select">
             <!-- 模型选择 -->
-            <a-select :default-value="currentModel" v-model="currentModel" @change="switchModel" style="width: 150px"
-              size="small" :disabled="loading">
-              <a-select-option v-for="model in models" :key="model.value" :value="model.value">
+            <a-select
+              :default-value="currentModel"
+              v-model="currentModel"
+              @change="switchModel"
+              style="width: 150px"
+              size="small"
+              :disabled="loading"
+            >
+              <a-select-option
+                v-for="model in models"
+                :key="model.value"
+                :value="model.value"
+              >
                 {{ model.alias }}
               </a-select-option>
             </a-select>
           </div>
           <div class="input-actions">
             <!-- 联网搜索按钮 -->
-            <button class="webServe-button" :class="{ 'active-search': webSearch }" @click="switchWebSearch"
-              :disabled="loading">
-              <span class="webServe-icon"><img src="/互联网搜索.svg"></span>
+            <button
+              class="webServe-button"
+              :class="{ 'active-search': webSearch }"
+              @click="switchWebSearch"
+              :disabled="loading"
+            >
+              <span class="webServe-icon"><img src="/互联网搜索.svg" /></span>
               联网搜索
             </button>
             <!-- 发送按钮 -->
-            <button class="send-button" @click="sendMessage" :disabled="!userInput.trim() || loading">
-              <span class="send-icon"><img src="/发送.svg"></span>
+            <button
+              class="send-button"
+              @click="sendMessage"
+              :disabled="!userInput.trim() || loading"
+            >
+              <span class="send-icon"><img src="/发送.svg" /></span>
             </button>
           </div>
         </div>
@@ -83,18 +125,20 @@
 </template>
 
 <script>
-import { chatService } from '@/services/aiService';
-import { qianfanService } from '@/services/qianfanService';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import { chatService } from "@/services/aiService";
+import { qianfanService } from "@/services/qianfanService";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 import { useModelStore } from "@/stores/modelStore";
-import { Flex, Select, Button, message } from 'ant-design-vue';
-import { Sender } from 'ant-design-x-vue';
-import { SendOutlined } from '@ant-design/icons-vue';
-import { Avatar } from 'ant-design-vue';
+import { Flex, Select, Button, message } from "ant-design-vue";
+import { Sender } from "ant-design-x-vue";
+import { SendOutlined } from "@ant-design/icons-vue";
+import { Avatar } from "ant-design-vue";
+import { createConversation } from "@/services/conversationService";
+import { message as messageApi } from "ant-design-vue";
 
 export default {
-  name: 'ChatView',
+  name: "ChatView",
   components: {
     Flex,
     Select,
@@ -108,7 +152,7 @@ export default {
     return {
       currentModel: modelStore.currentModel,
       messages: [],
-      userInput: '',
+      userInput: "",
       loading: false,
       webSearch: true,
       conversationId: null,
@@ -149,7 +193,12 @@ export default {
     handleScroll() {
       const scrollArea = this.$refs.scrollArea;
       if (!scrollArea) return;
-      const isAtBottom = Math.abs(scrollArea.scrollHeight - scrollArea.scrollTop - scrollArea.clientHeight) < 5;
+      const isAtBottom =
+        Math.abs(
+          scrollArea.scrollHeight -
+            scrollArea.scrollTop -
+            scrollArea.clientHeight
+        ) < 5;
       this.autoScroll = isAtBottom;
     },
 
@@ -165,14 +214,20 @@ export default {
     },
 
     hasThinkingBefore(currentMessage) {
-      const currentIndex = this.messages.findIndex(msg => msg.id === currentMessage.id);
+      const currentIndex = this.messages.findIndex(
+        (msg) => msg.id === currentMessage.id
+      );
       if (currentIndex === -1) return false;
       for (let i = currentIndex - 1; i >= 0; i--) {
         const msg = this.messages[i];
-        if (msg.role === 'user') {
+        if (msg.role === "user") {
           return false;
         }
-        if (msg.role === 'thinking' && msg.thinking && msg.thinking.trim().length > 0) {
+        if (
+          msg.role === "thinking" &&
+          msg.thinking &&
+          msg.thinking.trim().length > 0
+        ) {
           return true;
         }
       }
@@ -186,11 +241,11 @@ export default {
 
     switchWebSearch() {
       this.webSearch = !this.webSearch;
-      console.log('联网模式: ' + (this.webSearch ? '开启' : '关闭'));
+      console.log("联网模式: " + (this.webSearch ? "开启" : "关闭"));
     },
 
     handleKeyDown(event) {
-      if (event.key === 'Enter') {
+      if (event.key === "Enter") {
         if (!event.shiftKey) {
           event.preventDefault();
           this.sendMessage();
@@ -200,7 +255,7 @@ export default {
     },
 
     renderMarkdown(text) {
-      if (!text) return '';
+      if (!text) return "";
       const rawHtml = marked.parse(text);
       return DOMPurify.sanitize(rawHtml);
     },
@@ -208,137 +263,95 @@ export default {
     async sendMessage() {
       if (!this.userInput.trim() || this.loading) return;
 
-      // 显示加载消息
-      const loadHide = message.loading('正在思考中...', 0);
-      //用户消息
+      const loadHide = messageApi.loading("正在思考中...", 0);
+
       const userMessage = {
-        id: Date.now() + '-user',
-        role: 'user',
-        content: this.userInput
+        id: Date.now() + "-user",
+        role: "user",
+        content: this.userInput,
       };
       this.messages.push(userMessage);
       this.loading = true;
       const userQuery = this.userInput;
-      this.userInput = '';
+      this.userInput = "";
 
-      //思考过程消息
       const thinkingMessage = {
-        id: Date.now() + '-thinking',
-        role: 'thinking',
-        thinking: ''
+        id: Date.now() + "-thinking",
+        role: "thinking",
+        thinking: "",
       };
       this.messages.push(thinkingMessage);
 
-      //ai回复消息
       const aiMessage = {
-        id: Date.now() + '-assistant',
-        role: 'assistant',
-        content: ''
+        id: Date.now() + "-assistant",
+        role: "assistant",
+        content: "",
       };
       this.messages.push(aiMessage);
 
       try {
-        console.log('当前模型:', this.currentModel);
-        console.log('现在的max_tokens:', this.max_tokens);
-        console.log('现在的temperature:', this.temperature);
-        console.log('现在的top_p:', this.top_p);
-        console.log('现在的top_k:', this.top_k);
-        console.log('现在的frequency_penalty:', this.frequency_penalty);
+        const params = {
+          message: userQuery,
+          LLMID: 1,
+          title: "GESeek",
+          webSearch: this.webSearch,
+        };
 
-        let messagesToSend = [];
-        // 如果启用了联网功能，先通过千帆API获取信息
-        if (this.webSearch) {
-          try {
-            if (!this.conversationId) {
-              this.conversationId = await qianfanService.getConversationId();
-            }
-            const qianfanResponse = await qianfanService.sendMessage(userQuery, this.conversationId);
-            // 构建包含联网信息的消息
-            messagesToSend = [
-              ...this.messages
-                .slice(-5)
-                .filter(msg => msg.role !== 'thinking')
-                .map(msg => ({
-                  role: msg.role,
-                  content: msg.content
-                })),
-              {
-                role: 'system',
-                content: `以下是来自互联网查询的结果，请基于这些信息回答用户的问题：\n${qianfanResponse}`
-              }
-            ];
-          }
-          catch (error) {
-            // 联网失败时回退到常规模式
-            messagesToSend = this.messages
-              .slice(-5)
-              .filter(msg => msg.role !== 'thinking')
-              .map(msg => ({
-                role: msg.role,
-                content: msg.content
-              }));
-          }
-        }
-        else {
-          // 不使用联网功能
-          messagesToSend = this.messages
-            .filter(msg => msg.role !== 'thinking')
-            .map(msg => ({
-              role: msg.role,
-              content: msg.content
-            }));
-        }
-        // 添加标志跟踪是否已收到第一个响应
         let firstResponseReceived = false;
-        const aiResponse = await chatService.sendMessage(
-          messagesToSend,
+
+        const response = await createConversation(params,
           // 思考过程回调
           (reasoning) => {
-            const thinkingIndex = this.messages.findIndex(msg => msg.id === thinkingMessage.id);
+            const thinkingIndex = this.messages.findIndex(
+              (msg) => msg.id === thinkingMessage.id
+            );
             if (thinkingIndex !== -1) {
               if (!firstResponseReceived) {
                 loadHide(); // 收到第一个思考内容时隐藏加载消息
                 firstResponseReceived = true;
               }
-              const currentThinking = this.messages[thinkingIndex].thinking || '';
+              const currentThinking =
+                this.messages[thinkingIndex].thinking || "";
               const newThinking = currentThinking + reasoning;
               this.messages[thinkingIndex].thinking = newThinking;
             }
           },
           // 回答内容回调
           (reply) => {
-            if (!firstResponseReceived) {
-              loadHide(); // 收到第一个回答内容时隐藏加载消息
-              firstResponseReceived = true;
-            }
-            const aiIndex = this.messages.findIndex(msg => msg.id === aiMessage.id);
+            const aiIndex = this.messages.findIndex(
+              (msg) => msg.id === aiMessage.id
+            );
             if (aiIndex !== -1) {
-              const currentContent = this.messages[aiIndex].content || '';
+              const currentContent = this.messages[aiIndex].content || "";
               const newContent = currentContent + reply;
               this.messages[aiIndex].content = newContent;
             }
-          },
+          }
         );
 
+        console.log("对话创建成功:", response);
       } catch (error) {
-        console.error('AI响应错误:', error);
-        const thinkingIndex = this.messages.findIndex(msg => msg.id === thinkingMessage.id);
+        console.error("AI响应错误:", error);
+        const thinkingIndex = this.messages.findIndex(
+          (msg) => msg.id === thinkingMessage.id
+        );
         if (thinkingIndex !== -1) {
-          this.messages[thinkingIndex].thinking = '思考过程中断: ' + error.message;
+          this.messages[thinkingIndex].thinking =
+            "思考过程中断: " + error.message;
         }
         this.messages.push({
-          id: Date.now() + '-error',
-          role: 'assistant',
-          content: `抱歉，发生了错误: ${error.message || '请求失败'}`
+          id: Date.now() + "-error",
+          role: "assistant",
+          content: `抱歉，发生了错误: ${error.message || "请求失败"}`,
         });
       } finally {
         this.loading = false;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style scoped>
-@import '@/assets/styles/views/chat.css';
+@import "@/assets/styles/views/chat.css";
 </style>
