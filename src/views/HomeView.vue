@@ -82,17 +82,20 @@ const switchModel = (value: string) => {//统一命名为switchModel
 
 // 处理提交
 const handleSubmit = () => {
+    const userStore = useUserStore();
+    
+    // 检查token是否存在，如果不存在则通过store的action更新登录状态
+    if(!localStorage.getItem('token')) {
+        userStore.logout();
+    }
 
-
-    if (useUserStore().isLoggedIn === false) {
+    if (!userStore.loggedIn) { 
         // 用户未登录，显示登录卡片
         showLoginCard.value = true;
         messageApi.warning('请先登录后再发送消息');
         return;
     } else {
         // 用户已登录，继续发送消息
-        const newToken = userService.refreshToken();
-        console.log(newToken)
         messageApi.info(`使用 ${modelStore.currentModel} 发送消息`);
         userInput.value = '';
         loading.value = true;
@@ -103,7 +106,6 @@ const handleSubmit = () => {
             messageApi.success('消息发送成功！');
         }, 2000);
     }
-
 };
 
 // 修改登录成功处理函数，接收登录结果作为参数
