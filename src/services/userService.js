@@ -39,6 +39,7 @@ export async function register(userData) {
 export async function refreshToken() {
     try {
         const refreshTokenRes = await authApi.refreshToken();
+        localStorage.setItem("token", refreshTokenRes.data.token);
         console.log(refreshTokenRes);
         if (refreshTokenRes.success == true) {
             localStorage.setItem("token", refreshTokenRes.data.token);

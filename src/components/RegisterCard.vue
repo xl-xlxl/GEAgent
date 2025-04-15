@@ -33,18 +33,14 @@
           { min: 8, max: 100, message: '密码长度必须在8-100字符之间' },
           { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, message: '密码必须包含大小写字母和数字' }
         ]">
-          <a-input-password v-model:value="registerForm.password" placeholder="密码" size="large">
-            <template #prefix><lock-outlined /></template>
-          </a-input-password>
+          <a-input-password v-model:value="registerForm.password" placeholder="密码" size="large" />
         </a-form-item>
         
         <a-form-item name="confirmPassword" :rules="[
           { required: true, message: '请确认密码' },
           { validator: validateConfirmPassword }
         ]">
-          <a-input-password v-model:value="registerForm.confirmPassword" placeholder="确认密码" size="large">
-            <template #prefix><lock-outlined /></template>
-          </a-input-password>
+          <a-input-password v-model:value="registerForm.confirmPassword" placeholder="确认密码" size="large" />
         </a-form-item>
         
         

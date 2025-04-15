@@ -127,8 +127,8 @@
 
     </a-layout-sider>
     <div class="app-container">
-      <ChatView />
-      <!-- <HomeView /> -->
+      <!-- <ChatView /> -->
+      <HomeView />
     </div>
   </a-layout>
 </template>
@@ -138,6 +138,8 @@ import HomeView from '@/views/HomeView.vue';
 import ChatView from './views/ChatView.vue';
 import { useModelStore } from "@/stores/modelStore";
 import { message } from 'ant-design-vue';
+import * as userService from '@/services/userService';
+import { useUserStore } from './stores/userStore';
 
 export default {
   name: 'App',
@@ -190,6 +192,10 @@ export default {
         }
       }
     };
+  },
+
+  created() {
+    
   },
   methods: {
     toggleCollapsed() {

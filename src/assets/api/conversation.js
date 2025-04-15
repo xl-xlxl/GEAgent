@@ -1,4 +1,4 @@
-import streamApi from "@/assets/api/index";
+import { streamApi } from "@/assets/api/index";
 import axios from 'axios';
 import { ref } from 'vue';
 

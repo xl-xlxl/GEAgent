@@ -1,6 +1,6 @@
 import axios from "axios";
 import { message } from 'ant-design-vue';
-const messageApi = message.useMessage()
+const [messageApi, contextHolder] = message.useMessage();
 
 const baseURL = `${import.meta.env.VITE_API_BASE_URL}/api`;
 
@@ -32,8 +32,18 @@ api.interceptors.response.use(res => {
     // console.log("拦截响应：", res);
     return res;
 }, error => {
+    console.log("响应错误：", error);
+    // 修正错误状态码的获取方式
+    if (error.response && error.response.status === 403) {
+        // 使用正确的消息API调用方式
+        messageApi.error("登录已过期，请重新登录");
+        //延时2秒后跳转到登录页面
+        setTimeout(() => {
+            localStorage.removeItem("token");
+            window.location.href = "/"; 
+        },100000)
+    }
     // 传递错误到调用者
-    // console.log("响应错误：", error);
     return Promise.reject(error);
 });
 
@@ -73,4 +83,4 @@ streamApi.interceptors.response.use(res => {
 });
 
 
-export default api;
+export {api, streamApi};

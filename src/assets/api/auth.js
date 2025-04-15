@@ -1,4 +1,4 @@
-import api from '@/assets/api/index'
+import { api } from '@/assets/api/index'
 import axios from 'axios' 
 import { ref } from 'vue';
 
@@ -25,7 +25,7 @@ const authApi = {
         try {
             return await api.post('/user/login', credentials)
         } catch (error) {
-
+            console.log(error);
             let head = '未知错误';
             let errorMessage = '登录失败，请稍后重试';
             if (error.response.status === 401) {
