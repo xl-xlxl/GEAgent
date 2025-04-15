@@ -127,8 +127,7 @@
 
     </a-layout-sider>
     <div class="app-container">
-      <!-- <ChatView /> -->
-      <HomeView />
+      <router-view />
     </div>
   </a-layout>
 </template>

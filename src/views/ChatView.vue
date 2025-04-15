@@ -97,7 +97,7 @@ import { Flex, Select, Button, message } from "ant-design-vue";
 import { Sender } from "ant-design-x-vue";
 import { SendOutlined } from "@ant-design/icons-vue";
 import { Avatar } from "ant-design-vue";
-import { createConversation } from "@/services/conversationService";
+import { createConversation, continueConversation } from "@/services/conversationService";
 import { message as messageApi } from "ant-design-vue";
 
 export default {
@@ -122,7 +122,19 @@ export default {
       models: modelStore.models,
       modelStore,
       autoScroll: true,
+      firstResponseReceived: false,
     };
+  },
+
+  created() {
+    try {
+      // 安全地访问路由参数
+      this.conversationId = this.$route?.params?.id || null;
+      console.log("当前对话ID:", this.conversationId);
+    } catch (error) {
+      console.error("获取路由参数出错:", error);
+      this.conversationId = null;
+    }
   },
 
   watch: {
@@ -150,6 +162,12 @@ export default {
     frequency_penalty() {
       return useModelStore().frequency_penalty;
     },
+  },
+
+  created() {
+    // 从路由参数获取会话ID
+    this.conversationId = this.$route.params.id || null;
+    console.log("当前对话ID:", this.conversationId);
   },
 
   methods: {
@@ -223,6 +241,42 @@ export default {
       return DOMPurify.sanitize(rawHtml);
     },
 
+    // 处理思考过程回调的辅助函数
+    handleReasoningCallback(thinkingMessage, loadHide) {
+      return (reasoning) => {
+        const thinkingIndex = this.messages.findIndex(
+          (msg) => msg.id === thinkingMessage.id
+        );
+        if (thinkingIndex !== -1) {
+          if (!this.firstResponseReceived) {
+            loadHide(); // 收到第一个回复时隐藏加载提示
+            this.firstResponseReceived = true;
+          }
+          const currentThinking = this.messages[thinkingIndex].thinking || "";
+          const newThinking = currentThinking + reasoning;
+          this.messages[thinkingIndex].thinking = newThinking;
+        }
+      };
+    },
+
+    // 处理回答内容回调的辅助函数
+    handleReplyCallback(aiMessage, loadHide) {
+      return (reply) => {
+        const aiIndex = this.messages.findIndex(
+          (msg) => msg.id === aiMessage.id
+        );
+        if (aiIndex !== -1) {
+          if (!this.firstResponseReceived) {
+            loadHide();
+            this.firstResponseReceived = true;
+          }
+          const currentContent = this.messages[aiIndex].content || "";
+          const newContent = currentContent + reply;
+          this.messages[aiIndex].content = newContent;
+        }
+      };
+    },
+
     getTitleFromMessage(message) {
       // 截取前20个字符，如果不足20个则使用整个消息
       return message.length > 20 ? message.substring(0, 17) + '...' : message;
@@ -272,52 +326,43 @@ export default {
       try {
         const params = {
           message: userQuery,
-          LLMID: 1,//临时
+          LLMID: 0,//临时
           title: this.getTitleFromMessage(userQuery),
           webSearch: this.webSearch,
         };
 
-        const response = await createConversation(
-          params,
-          // 思考过程回调
-          (reasoning) => {
-            const thinkingIndex = this.messages.findIndex(
-              (msg) => msg.id === thinkingMessage.id
-            );
-            if (thinkingIndex !== -1) {
-              if (!firstResponseReceived) {
-                loadHide(); // 收到第一个回复时隐藏加载提示
-                firstResponseReceived = true;
-              }
-              const currentThinking = this.messages[thinkingIndex].thinking || "";
-              const newThinking = currentThinking + reasoning;
-              this.messages[thinkingIndex].thinking = newThinking;
-            }
-          },
-          // 回答内容回调
-          (reply) => {
-            const aiIndex = this.messages.findIndex(
-              (msg) => msg.id === aiMessage.id
-            );
-            if (aiIndex !== -1) {
-              if (!firstResponseReceived) {
-                loadHide();
-                firstResponseReceived = true;
-              }
-              const currentContent = this.messages[aiIndex].content || "";
-              const newContent = currentContent + reply;
-              this.messages[aiIndex].content = newContent;
-            }
-          }
-        );
+        let response;
 
-        // 保存对话ID
-        if (response && response.conversationId) {
-          this.conversationId = response.conversationId;
-          console.log("对话创建完毕,会话ID:", this.conversationId);
+        // 根据conversationId判断是创建新对话还是继续对话
+        if (!this.conversationId) {
+          // 创建新对话
+          params.title = this.getTitleFromMessage(userQuery); // 新对话需要标题
+
+          response = await createConversation(
+            params,
+            // 思考过程和回答内容回调保持不变
+            this.handleReasoningCallback(thinkingMessage, loadHide, firstResponseReceived),
+            this.handleReplyCallback(aiMessage, loadHide, firstResponseReceived)
+          );
+
+          // 保存对话ID
+          if (response && response.conversationId) {
+            this.conversationId = response.conversationId;
+            console.log("新对话已创建，会话ID:", this.conversationId);
+          }
+        } else {
+          // 继续现有对话
+          response = await continueConversation(
+            params,
+            this.conversationId,
+            this.handleReasoningCallback(thinkingMessage, loadHide, firstResponseReceived),
+            this.handleReplyCallback(aiMessage, loadHide, firstResponseReceived)
+          );
+
+          console.log("继续对话完成，会话ID:", this.conversationId);
         }
       } catch (error) {
-        console.error("创建新会话-UI层错误:", error);
+        console.error(this.conversationId ? "继续对话-UI层错误:" : "创建新会话-UI层错误:", error);
         if (error.error?.isShowable) {
           messageApi.error("服务暂时不可用，请稍后再试");
         }
