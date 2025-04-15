@@ -117,11 +117,12 @@ const handleSubmit = async () => {
         const params = {
             message: messageContent,
             LLMID: 0,
-            title: userInput.value.length > 20
-                ? userInput.value.substring(0, 17) + '...'
-                : userInput.value,
+            title: messageContent.length > 20
+                ? messageContent.substring(0, 17) + '...'
+                : messageContent,
             webSearch: webSearch.value
         };
+        console.log(1)
 
         // 调用API创建新会话
         const response = await createConversation(
@@ -129,13 +130,23 @@ const handleSubmit = async () => {
             () => { }, // 忽略思考回调
             () => { }  // 忽略回复回调
         );
+        console.log(2)
 
         // 检查响应是否成功
         if (response.success && response.conversationId) {
-            // 保存用户输入到本地存储，以便在聊天页面显示
-            localStorage.setItem('lastUserQuery', messageContent);
-            // 导航到聊天页面
-            router.push(`/chat/${response.conversationId}`);
+            // 结束加载状态
+            loading.value = false;
+            loadHide(); // 确保加载提示被关闭
+
+            router.push({
+                path: `/chat/${response.conversationId}`,
+                query: {
+                    userMessage: encodeURIComponent(messageContent),
+                    initialResponseId: response.responseId || '', // 如果API返回响应ID
+                    timestamp: Date.now() // 确保缓存不会影响请求
+                }
+            });
+            console.log(3)
         } else {
             throw new Error('创建会话失败');
         }
@@ -156,9 +167,7 @@ const handleLoginSuccess = (loginResult) => {
         // 如果输入框有内容，尝试发送消息
         if (userInput.value.trim()) {
             // 延迟一点执行提交，给用户看到登录成功消息的时间
-            setTimeout(() => {
-                handleSubmit();
-            }, 500);
+            handleSubmit();
         }
     } else {
         messageApi.error('登录未完成，请重试');

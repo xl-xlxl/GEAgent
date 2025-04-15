@@ -131,6 +131,7 @@ export default {
       // 安全地访问路由参数
       this.conversationId = this.$route?.params?.id || null;
       console.log("当前对话ID:", this.conversationId);
+
     } catch (error) {
       console.error("获取路由参数出错:", error);
       this.conversationId = null;
@@ -163,52 +164,32 @@ export default {
       return useModelStore().frequency_penalty;
     },
   },
-  
+
   mounted() {
-    // 从本地存储获取用户最近的查询
-    const lastUserQuery = localStorage.getItem('lastUserQuery');
-    
-    // 如果没有conversationId或用户查询，可能是直接访问的，重定向到首页
+    // 如果没有conversationId，可能是直接访问的，重定向到首页
     if (!this.conversationId) {
-        console.warn('没有有效的会话ID，重定向到首页');
-        this.$router.replace('/');
-        return;
+      console.warn('没有有效的会话ID，重定向到首页');
+      this.$router.replace('/');
+      return;
     }
-    
-    // 如果有用户查询，则显示出来
-    if (lastUserQuery) {
-        // 创建用户消息
-        const userMessage = {
-            id: Date.now() + "-user",
-            role: "user",
-            content: lastUserQuery,
-        };
-        
-        // 添加用户消息到消息列表
-        this.messages.push(userMessage);
-        
-        // 创建AI思考和回复的占位消息
-        const thinkingMessage = {
-            id: Date.now() + "-thinking",
-            role: "thinking",
-            thinking: "正在思考中...",
-        };
-        
-        const aiMessage = {
-            id: Date.now() + "-assistant",
-            role: "assistant",
-            content: "正在生成回复...",
-        };
-        
-        this.messages.push(thinkingMessage);
-        this.messages.push(aiMessage);
-        
-        // 清除本地存储的查询，防止刷新页面时重复显示
-        localStorage.removeItem('lastUserQuery');
-    }
-},
+
+    this.setupInitialMessages();
+  },
 
   methods: {
+    setupInitialMessages() {
+      // 从路由查询参数获取用户消息
+      const userMessageText = this.$route.query.userMessage
+        ? decodeURIComponent(this.$route.query.userMessage)
+        : null;
+      if (userMessageText) {
+        // 创建并显示消息
+        this.displayUserMessage(userMessageText);
+      }
+      // 建立WebSocket连接获取流式响应
+      this.setupWebSocketConnection();
+    },
+
     handleScroll() {
       const scrollArea = this.$refs.scrollArea;
       if (!scrollArea) return;
@@ -277,6 +258,55 @@ export default {
       if (!text) return "";
       const rawHtml = marked.parse(text);
       return DOMPurify.sanitize(rawHtml);
+    },
+
+
+    // 新增方法：显示用户消息和占位符
+    displayUserMessage(messageText) {
+      // 创建用户消息
+      const userMessage = {
+        id: Date.now() + "-user",
+        role: "user",
+        content: messageText
+      };
+
+      const thinkingMessage = {
+        id: Date.now() + "-thinking",
+        role: "thinking",
+        thinking: "请稍等，正在连接服务器..."
+      };
+
+      const aiMessage = {
+        id: Date.now() + "-assistant",
+        role: "assistant",
+        content: ""
+      };
+
+      // 添加消息到列表
+      this.messages.push(userMessage);
+      this.messages.push(thinkingMessage);
+      this.messages.push(aiMessage);
+
+      // 滚动到底部
+      this.$nextTick(() => {
+        this.scrollToBottom();
+      });
+
+      return { userMessage, thinkingMessage, aiMessage };
+    },
+
+    // 新增方法：建立WebSocket连接
+    setupWebSocketConnection() {
+      // 使用会话ID建立连接
+      const wsUrl = `wss://your-api-endpoint/stream/${this.conversationId}`;
+
+      // 或者使用SSE（服务器发送事件）
+      // const eventSource = new EventSource(`/api/stream/${this.conversationId}`);
+
+      console.log("建立流式连接，等待服务器响应...");
+
+      // 这里是示例代码，您需要根据实际API实现WebSocket或SSE连接
+      // 实际代码可能需要处理认证、重连等问题
     },
 
     // 处理思考过程回调的辅助函数
