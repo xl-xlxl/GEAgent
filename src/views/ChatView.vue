@@ -224,8 +224,8 @@ export default {
     },
 
     getTitleFromMessage(message) {
-      // 截取前10个字符，如果不足10个则使用整个消息
-      return message.length > 10 ? message.substring(0, 10) + '...' : message;
+      // 截取前20个字符，如果不足20个则使用整个消息
+      return message.length > 20 ? message.substring(0, 17) + '...' : message;
     },
 
     async sendMessage() {
@@ -301,7 +301,7 @@ export default {
             );
             if (aiIndex !== -1) {
               if (!firstResponseReceived) {
-                loadHide(); // 如果思考过程回调没有触发，则在这里隐藏加载提示
+                loadHide();
                 firstResponseReceived = true;
               }
               const currentContent = this.messages[aiIndex].content || "";
@@ -317,20 +317,13 @@ export default {
           console.log("对话创建完毕,会话ID:", this.conversationId);
         }
       } catch (error) {
-        console.error("AI响应错误:", error);
-
-        // 显示错误提示
-        messageApi.error({
-          content: `请求失败: ${error.message || "未知错误"}`,
-          duration: 5,
-        });
-
-        // 添加错误消息到AI回复中
-        const aiIndex = this.messages.findIndex(
-          (msg) => msg.id === aiMessage.id
-        );
+        console.error("创建新会话-UI层错误:", error);
+        if (error.error?.isShowable) {
+          messageApi.error("服务暂时不可用，请稍后再试");
+        }
+        const aiIndex = this.messages.findIndex(msg => msg.id === aiMessage.id);
         if (aiIndex !== -1) {
-          this.messages[aiIndex].content = "抱歉，我遇到了问题，无法回复您的问题。";
+          this.messages[aiIndex].content = "抱歉，我暂时无法回答您的问题。";
         }
       } finally {
         // 无论成功或失败，都结束加载状态
