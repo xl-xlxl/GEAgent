@@ -195,9 +195,30 @@ export default {
   },
 
   created() {
-    
+    // 初始化用户
+    this.initializeUser();
   },
   methods: {
+    // 添加初始化用户方法
+    async initializeUser() {
+      try {
+        const refreshToken = await userService.refreshToken();
+        console.log('refreshToken', refreshToken);
+        if (refreshToken.data.token) {
+          console.log('refreshToken');
+          localStorage.setItem('token', refreshToken.data.token);
+          const userStore = useUserStore();
+          const userInfo = await userService.getUserInfo();
+          console.log('userInfo', userInfo);
+          console.log(111111111);
+          userStore.login(userInfo, refreshToken.data.token);
+        }
+      } catch (error) {
+        console.error('初始化用户失败:', error);
+        // 响应拦截器会处理403错误，这里不需要额外处理
+      }
+    },
+    
     toggleCollapsed() {
       this.collapsed = !this.collapsed;
     },

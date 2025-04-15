@@ -1,4 +1,5 @@
 import authApi from "@/assets/api/auth";
+import { ref } from "vue";
 
 export async function login(credentials) {
     try {
@@ -40,13 +41,11 @@ export async function refreshToken() {
     try {
         const refreshTokenRes = await authApi.refreshToken();
         localStorage.setItem("token", refreshTokenRes.data.token);
-        console.log(refreshTokenRes);
         if (refreshTokenRes.success == true) {
             localStorage.setItem("token", refreshTokenRes.data.token);
-            return refreshTokenRes.data;
+            return refreshTokenRes.data.token;
         }
     } catch (error) {
-        console.log(error);
         return {
             success: false,
             error
@@ -54,3 +53,16 @@ export async function refreshToken() {
     }
 }
 
+export async function getUserInfo() {
+    try {
+        const userDataRes = await authApi.getUserInfo();
+        if (userDataRes.data.success == true) {
+            return userDataRes.data;
+        }
+    }catch (error) {
+        return {
+            success: false,
+            error
+        }
+    }
+}

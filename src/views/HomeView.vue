@@ -55,7 +55,9 @@ import { onWatcherCleanup, ref, watch } from 'vue';
 import LoginCard from '@/components/LoginCard.vue';
 import RegisterCard from '@/components/RegisterCard.vue';
 import { useModelStore } from '@/stores/modelStore';
+import { useUserStore } from '@/stores/userStore';
 import * as userService from '@/services/userService';
+
 
 defineOptions({ name: 'AXSenderBasicSetup' });
 
@@ -82,11 +84,7 @@ const switchModel = (value: string) => {//统一命名为switchModel
 const handleSubmit = () => {
 
 
-    // 检查登录状态，这里假设从localStorage获取
-    const token = localStorage.getItem('token');
-    console.log(token)
-
-    if (!token) {
+    if (useUserStore().isLoggedIn === false) {
         // 用户未登录，显示登录卡片
         showLoginCard.value = true;
         messageApi.warning('请先登录后再发送消息');
@@ -113,12 +111,10 @@ const handleLoginSuccess = (loginResult) => {
     // 确保登录成功
     if (loginResult) {
         showLoginCard.value = false;
-
         // 登录成功后自动发送消息
         messageApi.info(`使用 ${modelStore.currentModel} 发送消息`);
         userInput.value = '';
         loading.value = true;
-
         // 模拟发送成功
         setTimeout(() => {
             loading.value = false;
