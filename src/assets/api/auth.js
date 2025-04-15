@@ -82,7 +82,7 @@ const authApi = {
     },
 
     async refreshToken() {
-       try {
+        try {
             return await api.get('/user/refreshToken')
         }catch (error) {
             let head = '刷新token失败';
