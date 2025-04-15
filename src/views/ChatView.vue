@@ -163,22 +163,6 @@ export default {
       return useModelStore().frequency_penalty;
     },
   },
-
-  created() {
-    try {
-        // 安全地访问路由参数
-        this.conversationId = this.$route?.params?.id || null;
-        console.log("当前对话ID:", this.conversationId);
-
-        // 设置接收流式消息的监听器
-        if (this.conversationId) {
-            this.setupStreamListeners();
-        }
-    } catch (error) {
-        console.error("获取路由参数出错:", error);
-        this.conversationId = null;
-    }
-},
   
   mounted() {
     // 从本地存储获取用户最近的查询

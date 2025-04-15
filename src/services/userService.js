@@ -1,11 +1,14 @@
 import authApi from "@/assets/api/auth";
 import { ref } from "vue";
+import { useUserStore } from "@/stores/userStore";
 
 export async function login(credentials) {
     try {
         const loginRes = await authApi.login(credentials);
         if (loginRes.data.success == true) {
-            localStorage.setItem("token", loginRes.data.token);
+            const userStore = useUserStore();
+            // 使用store的login action而不是直接设置loggedIn属性
+            userStore.login(loginRes.data.user, loginRes.data.token);
             return loginRes.data;
         } else {
             throw new Error(loginRes.data.message);
@@ -16,9 +19,7 @@ export async function login(credentials) {
             error
         }
     }
-
 }
-
 
 export async function register(userData) {
     try {
@@ -40,10 +41,9 @@ export async function register(userData) {
 export async function refreshToken() {
     try {
         const refreshTokenRes = await authApi.refreshToken();
-        console.log(refreshTokenRes);
         if (refreshTokenRes.data.success == true) {
             localStorage.setItem("token", refreshTokenRes.data.token);
-            return refreshTokenRes.data.token;
+            return refreshTokenRes.data;
         }
     } catch (error) {
         return {

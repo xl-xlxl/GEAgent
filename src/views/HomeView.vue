@@ -87,33 +87,36 @@ const switchModel = (value: string) => {//统一命名为switchModel
 
 // 处理提交
 const handleSubmit = async () => {
-    // 防止空消息或重复发送
+    const userStore = useUserStore();
+
+    // 检查输入是否为空
     if (!userInput.value.trim() || loading.value) return;
 
-    //检查用户登录
-    if (useUserStore().isLoggedIn === false) {
+    // 检查token是否存在，如果不存在则通过store的action更新登录状态
+    if (!localStorage.getItem('token')) {
+        userStore.logout();
+    }
+
+    if (!userStore.loggedIn) {
         // 用户未登录，显示登录卡片
         showLoginCard.value = true;
         messageApi.warning('请先登录后再发送消息');
         return;
-    } else {
-        // 用户已登录，继续发送消息
-        const newToken = userService.refreshToken();
-        console.log(newToken)
-        messageApi.info(`使用 ${modelStore.currentModel} 发送消息`);
-        userInput.value = '';
-        loading.value = true;
     }
 
-    // 设置加载状态
+    // 重要：先保存消息内容，再清空输入框
+    const messageContent = userInput.value.trim();
+    userInput.value = '';
+
+    // 用户已登录，继续发送消息
     loading.value = true;
     const loadHide = messageApi.loading("创建会话中...", 0);
 
     try {
         // 准备请求参数
         const params = {
-            message: userInput.value,
-            LLMID: modelStore.currentModel,
+            message: messageContent,
+            LLMID: 0,
             title: userInput.value.length > 20
                 ? userInput.value.substring(0, 17) + '...'
                 : userInput.value,
@@ -130,7 +133,7 @@ const handleSubmit = async () => {
         // 检查响应是否成功
         if (response.success && response.conversationId) {
             // 保存用户输入到本地存储，以便在聊天页面显示
-            localStorage.setItem('lastUserQuery', userInput.value);
+            localStorage.setItem('lastUserQuery', messageContent);
             // 导航到聊天页面
             router.push(`/chat/${response.conversationId}`);
         } else {
@@ -139,9 +142,6 @@ const handleSubmit = async () => {
     } catch (error) {
         console.error('创建会话错误:', error);
         messageApi.error('创建会话失败，请稍后再试');
-    } finally {
-        loading.value = false;
-        loadHide();
     }
 };
 

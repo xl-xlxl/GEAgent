@@ -56,7 +56,6 @@ export const useUserStore = defineStore("userStore", {
     // 刷新token
     refreshToken(newToken) {
       this.token = newToken;
-      localStorage.setItem('token', newToken);
     }
   },
 });

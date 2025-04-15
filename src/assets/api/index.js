@@ -15,10 +15,9 @@ const headers = {
 // 只有token存在时才添加Authorization头
 const token = localStorage.getItem("token");
 if (token) {
-  console.log("token:", token);
   headers['Authorization'] = `Bearer ${token}`;
 }
-console.log("headers:", headers);
+
 const api = axios.create({
     baseURL,          // 基础URL
     timeout: 10000,   // 请求超时时间：10秒

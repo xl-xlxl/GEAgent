@@ -202,15 +202,13 @@ export default {
     async initializeUser() {
       try {
         const refreshToken = await userService.refreshToken();
-        console.log('refreshToken', refreshToken);
-        if (refreshToken.data.token) {
-          console.log('refreshToken');
-          localStorage.setItem('token', refreshToken.data.token);
+        
+        if (refreshToken.token) {
+          console.log('refreshToken', refreshToken.token);
+          message.success('用户恢复登录');
           const userStore = useUserStore();
           const userInfo = await userService.getUserInfo();
-          console.log('userInfo', userInfo);
-          console.log(111111111);
-          userStore.login(userInfo, refreshToken.data.token);
+          userStore.login(userInfo, refreshToken.token);
         }
       } catch (error) {
         console.error('初始化用户失败:', error);
