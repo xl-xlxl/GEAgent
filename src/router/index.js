@@ -3,13 +3,13 @@ import HomeView from '../views/HomeView.vue'
 import ChatView from '../views/ChatView.vue'
 
 const routes = [
-    // {
-    //     path: '/',
-    //     name: 'home',
-    //     component: HomeView
-    // },
     {
         path: '/',
+        name: 'home',
+        component: HomeView
+    },
+    {
+        path: '/chat/:id',
         name: 'chat',
         component: ChatView
     }

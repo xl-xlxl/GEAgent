@@ -165,10 +165,64 @@ export default {
   },
 
   created() {
-    // 从路由参数获取会话ID
-    this.conversationId = this.$route.params.id || null;
-    console.log("当前对话ID:", this.conversationId);
-  },
+    try {
+        // 安全地访问路由参数
+        this.conversationId = this.$route?.params?.id || null;
+        console.log("当前对话ID:", this.conversationId);
+
+        // 设置接收流式消息的监听器
+        if (this.conversationId) {
+            this.setupStreamListeners();
+        }
+    } catch (error) {
+        console.error("获取路由参数出错:", error);
+        this.conversationId = null;
+    }
+},
+  
+  mounted() {
+    // 从本地存储获取用户最近的查询
+    const lastUserQuery = localStorage.getItem('lastUserQuery');
+    
+    // 如果没有conversationId或用户查询，可能是直接访问的，重定向到首页
+    if (!this.conversationId) {
+        console.warn('没有有效的会话ID，重定向到首页');
+        this.$router.replace('/');
+        return;
+    }
+    
+    // 如果有用户查询，则显示出来
+    if (lastUserQuery) {
+        // 创建用户消息
+        const userMessage = {
+            id: Date.now() + "-user",
+            role: "user",
+            content: lastUserQuery,
+        };
+        
+        // 添加用户消息到消息列表
+        this.messages.push(userMessage);
+        
+        // 创建AI思考和回复的占位消息
+        const thinkingMessage = {
+            id: Date.now() + "-thinking",
+            role: "thinking",
+            thinking: "正在思考中...",
+        };
+        
+        const aiMessage = {
+            id: Date.now() + "-assistant",
+            role: "assistant",
+            content: "正在生成回复...",
+        };
+        
+        this.messages.push(thinkingMessage);
+        this.messages.push(aiMessage);
+        
+        // 清除本地存储的查询，防止刷新页面时重复显示
+        localStorage.removeItem('lastUserQuery');
+    }
+},
 
   methods: {
     handleScroll() {
@@ -331,38 +385,17 @@ export default {
           webSearch: this.webSearch,
         };
 
-        let response;
+        // 调用继续对话API
+        const response = await continueConversation(
+          params,
+          this.conversationId,
+          this.handleReasoningCallback(thinkingMessage, loadHide),
+          this.handleReplyCallback(aiMessage, loadHide)
+        );
 
-        // 根据conversationId判断是创建新对话还是继续对话
-        if (!this.conversationId) {
-          // 创建新对话
-          params.title = this.getTitleFromMessage(userQuery); // 新对话需要标题
-
-          response = await createConversation(
-            params,
-            // 思考过程和回答内容回调保持不变
-            this.handleReasoningCallback(thinkingMessage, loadHide, firstResponseReceived),
-            this.handleReplyCallback(aiMessage, loadHide, firstResponseReceived)
-          );
-
-          // 保存对话ID
-          if (response && response.conversationId) {
-            this.conversationId = response.conversationId;
-            console.log("新对话已创建，会话ID:", this.conversationId);
-          }
-        } else {
-          // 继续现有对话
-          response = await continueConversation(
-            params,
-            this.conversationId,
-            this.handleReasoningCallback(thinkingMessage, loadHide, firstResponseReceived),
-            this.handleReplyCallback(aiMessage, loadHide, firstResponseReceived)
-          );
-
-          console.log("继续对话完成，会话ID:", this.conversationId);
-        }
+        console.log("继续对话完成，会话ID:", this.conversationId);
       } catch (error) {
-        console.error(this.conversationId ? "继续对话-UI层错误:" : "创建新会话-UI层错误:", error);
+        console.error("继续对话-UI层错误:", error);
         if (error.error?.isShowable) {
           messageApi.error("服务暂时不可用，请稍后再试");
         }
@@ -373,7 +406,7 @@ export default {
       } finally {
         // 无论成功或失败，都结束加载状态
         this.loading = false;
-        if (!firstResponseReceived && loadHide) {
+        if (!this.firstResponseReceived && loadHide) {
           loadHide();
         }
         // 滚动到底部
