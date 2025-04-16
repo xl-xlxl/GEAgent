@@ -13,13 +13,13 @@
       <div class="add-container" style="height:7%;">
         <!-- 新增对话按钮 -->
         <div v-if="!collapsed">
-          <div class="bubble icon-container whitespace-nowrap" :class="{ collapsed: collapsed }">
+          <div class="bubble icon-container whitespace-nowrap" :class="{ collapsed: collapsed }" @click="goToHome">
             开启新的对话
             <img src="/新增对话.svg" alt="add" class="icon" />
           </div>
         </div>
         <div v-else>
-          <div class="icon-container" :class="{ collapsed: collapsed }">
+          <div class="icon-container" :class="{ collapsed: collapsed }" @click="goToHome">
             <img src="/新增对话.svg" alt="add" class="icon" />
           </div>
         </div>
@@ -240,7 +240,11 @@ export default {
       this.switchSettings();
       message.success(`已应用"${presetName}"预设`);
       this.PopoverVisible = false;
-    }
+    },
+
+    goToHome() {
+      this.$router.push('/');  // 导航到首页路由
+    },
   },
 }
 </script>
