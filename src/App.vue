@@ -1,16 +1,16 @@
 <template>
   <a-layout style="min-height: 100vh;">
     <a-layout-sider v-model:collapsed="collapsed" collapsible :width="260" :collapsedWidth="70"
-      style=" padding: 0; user-select: none;">
+      style=" padding: 0; user-select: none; height: 100vh;">
 
       <div class="close-container" style="height: 10%;">
         <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
-          <span v-if="!collapsed" class="title">GESeek</span>
+          <span v-if="!collapsed" class="title">GEAgent</span>
           <img src="/收起.svg" alt="close" class="icon" />
         </div>
       </div>
 
-      <div class="add-container" style="height:7%;">
+      <div class="add-container" style="height:7vh;">
         <!-- 新增对话按钮 -->
         <div v-if="!collapsed">
           <div class="bubble icon-container whitespace-nowrap" :class="{ collapsed: collapsed }" @click="goToHome">
@@ -25,7 +25,7 @@
         </div>
       </div>
 
-      <div class="history-container" style="height:68%; overflow-y: auto;">
+      <div class="history-container" style="height:68vh;">
         <div class="flex justify-between items-center px-2 py-1">
           <span v-if="!collapsed" class="text-sm font-medium">对话历史</span>
           <a-button type="link" size="small" @click="fetchConversationList">
@@ -44,7 +44,7 @@
         </div>
 
         <!-- 对话历史列表 -->
-        <div v-else>
+        <div v-else style="overflow-y: auto;">
           <div v-for="conversation in conversations" :key="conversation.id" @click="goToConversation(conversation.id)"
             class="conversation-item" :class="{ 'active': $route.params.id == conversation.id }">
             <div v-if="!collapsed" class="flex flex-col p-2">
@@ -62,7 +62,7 @@
         </div>
       </div>
 
-      <div class="setting-container" style="height: 7%;">
+      <div class="setting-container" style="height: 7vh;">
         <a-popover trigger="click">
           <template #content>
             <div class="no-select">
@@ -136,7 +136,7 @@
         </a-popover>
       </div>
 
-      <div class="user-container" style="height: 8%; align-items: center;">
+      <div class="user-container" style="height: 8vh; align-items: center;">
         <a-popover trigger="click">
           <template #content>
             <div class="no-select">
@@ -282,31 +282,23 @@ export default {
     },
 
     goToHome() {
-      this.$router.push('/');  // 导航到首页路由
+      this.$router.push('/');
     },
 
     async goToConversation(id) {
-      this.$router.push({
-        name: 'chat',
-        params: { id: id }
-      });
+      this.$router.push(`/chat/${id}`);
     },
 
     async fetchConversationList() {
-      // 检查用户是否已登录
       if (!localStorage.getItem('token')) return;
       try {
         this.loadingConversations = true;
         const response = await getConversationList();
-        console.log("获取的对话列表数据:", response); // 用于调试
+        console.log("获取的对话列表数据:", response);
 
-        // 修改这里，使用 response.conversations 而不是 response.data
-        if (response && response.conversations) {
           this.conversations = response.conversations;
           console.log("设置到组件的对话列表:", this.conversations.length);
-        } else {
-          console.warn("对话列表数据格式不符合预期:", response);
-        }
+
       } catch (error) {
         console.error("获取对话列表失败:", error);
       } finally {
@@ -314,24 +306,24 @@ export default {
       }
     },
 
-    async fetchConversationHistory(conversationId) {
-      try {
-        this.loading = true;
-        const response = await getConversationHistory(conversationId);
+    // async fetchConversationHistory(conversationId) {
+    //   try {
+    //     this.loading = true;
+    //     const response = await getConversationHistory(conversationId);
 
-        if (response.success !== false) {
-          // 处理返回的对话历史数据
-          this.conversationHistory = response.messages; // 根据实际返回格式调整
-        } else {
-          // 处理错误
-          console.error("获取对话历史失败:", response.error);
-        }
-      } catch (error) {
-        console.error("获取对话历史出错:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
+    //     if (response.success !== false) {
+    //       // 处理返回的对话历史数据
+    //       this.conversationHistory = response.messages; // 根据实际返回格式调整
+    //     } else {
+    //       // 处理错误
+    //       console.error("获取对话历史失败:", response.error);
+    //     }
+    //   } catch (error) {
+    //     console.error("获取对话历史出错:", error);
+    //   } finally {
+    //     this.loading = false;
+    //   }
+    // },
 
   },
 }

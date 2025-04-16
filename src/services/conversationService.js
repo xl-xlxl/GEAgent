@@ -1,5 +1,6 @@
 import conversationApi from "@/assets/api/conversation";
 
+// 创建新会话的服务函数
 export async function createConversation(params, reasoningCallback, replyCallback) {
     try {
         const response = await conversationApi.createConversation(params, reasoningCallback, replyCallback);

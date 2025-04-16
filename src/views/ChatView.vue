@@ -56,7 +56,7 @@
     <div class="input-area">
       <div class="input-container">
         <!-- 输入框 -->
-        <textarea class="message-input" placeholder="给 GESeek 发送消息" v-model="userInput" @keydown="handleKeyDown"
+        <textarea class="message-input" placeholder="给 GEAgent 发送消息" v-model="userInput" @keydown="handleKeyDown"
           :disabled="loading" :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
         <div style="display: flex; justify-content: space-between">
           <div class="model-select">
@@ -121,34 +121,18 @@ export default {
       modelStore,
       autoScroll: true,
       conversationId: null,
+      loading: false,
+      conversationId: null,
     };
   },
 
   mounted() {
-    // 检查是否有通过路由传递的初始消息
     if (this.$route.query.initialMessage) {
-      const initialMessage = this.$route.query.initialMessage;
-
-      // 设置用户输入
-      this.userInput = initialMessage;
-
-      // 获取 webSearch 和 modelId 参数
-      if (this.$route.query.webSearch !== undefined) {
-        this.webSearch = this.$route.query.webSearch === 'true';
-      }
-
-      if (this.$route.query.modelId) {
-        this.currentModel = this.$route.query.modelId;
-        this.modelStore.switchModel(this.currentModel);
-      }
-
-      // 使用nextTick确保DOM更新后再发送消息
+      this.userInput = this.$route.query.initialMessage;
+      // 在下一个 DOM 更新周期发送消息
       this.$nextTick(() => {
         this.sendMessage();
       });
-
-      // 清除URL参数，避免刷新页面重复发送
-      this.$router.replace({ query: {} });
     }
   },
 
@@ -159,43 +143,11 @@ export default {
         if (newId) {
           this.conversationId = newId;
           await this.loadConversationHistory(newId);
+        } else {
+          this.conversationId = null;
+          this.messages = [];
         }
       }
-    }
-  },
-
-  // 在 methods 部分添加
-  async loadConversationHistory(conversationId) {
-    try {
-      this.loading = true;
-      const response = await getConversationHistory(conversationId);
-
-      if (response && response.messages) {
-        // 清空当前消息
-        this.messages = [];
-
-        // 将历史消息添加到当前会话
-        response.messages.forEach(msg => {
-          this.messages.push({
-            id: msg.id || Date.now() + "-" + msg.role,
-            role: msg.role,
-            content: msg.content,
-            thinking: msg.reasoning_content || ""
-          });
-        });
-
-        // 滚动到消息底部
-        this.$nextTick(() => {
-          this.scrollToBottom();
-        });
-      } else if (response.error) {
-        message.error(response.error.message || "无法加载对话历史");
-      }
-    } catch (error) {
-      console.error("加载对话历史失败:", error);
-      message.error("加载对话历史失败");
-    } finally {
-      this.loading = false;
     }
   },
 
@@ -372,18 +324,15 @@ export default {
       this.messages.push(aiMessage);
 
       try {
-        // 修改参数结构以符合API要求
         const params = {
           message: userQuery,
-          LLMID: 3, // 修改为3
+          LLMID: 3, 
           webSearch: this.webSearch,
-          MCP: false // 添加MCP字段
+          MCP: false,
         };
 
-        // 只有创建新会话时才添加title字段
         if (!this.conversationId) {
           params.title = this.getTitleFromMessage(userQuery);
-
           // 创建新会话
           const response = await createConversation(
             params,
@@ -404,6 +353,7 @@ export default {
           );
           console.log("继续对话完成，会话ID:", this.conversationId);
         }
+
       } catch (error) {
         console.error("聊天操作-UI层错误:", error);
         if (error.error?.isShowable) {
@@ -413,14 +363,46 @@ export default {
         if (aiIndex !== -1) {
           this.messages[aiIndex].content = "抱歉，我暂时无法回答您的问题。";
         }
+
       } finally {
-        // 无论成功或失败，都结束加载状态
         this.loading = false;
         loadHide();
-        // 滚动到底部
         this.scrollToBottom();
       }
-    }
+    },
+
+    async loadConversationHistory(conversationId) {
+      try {
+        this.loading = true;
+        const response = await getConversationHistory(conversationId);
+
+        if (response && response.messages) {
+          this.messages = [];
+
+          // 添加历史消息
+          response.messages.forEach(msg => {
+            this.messages.push({
+              id: msg.id || `${Date.now()}-${Math.random()}`,
+              role: msg.role, // user, assistant, system
+              content: msg.content,
+              thinking: msg.reasoning_content || ""
+            });
+          });
+
+          this.$nextTick(() => {
+            this.scrollToBottom();
+          });
+        } else if (response.error) {
+          message.error(response.error.message || "无法加载对话历史");
+        }
+      } catch (error) {
+        console.error("加载对话历史失败:", error);
+        message.error("加载对话历史失败");
+      } finally {
+        this.loading = false;
+      }
+    },
+
   },
 };
 </script>

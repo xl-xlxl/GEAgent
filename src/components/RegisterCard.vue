@@ -3,7 +3,7 @@
     <a-card class="register-card">
       <template #cover>
         <div class="card-cover">
-          <h1 class="website-title">GESeek</h1>
+          <h1 class="website-title">GEAgent</h1>
         </div>
       </template>
       

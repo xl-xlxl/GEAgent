@@ -3,10 +3,10 @@
     <div class="home-container">
 
         <div class="input-area">
-            <h1 class="website-title">GESeek</h1>
+            <h1 class="website-title">GEAgent</h1>
             <div class="input-container">
                 <!-- 输入栏 -->
-                <textarea class="message-input" placeholder="给 GESeek 发送消息" v-model="userInput" @submit="handleSubmit"
+                <textarea class="message-input" placeholder="给 GEAgent 发送消息" v-model="userInput" @submit="handleSubmit"
                     @keydown="handleKeyDown" :disabled="loading" :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
                 <div style="display: flex;justify-content: space-between;">
                     <div class="model-select">
@@ -60,8 +60,6 @@ import { useUserStore } from '@/stores/userStore';
 import * as userService from '@/services/userService';
 import { useRouter } from 'vue-router';
 
-defineOptions({ name: 'AXSenderBasicSetup' });
-
 const [messageApi, contextHolder] = message.useMessage();
 const userInput = ref<any>('');
 const loading = ref<boolean>(false);
@@ -102,22 +100,20 @@ const handleSubmit = async () => {
         return;
     }
 
-    // 重要：保存消息内容，准备传递到聊天页面
+    // 保存消息内容，准备传递到聊天页面
     const messageContent = userInput.value.trim();
     userInput.value = '';
-    
-    // 导航到聊天页面，并通过state传递用户输入
+
+    // 使用查询参数传递初始消息
     router.push({
-        name: 'chat', // 确保这是您聊天路由的名称
-        query: { initialMessage: messageContent },
-        params: { 
-            webSearch: webSearch.value ? 'true' : 'false',
-            modelId: currentModel.value 
-        }
-    });
+    path: '/chat',
+    query: {
+        initialMessage: messageContent,
+    }
+});
 };
 
-// 修改登录成功处理函数，接收登录结果作为参数
+// 登录成功处理函数
 const handleLoginSuccess = (loginResult) => {
     // 确保登录成功
     if (loginResult) {
@@ -127,7 +123,6 @@ const handleLoginSuccess = (loginResult) => {
 
         // 如果输入框有内容，尝试发送消息
         if (userInput.value.trim()) {
-            // 延迟一点执行提交，给用户看到登录成功消息的时间
             handleSubmit();
         }
     } else {

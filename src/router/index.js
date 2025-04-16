@@ -9,7 +9,12 @@ const routes = [
         component: HomeView
     },
     {
-        path: '/chat',
+        path: '/chat',  // 新增无参数路由
+        name: 'newChat',
+        component: ChatView
+    },
+    {
+        path: '/chat/:id',
         name: 'chat',
         component: ChatView
     }

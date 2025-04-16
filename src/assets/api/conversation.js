@@ -1,16 +1,3 @@
-import axios from "axios";
-import { ref } from "vue";
-
-function SelectMessageError(error) {
-    let errorMessage = "未知错误";
-    if (error.response && error.response.data && error.response.data.message) {
-        errorMessage = error.response.data.message;
-    } else if (error.message) {
-        errorMessage = error.message;
-    }
-    return errorMessage;
-}
-
 // 创建新对话
 const conversationApi = {
     async createConversation(params, reasoningCallback, replyCallback) {
