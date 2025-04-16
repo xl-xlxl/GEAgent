@@ -127,7 +127,9 @@
 
     </a-layout-sider>
     <div class="app-container">
-      <ChatView/>
+      <router-view />
+      <!-- <ChatView/> -->
+      <!-- <HomeView /> -->
     </div>
   </a-layout>
 </template>
@@ -202,7 +204,7 @@ export default {
     async initializeUser() {
       try {
         const refreshToken = await userService.refreshToken();
-        
+
         if (refreshToken.token) {
           console.log('refreshToken', refreshToken.token);
           message.success('用户恢复登录');
@@ -215,7 +217,7 @@ export default {
         // 响应拦截器会处理403错误，这里不需要额外处理
       }
     },
-    
+
     toggleCollapsed() {
       this.collapsed = !this.collapsed;
     },

@@ -58,6 +58,7 @@ import RegisterCard from '@/components/RegisterCard.vue';
 import { useModelStore } from '@/stores/modelStore';
 import { useUserStore } from '@/stores/userStore';
 import * as userService from '@/services/userService';
+import { useRouter } from 'vue-router';
 
 defineOptions({ name: 'AXSenderBasicSetup' });
 
@@ -68,6 +69,8 @@ const showLoginCard = ref<boolean>(false);
 const showRegisterCard = ref<boolean>(false);
 // 临时写一个无意义的变量，后续会改为真正的联网搜索功能
 const webSearch = ref<boolean>(false);
+
+const router = useRouter();
 
 // 使用 modelStore
 const modelStore = useModelStore();
@@ -99,14 +102,19 @@ const handleSubmit = async () => {
         return;
     }
 
-    // 重要：先保存消息内容，再清空输入框
+    // 重要：保存消息内容，准备传递到聊天页面
     const messageContent = userInput.value.trim();
     userInput.value = '';
-
-    // 用户已登录，继续发送消息
-    loading.value = true;
-    const loadHide = messageApi.loading("创建会话中...", 0);
     
+    // 导航到聊天页面，并通过state传递用户输入
+    router.push({
+        name: 'chat', // 确保这是您聊天路由的名称
+        query: { initialMessage: messageContent },
+        params: { 
+            webSearch: webSearch.value ? 'true' : 'false',
+            modelId: currentModel.value 
+        }
+    });
 };
 
 // 修改登录成功处理函数，接收登录结果作为参数

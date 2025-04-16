@@ -124,6 +124,34 @@ export default {
     };
   },
 
+  mounted() {
+    // 检查是否有通过路由传递的初始消息
+    if (this.$route.query.initialMessage) {
+      const initialMessage = this.$route.query.initialMessage;
+
+      // 设置用户输入
+      this.userInput = initialMessage;
+
+      // 获取 webSearch 和 modelId 参数
+      if (this.$route.query.webSearch !== undefined) {
+        this.webSearch = this.$route.query.webSearch === 'true';
+      }
+
+      if (this.$route.query.modelId) {
+        this.currentModel = this.$route.query.modelId;
+        this.modelStore.switchModel(this.currentModel);
+      }
+
+      // 使用nextTick确保DOM更新后再发送消息
+      this.$nextTick(() => {
+        this.sendMessage();
+      });
+
+      // 清除URL参数，避免刷新页面重复发送
+      this.$router.replace({ query: {} });
+    }
+  },
+
   watch: {
     messages: {
       handler() {
@@ -271,7 +299,7 @@ export default {
       // 设置加载状态
       this.loading = true;
       const loadHide = messageApi.loading("正在思考中...", 0);
-      let firstResponseReceived = false;
+      this.firstResponseReceived = false;
 
       // 创建用户消息
       const userMessage = {
@@ -306,14 +334,18 @@ export default {
       this.messages.push(aiMessage);
 
       try {
+        // 修改参数结构以符合API要求
         const params = {
           message: userQuery,
-          LLMID: 0,//临时
-          title: this.getTitleFromMessage(userQuery),
+          LLMID: 3, // 修改为3
           webSearch: this.webSearch,
+          MCP: false // 添加MCP字段
         };
 
+        // 只有创建新会话时才添加title字段
         if (!this.conversationId) {
+          params.title = this.getTitleFromMessage(userQuery);
+
           // 创建新会话
           const response = await createConversation(
             params,
@@ -328,7 +360,7 @@ export default {
           // 继续现有对话
           const response = await continueConversation(
             params,
-            this.conversationId, // 使用组件中保存的会话ID
+            this.conversationId,
             this.handleReasoningCallback(thinkingMessage, loadHide),
             this.handleReplyCallback(aiMessage, loadHide)
           );
