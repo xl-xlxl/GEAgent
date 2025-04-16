@@ -25,8 +25,41 @@
         </div>
       </div>
 
-      <div class="history-container" style="height:68%;">
+      <div class="history-container" style="height:68%; overflow-y: auto;">
+        <div class="flex justify-between items-center px-2 py-1">
+          <span v-if="!collapsed" class="text-sm font-medium">对话历史</span>
+          <a-button type="link" size="small" @click="fetchConversationList">
+            1
+          </a-button>
+        </div>
+        <!-- 加载状态 -->
+        <div v-if="loadingConversations" class="flex justify-center items-center h-full">
+          <a-spin />
+        </div>
 
+        <!-- 无数据状态 -->
+        <div v-else-if="conversations.length === 0" class="flex justify-center items-center h-full text-gray-400">
+          <span v-if="!collapsed">暂无对话历史</span>
+          <span v-else>无</span>
+        </div>
+
+        <!-- 对话历史列表 -->
+        <div v-else>
+          <div v-for="conversation in conversations" :key="conversation.id" @click="goToConversation(conversation.id)"
+            class="conversation-item" :class="{ 'active': $route.params.id == conversation.id }">
+            <div v-if="!collapsed" class="flex flex-col p-2">
+              <div class="truncate font-medium">{{ conversation.title }}</div>
+              <div class="text-xs text-gray-500 truncate">
+                {{ new Date(conversation.createdAt).toLocaleString() }}
+              </div>
+            </div>
+            <div v-else class="flex justify-center p-2">
+              <a-tooltip :title="conversation.title">
+                <a-avatar size="small">{{ conversation.title.charAt(0) }}</a-avatar>
+              </a-tooltip>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="setting-container" style="height: 7%;">
@@ -141,6 +174,7 @@ import { useModelStore } from "@/stores/modelStore";
 import { message } from 'ant-design-vue';
 import * as userService from '@/services/userService';
 import { useUserStore } from './stores/userStore';
+import { getConversationList } from '@/services/conversationService';
 
 export default {
   name: 'App',
@@ -161,6 +195,8 @@ export default {
       modelStore,
       currentModel: modelStore.currentModel,
       PopoverVisible: false,
+      conversations: [],
+      loadingConversations: false,
       // 添加预设场景配置
       presets: {
         "创意文本": {
@@ -198,6 +234,8 @@ export default {
   created() {
     // 初始化用户
     this.initializeUser();
+    // 加载对话列表
+    this.fetchConversationList();
   },
   methods: {
     // 添加初始化用户方法
@@ -245,10 +283,76 @@ export default {
     goToHome() {
       this.$router.push('/');  // 导航到首页路由
     },
+
+    goToConversation(id) {
+      this.$router.push({
+        name: 'chat',
+        params: { id: id }
+      });
+    },
+
+    async fetchConversationList() {
+      // 检查用户是否已登录
+      if (!localStorage.getItem('token')) return;
+      try {
+        this.loadingConversations = true;
+        const response = await getConversationList();
+        console.log("获取的对话列表数据:", response); // 用于调试
+
+        // 修改这里，使用 response.conversations 而不是 response.data
+        if (response && response.conversations) {
+          this.conversations = response.conversations;
+          console.log("设置到组件的对话列表:", this.conversations.length);
+        } else {
+          console.warn("对话列表数据格式不符合预期:", response);
+        }
+      } catch (error) {
+        console.error("获取对话列表失败:", error);
+      } finally {
+        this.loadingConversations = false;
+      }
+    },
+
   },
 }
 </script>
 
 <style scoped>
 @import url('./assets/styles/views/app.css');
+
+/* 添加到 <style> 部分或导入的 CSS 文件中 */
+.conversation-item {
+  padding: 0.5rem;
+  margin: 0.25rem 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.conversation-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.conversation-item.active {
+  background-color: rgba(24, 144, 255, 0.1);
+  border-left: 3px solid #1890ff;
+}
+
+.history-container {
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.history-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.history-container::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.history-container::-webkit-scrollbar-track {
+  background: transparent;
+}
 </style>

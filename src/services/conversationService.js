@@ -37,3 +37,20 @@ export async function continueConversation(params, conversationId, reasoningCall
         }
     }
 }
+
+// 添加获取对话列表的函数
+export async function getConversationList() {
+    try {
+        const response = await conversationApi.getConversationList();
+        return response; 
+    } catch (error) {
+        console.log("获取对话列表-服务层错误:", error);
+        return {
+            success: false,
+            error: {
+                message: "无法获取对话列表",
+                isShowable: error.isShowable === true
+            }
+        }
+    }
+}

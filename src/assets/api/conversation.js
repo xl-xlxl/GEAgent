@@ -98,6 +98,7 @@ const conversationApi = {
         }
     },
 
+    
     // 继续对话
     async continueConversation(params, conversationId, reasoningCallback, replyCallback) {
         try {
@@ -177,7 +178,42 @@ const conversationApi = {
                 message: "服务暂时不可用，请稍后再试"
             };
         }
-    }
+    },
+
+
+    // 添加获取对话列表的API方法
+    async getConversationList() {
+        try {
+            const headers = {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            };
+            const response = await fetch("/api/chat/list", {
+                method: "GET",
+                headers,
+            });
+
+            // 检查HTTP状态码
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw {
+                    message: errorData.message || "获取对话列表失败",
+                    status: response.status,
+                    isShowable: true
+                };
+            }
+
+            // 解析并返回响应数据
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("获取对话列表错误:", error);
+            throw {
+                message: error.message || "获取对话列表时发生错误",
+                isShowable: error.isShowable !== undefined ? error.isShowable : true
+            };
+        }
+    },
 
 };
 
