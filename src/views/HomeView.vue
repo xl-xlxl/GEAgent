@@ -58,9 +58,6 @@ import RegisterCard from '@/components/RegisterCard.vue';
 import { useModelStore } from '@/stores/modelStore';
 import { useUserStore } from '@/stores/userStore';
 import * as userService from '@/services/userService';
-import { createConversation, continueConversation } from "@/services/conversationService";
-import { useRouter } from 'vue-router';
-
 
 defineOptions({ name: 'AXSenderBasicSetup' });
 
@@ -76,8 +73,6 @@ const webSearch = ref<boolean>(false);
 const modelStore = useModelStore();
 const models = modelStore.models;
 const currentModel = ref(modelStore.currentModel)
-
-const router = useRouter();
 
 // 更新模型选择
 const switchModel = (value: string) => {//统一命名为switchModel
@@ -111,49 +106,7 @@ const handleSubmit = async () => {
     // 用户已登录，继续发送消息
     loading.value = true;
     const loadHide = messageApi.loading("创建会话中...", 0);
-
-    try {
-        // 准备请求参数
-        const params = {
-            message: messageContent,
-            LLMID: 0,
-            title: messageContent.length > 20
-                ? messageContent.substring(0, 17) + '...'
-                : messageContent,
-            webSearch: webSearch.value
-        };
-        console.log(1)
-
-        // 调用API创建新会话
-        const response = await createConversation(
-            params,
-            () => { }, // 忽略思考回调
-            () => { }  // 忽略回复回调
-        );
-        console.log(2)
-
-        // 检查响应是否成功
-        if (response.success && response.conversationId) {
-            // 结束加载状态
-            loading.value = false;
-            loadHide(); // 确保加载提示被关闭
-
-            router.push({
-                path: `/chat/${response.conversationId}`,
-                query: {
-                    userMessage: encodeURIComponent(messageContent),
-                    initialResponseId: response.responseId || '', // 如果API返回响应ID
-                    timestamp: Date.now() // 确保缓存不会影响请求
-                }
-            });
-            console.log(3)
-        } else {
-            throw new Error('创建会话失败');
-        }
-    } catch (error) {
-        console.error('创建会话错误:', error);
-        messageApi.error('创建会话失败，请稍后再试');
-    }
+    
 };
 
 // 修改登录成功处理函数，接收登录结果作为参数

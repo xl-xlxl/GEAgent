@@ -1,7 +1,6 @@
 <template>
   <div class="chat-container">
     <div class="chat-header" style="user-select: none">
-      <h1>title</h1>
     </div>
     <div class="scroll-container" ref="scrollArea" @scroll="handleScroll">
       <!-- 消息区域 -->
@@ -118,24 +117,11 @@ export default {
       userInput: "",
       loading: false,
       webSearch: true,
-      conversationId: null,
       models: modelStore.models,
       modelStore,
       autoScroll: true,
-      firstResponseReceived: false,
+      conversationId: null,
     };
-  },
-
-  created() {
-    try {
-      // 安全地访问路由参数
-      this.conversationId = this.$route?.params?.id || null;
-      console.log("当前对话ID:", this.conversationId);
-
-    } catch (error) {
-      console.error("获取路由参数出错:", error);
-      this.conversationId = null;
-    }
   },
 
   watch: {
@@ -165,30 +151,7 @@ export default {
     },
   },
 
-  mounted() {
-    // 如果没有conversationId，可能是直接访问的，重定向到首页
-    if (!this.conversationId) {
-      console.warn('没有有效的会话ID，重定向到首页');
-      this.$router.replace('/');
-      return;
-    }
-
-    this.setupInitialMessages();
-  },
-
   methods: {
-    setupInitialMessages() {
-      // 从路由查询参数获取用户消息
-      const userMessageText = this.$route.query.userMessage
-        ? decodeURIComponent(this.$route.query.userMessage)
-        : null;
-      if (userMessageText) {
-        // 创建并显示消息
-        this.displayUserMessage(userMessageText);
-      }
-      // 建立WebSocket连接获取流式响应
-      this.setupWebSocketConnection();
-    },
 
     handleScroll() {
       const scrollArea = this.$refs.scrollArea;
@@ -258,55 +221,6 @@ export default {
       if (!text) return "";
       const rawHtml = marked.parse(text);
       return DOMPurify.sanitize(rawHtml);
-    },
-
-
-    // 新增方法：显示用户消息和占位符
-    displayUserMessage(messageText) {
-      // 创建用户消息
-      const userMessage = {
-        id: Date.now() + "-user",
-        role: "user",
-        content: messageText
-      };
-
-      const thinkingMessage = {
-        id: Date.now() + "-thinking",
-        role: "thinking",
-        thinking: "请稍等，正在连接服务器..."
-      };
-
-      const aiMessage = {
-        id: Date.now() + "-assistant",
-        role: "assistant",
-        content: ""
-      };
-
-      // 添加消息到列表
-      this.messages.push(userMessage);
-      this.messages.push(thinkingMessage);
-      this.messages.push(aiMessage);
-
-      // 滚动到底部
-      this.$nextTick(() => {
-        this.scrollToBottom();
-      });
-
-      return { userMessage, thinkingMessage, aiMessage };
-    },
-
-    // 新增方法：建立WebSocket连接
-    setupWebSocketConnection() {
-      // 使用会话ID建立连接
-      const wsUrl = `wss://your-api-endpoint/stream/${this.conversationId}`;
-
-      // 或者使用SSE（服务器发送事件）
-      // const eventSource = new EventSource(`/api/stream/${this.conversationId}`);
-
-      console.log("建立流式连接，等待服务器响应...");
-
-      // 这里是示例代码，您需要根据实际API实现WebSocket或SSE连接
-      // 实际代码可能需要处理认证、重连等问题
     },
 
     // 处理思考过程回调的辅助函数
@@ -399,17 +313,29 @@ export default {
           webSearch: this.webSearch,
         };
 
-        // 调用继续对话API
-        const response = await continueConversation(
-          params,
-          this.conversationId,
-          this.handleReasoningCallback(thinkingMessage, loadHide),
-          this.handleReplyCallback(aiMessage, loadHide)
-        );
+        if (!this.conversationId) {
+          // 创建新会话
+          const response = await createConversation(
+            params,
+            this.handleReasoningCallback(thinkingMessage, loadHide),
+            this.handleReplyCallback(aiMessage, loadHide)
+          );
 
-        console.log("继续对话完成，会话ID:", this.conversationId);
+          // 保存会话ID到组件状态
+          this.conversationId = response?.conversationId;
+          console.log("创建新会话完成，会话ID:", this.conversationId);
+        } else {
+          // 继续现有对话
+          const response = await continueConversation(
+            params,
+            this.conversationId, // 使用组件中保存的会话ID
+            this.handleReasoningCallback(thinkingMessage, loadHide),
+            this.handleReplyCallback(aiMessage, loadHide)
+          );
+          console.log("继续对话完成，会话ID:", this.conversationId);
+        }
       } catch (error) {
-        console.error("继续对话-UI层错误:", error);
+        console.error("聊天操作-UI层错误:", error);
         if (error.error?.isShowable) {
           messageApi.error("服务暂时不可用，请稍后再试");
         }
@@ -420,9 +346,7 @@ export default {
       } finally {
         // 无论成功或失败，都结束加载状态
         this.loading = false;
-        if (!this.firstResponseReceived && loadHide) {
-          loadHide();
-        }
+        loadHide();
         // 滚动到底部
         this.scrollToBottom();
       }
