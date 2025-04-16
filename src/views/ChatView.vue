@@ -96,7 +96,7 @@ import { Flex, Select, Button, message } from "ant-design-vue";
 import { Sender } from "ant-design-x-vue";
 import { SendOutlined } from "@ant-design/icons-vue";
 import { Avatar } from "ant-design-vue";
-import { createConversation, continueConversation } from "@/services/conversationService";
+import { createConversation, continueConversation, getConversationHistory } from "@/services/conversationService";
 import { message as messageApi } from "ant-design-vue";
 
 export default {
@@ -153,12 +153,50 @@ export default {
   },
 
   watch: {
-    messages: {
-      handler() {
-        this.scrollToBottom();
-      },
-      deep: true,
-    },
+    '$route.params.id': {
+      immediate: true,
+      async handler(newId) {
+        if (newId) {
+          this.conversationId = newId;
+          await this.loadConversationHistory(newId);
+        }
+      }
+    }
+  },
+
+  // 在 methods 部分添加
+  async loadConversationHistory(conversationId) {
+    try {
+      this.loading = true;
+      const response = await getConversationHistory(conversationId);
+
+      if (response && response.messages) {
+        // 清空当前消息
+        this.messages = [];
+
+        // 将历史消息添加到当前会话
+        response.messages.forEach(msg => {
+          this.messages.push({
+            id: msg.id || Date.now() + "-" + msg.role,
+            role: msg.role,
+            content: msg.content,
+            thinking: msg.reasoning_content || ""
+          });
+        });
+
+        // 滚动到消息底部
+        this.$nextTick(() => {
+          this.scrollToBottom();
+        });
+      } else if (response.error) {
+        message.error(response.error.message || "无法加载对话历史");
+      }
+    } catch (error) {
+      console.error("加载对话历史失败:", error);
+      message.error("加载对话历史失败");
+    } finally {
+      this.loading = false;
+    }
   },
 
   computed: {

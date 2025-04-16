@@ -215,6 +215,53 @@ const conversationApi = {
         }
     },
 
+    
+    // 获取特定对话的历史记录
+    async getConversationHistory(conversationId) {
+        try {
+            const headers = {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            };
+            
+            const response = await fetch(`/api/chat/list/${conversationId}`, {
+                method: "GET",
+                headers,
+            });
+
+            // 检查HTTP状态码
+            if (!response.ok) {
+                let errorData = {};
+                try {
+                    errorData = await response.json();
+                } catch (e) {
+                    errorData = { message: response.statusText };
+                }
+
+                // 构造错误对象
+                const error = {
+                    response: {
+                        status: response.status,
+                        data: errorData,
+                    },
+                    message: errorData.message || response.statusText,
+                };
+                console.log(`获取对话历史-API错误(${response.status}):`, error);
+                throw error;
+            }
+
+            // 解析并返回响应数据
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("获取对话历史错误:", error);
+            throw {
+                message: error.message || "获取对话历史时发生错误",
+                isShowable: error.isShowable !== undefined ? error.isShowable : true
+            };
+        }
+    },
+
 };
 
 export default conversationApi;

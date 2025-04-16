@@ -54,3 +54,20 @@ export async function getConversationList() {
         }
     }
 }
+
+// 添加获取特定对话历史的函数
+export async function getConversationHistory(conversationId) {
+    try {
+        const response = await conversationApi.getConversationHistory(conversationId);
+        return response; 
+    } catch (error) {
+        console.log("获取对话历史-服务层错误:", error);
+        return {
+            success: false,
+            error: {
+                message: "无法获取对话历史",
+                isShowable: error.isShowable === true
+            }
+        }
+    }
+}

@@ -174,7 +174,7 @@ import { useModelStore } from "@/stores/modelStore";
 import { message } from 'ant-design-vue';
 import * as userService from '@/services/userService';
 import { useUserStore } from './stores/userStore';
-import { getConversationList } from '@/services/conversationService';
+import { getConversationList, getConversationHistory } from '@/services/conversationService';
 
 export default {
   name: 'App',
@@ -237,6 +237,7 @@ export default {
     // 加载对话列表
     this.fetchConversationList();
   },
+
   methods: {
     // 添加初始化用户方法
     async initializeUser() {
@@ -284,7 +285,7 @@ export default {
       this.$router.push('/');  // 导航到首页路由
     },
 
-    goToConversation(id) {
+    async goToConversation(id) {
       this.$router.push({
         name: 'chat',
         params: { id: id }
@@ -310,6 +311,25 @@ export default {
         console.error("获取对话列表失败:", error);
       } finally {
         this.loadingConversations = false;
+      }
+    },
+
+    async fetchConversationHistory(conversationId) {
+      try {
+        this.loading = true;
+        const response = await getConversationHistory(conversationId);
+
+        if (response.success !== false) {
+          // 处理返回的对话历史数据
+          this.conversationHistory = response.messages; // 根据实际返回格式调整
+        } else {
+          // 处理错误
+          console.error("获取对话历史失败:", response.error);
+        }
+      } catch (error) {
+        console.error("获取对话历史出错:", error);
+      } finally {
+        this.loading = false;
       }
     },
 
