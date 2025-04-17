@@ -59,6 +59,7 @@ import { useModelStore } from '@/stores/modelStore';
 import { useUserStore } from '@/stores/userStore';
 import * as userService from '@/services/userService';
 import { useRouter } from 'vue-router';
+import { useConversationStore } from '@/stores/conversationStore';
 
 const [messageApi, contextHolder] = message.useMessage();
 const userInput = ref<any>('');
@@ -104,13 +105,17 @@ const handleSubmit = async () => {
     const messageContent = userInput.value.trim();
     userInput.value = '';
 
-    // 使用查询参数传递初始消息
-    router.push({
-    path: '/chat',
-    query: {
-        initialMessage: messageContent,
+    try {
+        // 将初始消息存储到状态管理中
+        const conversationStore = useConversationStore();
+        conversationStore.setInitialMessage(messageContent);
+
+        // 跳转到 /chat 页面
+        router.push('/chat');
+    } catch (error) {
+        console.error("跳转到聊天页面失败：", error);
+        messageApi.error("无法跳转到聊天页面，请稍后再试");
     }
-});
 };
 
 // 登录成功处理函数

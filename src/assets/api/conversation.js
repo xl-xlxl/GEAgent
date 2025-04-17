@@ -1,3 +1,5 @@
+import axios from 'axios'
+
 // 创建新对话
 const conversationApi = {
     async createConversation(params, reasoningCallback, replyCallback) {
@@ -85,7 +87,7 @@ const conversationApi = {
         }
     },
 
-    
+
     // 继续对话
     async continueConversation(params, conversationId, reasoningCallback, replyCallback) {
         try {
@@ -168,41 +170,44 @@ const conversationApi = {
     },
 
 
-    // 添加获取对话列表的API方法
+    // 添加获取对话列表的方法
     async getConversationList() {
         try {
             const headers = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
-            const response = await fetch("/api/chat/list", {
-                method: "GET",
-                headers,
-            });
-
-            // 检查HTTP状态码
-            if (!response.ok) {
-                const errorData = await response.json();
+            // 使用 axios 发送 GET 请求
+            const response = await axios.get("/api/chat/list", { headers });
+            // 检查 HTTP 状态码并返回数据
+            if (response.status === 200) {
+                return response.data; // 返回响应数据
+            } else {
                 throw {
-                    message: errorData.message || "获取对话列表失败",
+                    message: response.data?.message || "获取对话列表失败",
                     status: response.status,
-                    isShowable: true
+                    isShowable: true,
                 };
             }
-
-            // 解析并返回响应数据
-            const data = await response.json();
-            return data;
         } catch (error) {
             console.error("获取对话列表错误:", error);
-            throw {
-                message: error.message || "获取对话列表时发生错误",
-                isShowable: error.isShowable !== undefined ? error.isShowable : true
-            };
+            // 处理 axios 错误
+            if (error.response) {
+                throw {
+                    message: error.response.data?.message || "获取对话列表失败",
+                    status: error.response.status,
+                    isShowable: true,
+                };
+            } else {
+                throw {
+                    message: error.message || "获取对话列表时发生错误",
+                    isShowable: true,
+                };
+            }
         }
     },
 
-    
+
     // 获取特定对话的历史记录
     async getConversationHistory(conversationId) {
         try {
@@ -210,42 +215,36 @@ const conversationApi = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
-            
-            const response = await fetch(`/api/chat/list/${conversationId}`, {
-                method: "GET",
-                headers,
-            });
 
-            // 检查HTTP状态码
-            if (!response.ok) {
-                let errorData = {};
-                try {
-                    errorData = await response.json();
-                } catch (e) {
-                    errorData = { message: response.statusText };
-                }
+            // 使用 axios 发送 GET 请求
+            const response = await axios.get(`/api/chat/list/${conversationId}`, { headers });
 
-                // 构造错误对象
-                const error = {
-                    response: {
-                        status: response.status,
-                        data: errorData,
-                    },
-                    message: errorData.message || response.statusText,
+            // 检查 HTTP 状态码并返回数据
+            if (response.status === 200) {
+                return response.data; // 返回响应数据
+            } else {
+                throw {
+                    message: response.data?.message || "获取对话历史失败",
+                    status: response.status,
+                    isShowable: true,
                 };
-                console.log(`获取对话历史-API错误(${response.status}):`, error);
-                throw error;
             }
-
-            // 解析并返回响应数据
-            const data = await response.json();
-            return data;
         } catch (error) {
             console.error("获取对话历史错误:", error);
-            throw {
-                message: error.message || "获取对话历史时发生错误",
-                isShowable: error.isShowable !== undefined ? error.isShowable : true
-            };
+
+            // 处理 axios 错误
+            if (error.response) {
+                throw {
+                    message: error.response.data?.message || "获取对话历史失败",
+                    status: error.response.status,
+                    isShowable: true,
+                };
+            } else {
+                throw {
+                    message: error.message || "获取对话历史时发生错误",
+                    isShowable: true,
+                };
+            }
         }
     },
 

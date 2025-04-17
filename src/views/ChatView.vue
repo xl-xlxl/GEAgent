@@ -98,6 +98,7 @@ import { SendOutlined } from "@ant-design/icons-vue";
 import { Avatar } from "ant-design-vue";
 import { createConversation, continueConversation, getConversationHistory } from "@/services/conversationService";
 import { message as messageApi } from "ant-design-vue";
+import { useConversationStore } from '@/stores/conversationStore';
 
 export default {
   name: "ChatView",
@@ -121,34 +122,38 @@ export default {
       modelStore,
       autoScroll: true,
       conversationId: null,
-      loading: false,
-      conversationId: null,
+      userInput: '',
+      messages: [],
     };
   },
 
   mounted() {
-    if (this.$route.query.initialMessage) {
-      this.userInput = this.$route.query.initialMessage;
-      // 在下一个 DOM 更新周期发送消息
-      this.$nextTick(() => {
-        this.sendMessage();
-      });
-    }
-  },
+    const conversationStore = useConversationStore();
+    // 获取初始消息
+    if (conversationStore.initialMessage) {
+            this.userInput = conversationStore.initialMessage;
+            // 自动发送初始消息
+            this.sendMessage();
+            // 清除初始消息，避免重复发送
+            conversationStore.clearInitialMessage();
+        }
+    },
 
   watch: {
     '$route.params.id': {
       immediate: true,
-      async handler(newId) {
+      handler(newId) {
         if (newId) {
           this.conversationId = newId;
-          await this.loadConversationHistory(newId);
-        } else {
-          this.conversationId = null;
-          this.messages = [];
+
+          // 如果有初始消息，自动发送
+          if (this.$route.query.initialMessage) {
+            this.userInput = this.$route.query.initialMessage;
+            this.sendMessage();
+          }
         }
-      }
-    }
+      },
+    },
   },
 
   computed: {
@@ -326,11 +331,13 @@ export default {
       try {
         const params = {
           message: userQuery,
-          LLMID: 3, 
+          LLMID: 3,
           webSearch: this.webSearch,
           MCP: false,
         };
 
+        console.log("nextconversationId:", this.conversationId + 1);
+        // 如果没有会话ID，则创建新会话
         if (!this.conversationId) {
           params.title = this.getTitleFromMessage(userQuery);
           // 创建新会话

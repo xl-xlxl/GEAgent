@@ -286,7 +286,20 @@ export default {
     },
 
     async goToConversation(id) {
-      this.$router.push(`/chat/${id}`);
+      try {
+        // 跳转到对应的对话页面
+        this.$router.push(`/chat/${id}`);
+
+        // 调用 getConversationHistory 获取历史数据
+        const history = await getConversationHistory(id);
+        console.log("获取的对话历史:", history);
+
+        // 处理获取到的历史数据（例如存储到组件状态或其他地方）
+        this.conversationHistory = history.messages || []; // 假设返回的数据中有 messages 字段
+      } catch (error) {
+        console.error("获取对话历史失败:", error);
+        message.error(error.message || "获取对话历史失败");
+      }
     },
 
     async fetchConversationList() {
@@ -296,8 +309,8 @@ export default {
         const response = await getConversationList();
         console.log("获取的对话列表数据:", response);
 
-          this.conversations = response.conversations;
-          console.log("设置到组件的对话列表:", this.conversations.length);
+        this.conversations = response.conversations;
+        console.log("设置到组件的对话列表:", this.conversations.length);
 
       } catch (error) {
         console.error("获取对话列表失败:", error);

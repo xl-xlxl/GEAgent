@@ -9,7 +9,7 @@ const routes = [
         component: HomeView
     },
     {
-        path: '/chat',  // 新增无参数路由
+        path: '/chat',
         name: 'newChat',
         component: ChatView
     },
