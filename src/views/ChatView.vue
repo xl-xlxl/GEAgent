@@ -1,6 +1,9 @@
 <template>
   <div class="chat-container">
     <div class="chat-header" style="user-select: none">
+      <div class="title">
+        {{ title }}
+      </div>
     </div>
     <div class="scroll-container" ref="scrollArea" @scroll="handleScroll">
       <!-- 消息区域 -->
@@ -124,6 +127,7 @@ export default {
       conversationId: null,
       userInput: '',
       messages: [],
+      title: "新对话",
     };
   },
 
@@ -159,6 +163,9 @@ export default {
             if (response.success && response.conversation.messages) {
               // 清空当前消息列表
               this.messages = [];
+
+              // 提取后端返回的对话标题
+              this.title = response.conversation.title || "新对话"; // 如果没有标题，设置默认值
 
               // 提取 role、content 和 reasoning_content 并添加到消息列表
               response.conversation.messages.forEach((msg) => {
@@ -370,7 +377,6 @@ export default {
           MCP: false,
         };
 
-        console.log("nextconversationId:", this.conversationId + 1);
         // 如果没有会话ID，则创建新会话
         if (!this.conversationId) {
           params.title = this.getTitleFromMessage(userQuery);
@@ -383,8 +389,9 @@ export default {
 
           // 保存会话ID到组件状态
           this.conversationId = response?.conversationId;
+          this.title = params.title; // 提取会话标题
+
           await getConversationList();
-          console.log("getConversationList 调用完成");
           console.log("创建新会话完成，会话ID:", this.conversationId);
         } else {
           // 继续现有对话

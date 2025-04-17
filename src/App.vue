@@ -289,12 +289,10 @@ export default {
       if (!localStorage.getItem('token')) return;
       try {
         const response = await getConversationList();
-        console.log("获取的对话列表数据:", response);
 
         this.conversations = response.conversations.sort((a, b) => {
           return new Date(b.createdAt) - new Date(a.createdAt);
         });
-        console.log("排序后的对话列表:", this.conversations);
 
       } catch (error) {
         console.error("获取对话列表失败:", error);

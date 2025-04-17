@@ -4,7 +4,7 @@ import ChatView from '../views/ChatView.vue'
 
 const routes = [
     {
-        path: '/',
+        path: '',
         name: 'home',
         component: HomeView
     },
