@@ -161,8 +161,6 @@
     </a-layout-sider>
     <div class="app-container">
       <router-view />
-      <!-- <ChatView/> -->
-      <!-- <HomeView /> -->
     </div>
   </a-layout>
 </template>
@@ -231,6 +229,14 @@ export default {
     };
   },
 
+  watch: {
+    // 监听路由变化
+    $route(to, from) {
+      console.log("路由变化:", from.fullPath, "->", to.fullPath);
+      this.fetchConversationList(); // 每次路由变化时调用
+    },
+  },
+
   created() {
     // 初始化用户
     this.initializeUser();
@@ -287,18 +293,14 @@ export default {
 
     async goToConversation(id) {
       try {
+        if (this.$route.params.id === String(id)) {
+          return; // 如果已经是目标会话，直接返回
+        }
         // 跳转到对应的对话页面
         this.$router.push(`/chat/${id}`);
-
-        // 调用 getConversationHistory 获取历史数据
-        const history = await getConversationHistory(id);
-        console.log("获取的对话历史:", history);
-
-        // 处理获取到的历史数据（例如存储到组件状态或其他地方）
-        this.conversationHistory = history.messages || []; // 假设返回的数据中有 messages 字段
       } catch (error) {
-        console.error("获取对话历史失败:", error);
-        message.error(error.message || "获取对话历史失败");
+        console.error("跳转到会话失败:", error);
+        message.error(error.message || "跳转到会话失败");
       }
     },
 
@@ -318,25 +320,6 @@ export default {
         this.loadingConversations = false;
       }
     },
-
-    // async fetchConversationHistory(conversationId) {
-    //   try {
-    //     this.loading = true;
-    //     const response = await getConversationHistory(conversationId);
-
-    //     if (response.success !== false) {
-    //       // 处理返回的对话历史数据
-    //       this.conversationHistory = response.messages; // 根据实际返回格式调整
-    //     } else {
-    //       // 处理错误
-    //       console.error("获取对话历史失败:", response.error);
-    //     }
-    //   } catch (error) {
-    //     console.error("获取对话历史出错:", error);
-    //   } finally {
-    //     this.loading = false;
-    //   }
-    // },
 
   },
 }

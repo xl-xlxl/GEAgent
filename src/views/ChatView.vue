@@ -96,7 +96,7 @@ import { Flex, Select, Button, message } from "ant-design-vue";
 import { Sender } from "ant-design-x-vue";
 import { SendOutlined } from "@ant-design/icons-vue";
 import { Avatar } from "ant-design-vue";
-import { createConversation, continueConversation, getConversationHistory } from "@/services/conversationService";
+import { createConversation, continueConversation, getConversationHistory, getConversationList } from "@/services/conversationService";
 import { message as messageApi } from "ant-design-vue";
 import { useConversationStore } from '@/stores/conversationStore';
 
@@ -131,18 +131,18 @@ export default {
     const conversationStore = useConversationStore();
     // 获取初始消息
     if (conversationStore.initialMessage) {
-            this.userInput = conversationStore.initialMessage;
-            // 自动发送初始消息
-            this.sendMessage();
-            // 清除初始消息，避免重复发送
-            conversationStore.clearInitialMessage();
-        }
-    },
+      this.userInput = conversationStore.initialMessage;
+      // 自动发送初始消息
+      this.sendMessage();
+      // 清除初始消息，避免重复发送
+      conversationStore.clearInitialMessage();
+    }
+  },
 
   watch: {
     '$route.params.id': {
       immediate: true,
-      handler(newId) {
+      async handler(newId) { // 将 handler 声明为 async
         if (newId) {
           this.conversationId = newId;
 
@@ -150,6 +150,40 @@ export default {
           if (this.$route.query.initialMessage) {
             this.userInput = this.$route.query.initialMessage;
             this.sendMessage();
+          }
+
+          try {
+            // 调用 getConversationHistory 获取历史记录
+            const response = await getConversationHistory(newId);
+
+            if (response.success && response.conversation.messages) {
+              // 清空当前消息列表
+              this.messages = [];
+
+              // 提取 role、content 和 reasoning_content 并添加到消息列表
+              response.conversation.messages.forEach((msg) => {
+                this.messages.push({
+                  id: `${msg.id}-thinking`, // 唯一 ID
+                  role: "thinking", // 将 reasoning_content 渲染为 thinking
+                  thinking: msg.reasoning_content,
+                });
+                this.messages.push({
+                  id: msg.id,
+                  role: msg.role,
+                  content: msg.content,
+                  thinking: msg.reasoning_content,
+                });
+              });
+
+              // 滚动到底部
+              this.scrollToBottom();
+            } else {
+              console.error("获取对话历史失败:", response);
+              message.error("无法加载对话历史");
+            }
+          } catch (error) {
+            console.error("加载对话历史失败:", error);
+            message.error("加载对话历史失败");
           }
         }
       },
@@ -349,6 +383,8 @@ export default {
 
           // 保存会话ID到组件状态
           this.conversationId = response?.conversationId;
+          await getConversationList();
+          console.log("getConversationList 调用完成");
           console.log("创建新会话完成，会话ID:", this.conversationId);
         } else {
           // 继续现有对话
@@ -378,37 +414,37 @@ export default {
       }
     },
 
-    async loadConversationHistory(conversationId) {
-      try {
-        this.loading = true;
-        const response = await getConversationHistory(conversationId);
+    // async loadConversationHistory(conversationId) {
+    //   try {
+    //     this.loading = true;
+    //     const response = await getConversationHistory(conversationId);
 
-        if (response && response.messages) {
-          this.messages = [];
+    //     if (response && response.messages) {
+    //       this.messages = [];
 
-          // 添加历史消息
-          response.messages.forEach(msg => {
-            this.messages.push({
-              id: msg.id || `${Date.now()}-${Math.random()}`,
-              role: msg.role, // user, assistant, system
-              content: msg.content,
-              thinking: msg.reasoning_content || ""
-            });
-          });
+    //       // 添加历史消息
+    //       response.messages.forEach(msg => {
+    //         this.messages.push({
+    //           id: msg.id ,
+    //           role: msg.role,
+    //           content: msg.content,
+    //           thinking: msg.reasoning_content
+    //         });
+    //       });
 
-          this.$nextTick(() => {
-            this.scrollToBottom();
-          });
-        } else if (response.error) {
-          message.error(response.error.message || "无法加载对话历史");
-        }
-      } catch (error) {
-        console.error("加载对话历史失败:", error);
-        message.error("加载对话历史失败");
-      } finally {
-        this.loading = false;
-      }
-    },
+    //       this.$nextTick(() => {
+    //         this.scrollToBottom();
+    //       });
+    //     } else if (response.error) {
+    //       message.error(response.error.message || "无法加载对话历史");
+    //     }
+    //   } catch (error) {
+    //     console.error("加载对话历史失败:", error);
+    //     message.error("加载对话历史失败");
+    //   } finally {
+    //     this.loading = false;
+    //   }
+    // },
 
   },
 };

@@ -109,9 +109,9 @@ const handleSubmit = async () => {
         // 将初始消息存储到状态管理中
         const conversationStore = useConversationStore();
         conversationStore.setInitialMessage(messageContent);
-
         // 跳转到 /chat 页面
         router.push('/chat');
+        // 刷新对话列表
     } catch (error) {
         console.error("跳转到聊天页面失败：", error);
         messageApi.error("无法跳转到聊天页面，请稍后再试");
