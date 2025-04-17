@@ -102,6 +102,9 @@ import { Avatar } from "ant-design-vue";
 import { createConversation, continueConversation, getConversationHistory, getConversationList } from "@/services/conversationService";
 import { message as messageApi } from "ant-design-vue";
 import { useConversationStore } from '@/stores/conversationStore';
+import MarkdownIt from "markdown-it";
+import hljs from "highlight.js";
+import "highlight.js/styles/github.css"
 
 export default {
   name: "ChatView",
@@ -283,8 +286,22 @@ export default {
 
     renderMarkdown(text) {
       if (!text) return "";
-      const rawHtml = marked.parse(text);
-      return DOMPurify.sanitize(rawHtml);
+      // 创建 MarkdownIt 实例，启用代码高亮
+      const md = new MarkdownIt({
+        highlight: function (str, lang) {
+          if (lang && hljs.getLanguage(lang)) {
+            try {
+              // 使用 highlight.js 高亮代码
+              return hljs.highlight(str, { language: lang }).value;
+            } catch (__) {
+              console.error("代码高亮失败:", __);
+            }
+          }
+          return ""; // 如果语言不支持，返回空字符串
+        },
+      });
+      // 解析 Markdown 文本为 HTML
+      return md.render(text);
     },
 
     // 处理思考过程回调的辅助函数
