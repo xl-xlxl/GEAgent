@@ -413,39 +413,6 @@ export default {
         this.scrollToBottom();
       }
     },
-
-    // async loadConversationHistory(conversationId) {
-    //   try {
-    //     this.loading = true;
-    //     const response = await getConversationHistory(conversationId);
-
-    //     if (response && response.messages) {
-    //       this.messages = [];
-
-    //       // 添加历史消息
-    //       response.messages.forEach(msg => {
-    //         this.messages.push({
-    //           id: msg.id ,
-    //           role: msg.role,
-    //           content: msg.content,
-    //           thinking: msg.reasoning_content
-    //         });
-    //       });
-
-    //       this.$nextTick(() => {
-    //         this.scrollToBottom();
-    //       });
-    //     } else if (response.error) {
-    //       message.error(response.error.message || "无法加载对话历史");
-    //     }
-    //   } catch (error) {
-    //     console.error("加载对话历史失败:", error);
-    //     message.error("加载对话历史失败");
-    //   } finally {
-    //     this.loading = false;
-    //   }
-    // },
-
   },
 };
 </script>

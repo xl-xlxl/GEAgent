@@ -3,14 +3,14 @@
     <a-layout-sider v-model:collapsed="collapsed" collapsible :width="260" :collapsedWidth="70"
       style=" padding: 0; user-select: none; height: 100vh;">
 
-      <div class="close-container" style="height: 10%;">
+      <div class="close-container" style="height: 10vh;">
         <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
           <span v-if="!collapsed" class="title">GEAgent</span>
           <img src="/收起.svg" alt="close" class="icon" />
         </div>
       </div>
 
-      <div class="add-container" style="height:7vh;">
+      <div class="add-container" style="height:5vh;">
         <!-- 新增对话按钮 -->
         <div v-if="!collapsed">
           <div class="bubble icon-container whitespace-nowrap" :class="{ collapsed: collapsed }" @click="goToHome">
@@ -25,44 +25,26 @@
         </div>
       </div>
 
-      <div class="history-container" style="height:68vh;">
-        <div class="flex justify-between items-center px-2 py-1">
-          <span v-if="!collapsed" class="text-sm font-medium">对话历史</span>
-          <a-button type="link" size="small" @click="fetchConversationList">
-            1
-          </a-button>
-        </div>
-        <!-- 加载状态 -->
-        <div v-if="loadingConversations" class="flex justify-center items-center h-full">
-          <a-spin />
-        </div>
-
-        <!-- 无数据状态 -->
-        <div v-else-if="conversations.length === 0" class="flex justify-center items-center h-full text-gray-400">
-          <span v-if="!collapsed">暂无对话历史</span>
-          <span v-else>无</span>
-        </div>
-
-        <!-- 对话历史列表 -->
-        <div v-else style="overflow-y: auto;">
-          <div v-for="conversation in conversations" :key="conversation.id" @click="goToConversation(conversation.id)"
-            class="conversation-item" :class="{ 'active': $route.params.id == conversation.id }">
-            <div v-if="!collapsed" class="flex flex-col p-2">
-              <div class="truncate font-medium">{{ conversation.title }}</div>
-              <div class="text-xs text-gray-500 truncate">
-                {{ new Date(conversation.createdAt).toLocaleString() }}
+      <div class="history-container" style="height:70vh;">
+        <div v-if="!collapsed">
+          <!-- 对话历史列表 -->
+          <div class="history-list">
+            <div v-for="conversation in conversations" :key="conversation.id" @click="goToConversation(conversation.id)"
+              class="conversation-item" :class="{ 'active': $route.params.id == conversation.id }">
+              <div>
+                <div class="truncate" style="font-weight: bold;">{{ conversation.title }}</div>
+                <div class="text-xs truncate">
+                  {{ new Date(conversation.createdAt).toLocaleString() }}
+                </div>
               </div>
-            </div>
-            <div v-else class="flex justify-center p-2">
-              <a-tooltip :title="conversation.title">
-                <a-avatar size="small">{{ conversation.title.charAt(0) }}</a-avatar>
-              </a-tooltip>
             </div>
           </div>
         </div>
+        <div v-else>
+        </div>
       </div>
 
-      <div class="setting-container" style="height: 7vh;">
+      <div class="setting-container" style="height: 7vh; padding-top: 0.5em;">
         <a-popover trigger="click">
           <template #content>
             <div class="no-select">
@@ -194,7 +176,6 @@ export default {
       currentModel: modelStore.currentModel,
       PopoverVisible: false,
       conversations: [],
-      loadingConversations: false,
       // 添加预设场景配置
       presets: {
         "创意文本": {
@@ -307,17 +288,16 @@ export default {
     async fetchConversationList() {
       if (!localStorage.getItem('token')) return;
       try {
-        this.loadingConversations = true;
         const response = await getConversationList();
         console.log("获取的对话列表数据:", response);
 
-        this.conversations = response.conversations;
-        console.log("设置到组件的对话列表:", this.conversations.length);
+        this.conversations = response.conversations.sort((a, b) => {
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+        console.log("排序后的对话列表:", this.conversations);
 
       } catch (error) {
         console.error("获取对话列表失败:", error);
-      } finally {
-        this.loadingConversations = false;
       }
     },
 
@@ -327,40 +307,4 @@ export default {
 
 <style scoped>
 @import url('./assets/styles/views/app.css');
-
-/* 添加到 <style> 部分或导入的 CSS 文件中 */
-.conversation-item {
-  padding: 0.5rem;
-  margin: 0.25rem 0.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.conversation-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.conversation-item.active {
-  background-color: rgba(24, 144, 255, 0.1);
-  border-left: 3px solid #1890ff;
-}
-
-.history-container {
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
-
-.history-container::-webkit-scrollbar {
-  width: 4px;
-}
-
-.history-container::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-}
-
-.history-container::-webkit-scrollbar-track {
-  background: transparent;
-}
 </style>

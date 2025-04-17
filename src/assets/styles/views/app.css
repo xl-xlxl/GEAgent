@@ -87,3 +87,32 @@
 .preset-option:hover {
     background: linear-gradient(135deg, #FFECE8, #E8F8FF, #F4FFE8);
 }
+
+
+/* 添加到 <style> 部分或导入的 CSS 文件中 */
+.conversation-item {
+    padding: 0.5rem;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding: 2rem 1rem;
+}
+
+.conversation-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.conversation-item.active {
+    background: linear-gradient(135deg, #FFECE8, #E8F8FF, #F4FFE8);
+}
+
+.history-container {
+    overflow-y: auto;
+    scrollbar-width: none; 
+    width: 99%;
+    color:#777777;
+}
+
+.history-container::-webkit-scrollbar {
+    width: 0px;
+}
