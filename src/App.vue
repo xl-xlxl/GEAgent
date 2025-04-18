@@ -37,8 +37,47 @@
                   {{ new Date(conversation.createdAt).toLocaleString() }}
                 </div>
               </div>
+              <div class="-mt-9">
+                <a-popover trigger="click" placement="topRight">
+                  <template #content>
+                    <div class="no-select">
+                      <div class="preset-option preset-text" @click="deleteConversation(conversation.id)">
+                        删除对话
+                      </div>
+                      <div class="preset-option preset-text" @click="renameConversation(conversation.id)">
+                        重新命名
+                      </div>
+                    </div>
+                  </template>
+                  <div class="icon"><img src="/更多.svg" alt="more"></div>
+                </a-popover>
+              </div>
             </div>
           </div>
+
+          <div class="clear-all-container" v-if="conversations.length > 1">
+            <a-popover trigger="click" v-model:open="deletePopoverVisible">
+              <template #content>
+                <div class="no-select" style="display: flex; flex-direction: column; align-items: center;">
+                  <div class="preset-text" style="text-align: center; user-select: none; cursor: default; margin: 0;">
+                    确定要删除所有对话记录吗
+                  </div>
+                  <div style="display: flex; gap: 1em;">
+                    <div class="preset-option preset-text" style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em ;" @click="deleteAllConversations">
+                      删除
+                    </div>
+                    <div class="preset-option preset-text" style="cursor: pointer; margin: 0; padding: 1em 3em ;" @click="closeDeletePopover">
+                      取消
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <div class="delete-all-button">
+                <img src="/全部删除.svg" alt="删除全部对话" />
+              </div>
+            </a-popover>
+          </div>
+
         </div>
         <div v-else>
         </div>
@@ -119,11 +158,15 @@
       </div>
 
       <div class="user-container" style="height: 8vh; align-items: center;">
-        <a-popover trigger="click">
+        <a-popover trigger="click" placement="topRight">
           <template #content>
             <div class="no-select">
-              <h1 style=" font-weight: bold; margin-bottom: 15px;">修改信息</h1>
-              <h1 style=" font-weight: bold; margin-bottom: 15px;">退出登录</h1>
+              <div class="preset-option preset-text">
+                修改信息
+              </div>
+              <div class="preset-option preset-text">
+                退出登录
+              </div>
             </div>
           </template>
           <div v-if="!collapsed">
@@ -154,7 +197,8 @@ import { useModelStore } from "@/stores/modelStore";
 import { message } from 'ant-design-vue';
 import * as userService from '@/services/userService';
 import { useUserStore } from './stores/userStore';
-import { getConversationList, getConversationHistory } from '@/services/conversationService';
+import { getConversationList, deleteConversations, deleteAllConversations } from '@/services/conversationService';
+
 
 export default {
   name: 'App',
@@ -176,6 +220,7 @@ export default {
       currentModel: modelStore.currentModel,
       PopoverVisible: false,
       conversations: [],
+      deletePopoverVisible: false,
       // 添加预设场景配置
       presets: {
         "创意文本": {
@@ -298,6 +343,57 @@ export default {
         console.error("获取对话列表失败:", error);
       }
     },
+
+    async deleteConversation(id) {
+      try {
+        const result = await deleteConversations([id]);
+        if (result.success) {
+          message.success(`已删除对话`);
+          // 重新获取对话列表
+          await this.fetchConversationList();
+          // 如果删除的是当前对话，则返回首页
+          if (this.$route.params.id === String(id)) {
+            this.$router.push('/');
+          }
+        } else {
+          message.error(result.error?.message || "删除对话失败");
+        }
+      } catch (error) {
+        console.error("删除对话失败:", error);
+        message.error("删除对话失败");
+      }
+    },
+
+    async deleteAllConversations() {
+      try {
+        const result = await deleteAllConversations();
+        if (result.success) {
+          message.success(`成功删除了${result.deletedCount}个对话`);
+
+          // 关闭弹窗 - 提前关闭以提升用户体验
+          this.deletePopoverVisible = false;
+
+          // 强制清空当前对话列表
+          this.conversations = [];
+
+          // 如果当前在某个对话页，返回首页
+          if (this.$route.path.startsWith('/chat/')) {
+            this.$router.push('/');
+          }
+        } else {
+          message.error(result.error?.message || "删除所有对话失败");
+        }
+      } catch (error) {
+        console.error("删除所有对话失败:", error);
+        message.error("删除所有对话失败");
+      }
+    },
+
+    // 添加关闭弹窗方法
+    closeDeletePopover() {
+      // 这里可以通过v-model控制弹窗关闭
+      this.deletePopoverVisible = false;
+    }
 
   },
 }

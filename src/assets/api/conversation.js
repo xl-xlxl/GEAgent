@@ -248,6 +248,85 @@ const conversationApi = {
         }
     },
 
+    // 删除对话
+    async deleteConversations(conversationIds) {
+        try {
+            const headers = {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            };
+
+            const response = await axios.delete("/api/chat/delete", {
+                headers,
+                data: { conversationIds }
+            });
+
+            if (response.status === 200) {
+                return response.data;
+            } else {
+                throw {
+                    message: response.data?.message || "删除对话失败",
+                    status: response.status,
+                    isShowable: true,
+                };
+            }
+        } catch (error) {
+            console.error("删除对话错误:", error);
+
+            if (error.response) {
+                throw {
+                    message: error.response.data?.message || "删除对话失败",
+                    status: error.response.status,
+                    isShowable: true,
+                };
+            } else {
+                throw {
+                    message: error.message || "删除对话时发生错误",
+                    isShowable: true,
+                };
+            }
+        }
+    },
+
+    // 删除所有对话
+    async deleteAllConversations() {
+        try {
+            const headers = {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            };
+
+            const response = await axios.delete("/api/chat/deleteAll", {
+                headers
+            });
+
+            if (response.status === 200) {
+                return response.data;
+            } else {
+                throw {
+                    message: response.data?.message || "删除全部对话失败",
+                    status: response.status,
+                    isShowable: true,
+                };
+            }
+        } catch (error) {
+            console.error("删除全部对话错误:", error);
+
+            if (error.response) {
+                throw {
+                    message: error.response.data?.message || "删除全部对话失败",
+                    status: error.response.status,
+                    isShowable: true,
+                };
+            } else {
+                throw {
+                    message: error.message || "删除全部对话时发生错误",
+                    isShowable: true,
+                };
+            }
+        }
+    },
+
 };
 
 export default conversationApi;

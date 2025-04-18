@@ -400,11 +400,10 @@ export default {
           await getConversationList();
 
           // 如果当前路由不是新创建的会话，则跳转
-          if (this.$route.params.id !== this.conversationId) {
-            this.$router.push(`/chat/${this.conversationId}`);
-          }
-
-
+      if (this.$route.params.id !== this.conversationId) {
+        this.$router.push(`/chat/${this.conversationId}`);
+      }
+      
           console.log("创建新会话完成，会话ID:", this.conversationId);
         } else {
           // 继续现有对话

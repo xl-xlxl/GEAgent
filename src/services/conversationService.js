@@ -72,3 +72,37 @@ export async function getConversationHistory(conversationId) {
         }
     }
 }
+
+// 添加删除对话的函数
+export async function deleteConversations(conversationIds) {
+    try {
+        const response = await conversationApi.deleteConversations(conversationIds);
+        return response; 
+    } catch (error) {
+        console.log("删除对话-服务层错误:", error);
+        return {
+            success: false,
+            error: {
+                message: "无法删除对话",
+                isShowable: error.isShowable === true
+            }
+        }
+    }
+}
+
+// 添加删除所有对话的函数
+export async function deleteAllConversations() {
+    try {
+        const response = await conversationApi.deleteAllConversations();
+        return response; 
+    } catch (error) {
+        console.log("删除所有对话-服务层错误:", error);
+        return {
+            success: false,
+            error: {
+                message: "无法删除所有对话",
+                isShowable: error.isShowable === true
+            }
+        }
+    }
+}

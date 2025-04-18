@@ -91,7 +91,6 @@
 
 /* 添加到 <style> 部分或导入的 CSS 文件中 */
 .conversation-item {
-    padding: 0.5rem;
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.2s;
@@ -108,11 +107,48 @@
 
 .history-container {
     overflow-y: auto;
-    scrollbar-width: none; 
+    scrollbar-width: none;
     width: 99%;
-    color:#777777;
+    color: #777777;
 }
 
 .history-container::-webkit-scrollbar {
     width: 0px;
+}
+
+
+.delete-all-button {
+    cursor: pointer;
+    border-radius: 20px;
+    transition: all 0.2s;
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+.delete-all-button:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.delete-all-button img {
+    width: 2em;
+    height: auto;
+}
+
+.delete-all-button:hover img {
+    filter: brightness(0.9);
+}
+
+.ant-popover .no-select {
+    margin: -3px -5px;
+}
+
+.preset-text {
+    padding: 1em;
+    cursor: pointer;
+    margin-bottom: 1em;
+    border-radius: 20px;
+    transition: all 0.3s;
+    font-weight: bold;
+    color: #777777;
 }
