@@ -1,4 +1,3 @@
-import { titleProps } from 'ant-design-vue/es/typography/Title';
 import { defineStore } from 'pinia';
 
 export const useConversationStore = defineStore('conversationStore', {

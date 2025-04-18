@@ -136,12 +136,9 @@ export default {
 
   mounted() {
     const conversationStore = useConversationStore();
-    // 获取初始消息
     if (conversationStore.initialMessage) {
       this.userInput = conversationStore.initialMessage;
-      // 自动发送初始消息
       this.sendMessage();
-      // 清除初始消息，避免重复发送
       conversationStore.clearInitialMessage();
     }
   },
@@ -149,32 +146,24 @@ export default {
   watch: {
     '$route.params.id': {
       immediate: true,
-      async handler(newId) { // 将 handler 声明为 async
+      async handler(newId) {
         if (newId) {
           this.conversationId = newId;
-
           // 如果有初始消息，自动发送
           if (this.$route.query.initialMessage) {
             this.userInput = this.$route.query.initialMessage;
             this.sendMessage();
           }
-
           try {
-            // 调用 getConversationHistory 获取历史记录
             const response = await getConversationHistory(newId);
-
             if (response.success && response.conversation.messages) {
-              // 清空当前消息列表
               this.messages = [];
-
-              // 提取后端返回的对话标题
-              this.title = response.conversation.title || "新对话"; // 如果没有标题，设置默认值
-
+              this.title = response.conversation.title || "新对话";
               // 提取 role、content 和 reasoning_content 并添加到消息列表
               response.conversation.messages.forEach((msg) => {
                 this.messages.push({
-                  id: `${msg.id}-thinking`, // 唯一 ID
-                  role: "thinking", // 将 reasoning_content 渲染为 thinking
+                  id: `${msg.id}-thinking`,
+                  role: "thinking",
                   thinking: msg.reasoning_content,
                 });
                 this.messages.push({
@@ -184,9 +173,6 @@ export default {
                   thinking: msg.reasoning_content,
                 });
               });
-
-              // 滚动到底部
-              this.scrollToBottom();
             } else {
               console.error("获取对话历史失败:", response);
               message.error("无法加载对话历史");
@@ -197,6 +183,12 @@ export default {
           }
         }
       },
+    },
+    messages: {
+      handler() {
+        this.scrollToBottom();
+      },
+      deep: true,
     },
   },
 
@@ -224,11 +216,7 @@ export default {
       const scrollArea = this.$refs.scrollArea;
       if (!scrollArea) return;
       const isAtBottom =
-        Math.abs(
-          scrollArea.scrollHeight -
-          scrollArea.scrollTop -
-          scrollArea.clientHeight
-        ) < 5;
+        scrollArea.scrollTop >= scrollArea.scrollHeight - scrollArea.clientHeight - 5;
       this.autoScroll = isAtBottom;
     },
 
@@ -303,6 +291,7 @@ export default {
       // 解析 Markdown 文本为 HTML
       return md.render(text);
     },
+
 
     // 处理思考过程回调的辅助函数
     handleReasoningCallback(thinkingMessage, loadHide) {
