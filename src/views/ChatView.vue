@@ -379,32 +379,43 @@ export default {
         const params = {
           message: userQuery,
           LLMID: 3,
-          webSearch: this.webSearch,
-          MCP: false,
+          webSearch: true,
+          enableMCPService: true,
         };
 
         // 如果没有会话ID，则创建新会话
         if (!this.conversationId) {
           params.title = this.getTitleFromMessage(userQuery);
-          // 创建新会话
-          const response = await createConversation(
-            params,
-            this.handleReasoningCallback(thinkingMessage, loadHide),
-            this.handleReplyCallback(aiMessage, loadHide)
-          );
 
-          // 保存会话ID到组件状态
-          this.conversationId = response?.conversationId;
-          this.title = params.title; // 提取会话标题
+          try {
+            // 创建新会话
+            const response = await createConversation(
+              params,
+              this.handleReasoningCallback(thinkingMessage, loadHide),
+              this.handleReplyCallback(aiMessage, loadHide)
+            );
 
-          await getConversationList();
+            // 保存会话ID到组件状态
+            if (response && response.conversationId) {
+              this.conversationId = response.conversationId;
+              this.title = params.title; // 提取会话标题
 
-          // 如果当前路由不是新创建的会话，则跳转
-      if (this.$route.params.id !== this.conversationId) {
-        this.$router.push(`/chat/${this.conversationId}`);
-      }
-      
-          console.log("创建新会话完成，会话ID:", this.conversationId);
+              await getConversationList();
+
+              // 如果当前路由不是新创建的会话，则跳转
+              if (this.$route.params.id !== String(this.conversationId)) {
+                this.$router.push(`/chat/${this.conversationId}`);
+              }
+
+              console.log("创建新会话完成，会话ID:", this.conversationId);
+            } else {
+              console.error("未能获取到有效的会话ID");
+              messageApi.error("创建会话失败");
+            }
+          } catch (error) {
+            console.error("创建会话失败:", error);
+            messageApi.error(error.message || "创建会话失败");
+          }
         } else {
           // 继续现有对话
           const response = await continueConversation(

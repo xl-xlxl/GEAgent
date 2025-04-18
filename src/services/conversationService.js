@@ -1,19 +1,21 @@
 import conversationApi from "@/assets/api/conversation";
 
-// 创建新会话的服务函数
+// 修改创建新会话的服务函数
 export async function createConversation(params, reasoningCallback, replyCallback) {
     try {
-        const response = await conversationApi.createConversation(params, reasoningCallback, replyCallback);
-        return response; 
+        const response = await conversationApi.createConversation(
+            params,
+            reasoningCallback,
+            replyCallback
+        );
+
+        return response;
     } catch (error) {
-        console.log("创建新会话-服务层错误:", error);
-        return {
-            success: false,
-            error: {
-                message: "无法完成请求",
-                isShowable: error.isShowable === true
-            }
-        }
+        console.log("创建对话-服务层错误:", error);
+        throw {
+            message: error.message || "创建对话失败",
+            isShowable: error.isShowable === true,
+        };
     }
 }
 
@@ -21,12 +23,12 @@ export async function createConversation(params, reasoningCallback, replyCallbac
 export async function continueConversation(params, conversationId, reasoningCallback, replyCallback) {
     try {
         const response = await conversationApi.continueConversation(
-            params, 
-            conversationId, 
-            reasoningCallback, 
+            params,
+            conversationId,
+            reasoningCallback,
             replyCallback
         );
-        return response; 
+        return response;
     } catch (error) {
         console.log("继续对话-服务层错误:", error);
         return {
@@ -43,7 +45,7 @@ export async function continueConversation(params, conversationId, reasoningCall
 export async function getConversationList() {
     try {
         const response = await conversationApi.getConversationList();
-        return response; 
+        return response;
     } catch (error) {
         console.log("获取对话列表-服务层错误:", error);
         return {
@@ -60,7 +62,7 @@ export async function getConversationList() {
 export async function getConversationHistory(conversationId) {
     try {
         const response = await conversationApi.getConversationHistory(conversationId);
-        return response; 
+        return response;
     } catch (error) {
         console.log("获取对话历史-服务层错误:", error);
         return {
@@ -77,7 +79,7 @@ export async function getConversationHistory(conversationId) {
 export async function deleteConversations(conversationIds) {
     try {
         const response = await conversationApi.deleteConversations(conversationIds);
-        return response; 
+        return response;
     } catch (error) {
         console.log("删除对话-服务层错误:", error);
         return {
@@ -94,7 +96,7 @@ export async function deleteConversations(conversationIds) {
 export async function deleteAllConversations() {
     try {
         const response = await conversationApi.deleteAllConversations();
-        return response; 
+        return response;
     } catch (error) {
         console.log("删除所有对话-服务层错误:", error);
         return {

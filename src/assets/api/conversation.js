@@ -2,169 +2,155 @@ import axios from 'axios'
 
 // 创建新对话
 const conversationApi = {
+    // 修改创建新对话方法
     async createConversation(params, reasoningCallback, replyCallback) {
         try {
             const headers = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
+
+            // 创建请求
             const response = await fetch("/api/chat/create", {
-                method: "POST",
-                headers,
-                body: JSON.stringify({
-                    message: params.message,
-                    LLMID: params.LLMID,
-                    title: params.title,
-                    webSearch: params.webSearch,
-                }),
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(params)
             });
 
-            // 检查HTTP状态码
-            if (!response.ok) {
-                let errorData = {};
-                try {
-                    errorData = await response.json();
-                } catch (e) {
-                    errorData = { message: response.statusText };
-                }
-
-                // 构造错误对象
-                const error = {
-                    response: {
-                        status: response.status,
-                        data: errorData,
-                    },
-                    message: errorData.message || response.statusText,
-                };
-                console.log(`创建新会话-API错误(${response.status}):`, error);
-                throw error;
-            }
-
-            //处理响应流
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
             let conversationId = null;
+            let currentRound = 0;
+
+            // 处理流式响应
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                // 添加到缓冲区并按行分割
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split("\n");
-                buffer = lines.pop() || ""; // 保留可能不完整的最后一行
+
+                // 解码并分割响应数据
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n').filter(line => line.trim());
 
                 for (const line of lines) {
-                    if (line.startsWith("data: ")) {
-                        try {
-                            const jsonStr = line.substring(6);
-                            const jsonData = JSON.parse(jsonStr);
-                            // 处理不同类型的数据
-                            if (jsonData.conversationId) {
-                                conversationId = jsonData.conversationId;
-                            }
-                            if (jsonData.reasoning_content && reasoningCallback) {
-                                reasoningCallback(jsonData.reasoning_content);
-                            }
-                            if (jsonData.content && replyCallback) {
-                                replyCallback(jsonData.content);
-                            }
-                        } catch (error) {
-                            console.warn("无法解析响应数据:", line, error);
+                    let data;
+                    try {
+                        // 移除"data: "前缀并解析JSON
+                        const jsonStr = line.startsWith('data: ') ? line.substring(6) : line;
+                        data = JSON.parse(jsonStr);
+
+                        // 处理不同类型的响应
+                        if (data.connection && data.conversationId) {
+                            // 初始连接，获取会话ID
+                            conversationId = data.conversationId;
                         }
+                        // 添加条件：跳过特定的空内容
+                        else if (data.content === "\n\n" && data.reasoning_content === null) {
+                            continue;
+                            // 其他需要过滤的响应类型
+                        } else if (data.webSearchStatus || data.success === false || data.MCPStatus || data.content === "<tool_call>") {
+                            // 忽略这些特定类型的响应
+                            continue;
+                        } else if (data.postConversationRequest) {
+                            // 更新当前轮次
+                            currentRound = data.round;
+                        } else if (data.content !== null && !data.reasoning_content) {
+                            // 处理回复内容
+                            if (replyCallback && data.content) {
+                                replyCallback(data.content);
+                            }
+                        } else if (data.reasoning_content) {
+                            // 处理思考过程
+                            if (reasoningCallback && data.reasoning_content) {
+                                reasoningCallback(data.reasoning_content);
+                            }
+                        }
+                    } catch (error) {
+                        console.error("解析响应数据错误:", error, line);
                     }
                 }
             }
-            return { success: true, conversationId };
 
+            return { conversationId, round: currentRound };
         } catch (error) {
-            const isServerError = error.response &&
-                error.response.status >= 500;
+            console.error("创建对话-API层错误:", error);
             throw {
-                success: false,
-                isShowable: isServerError,
-                message: "服务暂时不可用，请稍后再试"
+                message: error.message || "创建新对话失败",
+                isShowable: true,
             };
         }
     },
 
 
-    // 继续对话
+    // 修改继续对话方法
     async continueConversation(params, conversationId, reasoningCallback, replyCallback) {
         try {
             const headers = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
+
+            // 创建请求
             const response = await fetch(`/api/chat/continue/${conversationId}`, {
-                method: "POST",
-                headers,
-                body: JSON.stringify({
-                    message: params.message,
-                    LLMID: params.LLMID,
-                    webSearch: params.webSearch,
-                }),
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(params)
             });
 
-            // 检查HTTP状态码
-            if (!response.ok) {
-                let errorData = {};
-                try {
-                    errorData = await response.json();
-                } catch (e) {
-                    errorData = { message: response.statusText };
-                }
+            let currentRound = 0;
 
-                // 构造错误对象
-                const error = {
-                    response: {
-                        status: response.status,
-                        data: errorData,
-                    },
-                    message: errorData.message || response.statusText,
-                };
-                console.log(`继续对话-API错误(${response.status}):`, error);
-                throw error;
-            }
-
-            //处理响应流
+            // 处理流式响应
             const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
+            const decoder = new TextDecoder("utf-8");
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                // 添加到缓冲区并按行分割
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split("\n");
-                buffer = lines.pop() || ""; // 保留可能不完整的最后一行
+
+                // 解码并分割响应数据
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n').filter(line => line.trim());
 
                 for (const line of lines) {
-                    if (line.startsWith("data: ")) {
-                        try {
-                            const jsonStr = line.substring(6);
-                            const jsonData = JSON.parse(jsonStr);
-                            // 处理不同类型的数据
-                            if (jsonData.reasoning_content && reasoningCallback) {
-                                reasoningCallback(jsonData.reasoning_content);
-                            }
-                            if (jsonData.content && replyCallback) {
-                                replyCallback(jsonData.content);
-                            }
-                        } catch (error) {
-                            console.warn("无法解析响应数据:", line, error);
+                    let data;
+                    try {
+                        // 移除"data: "前缀并解析JSON
+                        const jsonStr = line.startsWith('data: ') ? line.substring(6) : line;
+                        data = JSON.parse(jsonStr);
+
+                        // 添加条件：跳过特定的空内容
+                        if (data.content === "\n\n" && data.reasoning_content === null) {
+                            continue;
                         }
+                        // 其他需要过滤的响应类型
+                        else if (data.webSearchStatus || data.success === false || data.MCPStatus || data.content === "<tool_call>") {
+                            continue;
+                        } else if (data.postConversationRequest) {
+                            // 更新当前轮次
+                            currentRound = data.round;
+                        } else if (data.content !== null && !data.reasoning_content) {
+                            // 处理回复内容
+                            if (replyCallback && data.content) {
+                                replyCallback(data.content);
+                            }
+                        } else if (data.reasoning_content) {
+                            // 处理思考过程
+                            if (reasoningCallback && data.reasoning_content) {
+                                reasoningCallback(data.reasoning_content);
+                            }
+                        }
+                    } catch (error) {
+                        console.error("解析响应数据错误:", error, line);
                     }
                 }
             }
-            return { success: true, conversationId };
 
+            return { conversationId, round: currentRound };
         } catch (error) {
-            const isServerError = error.response &&
-                error.response.status >= 500;
+            console.error("继续对话-API层错误:", error);
             throw {
-                success: false,
-                isShowable: isServerError,
-                message: "服务暂时不可用，请稍后再试"
+                message: error.message || "继续对话失败",
+                isShowable: true,
             };
         }
     },
