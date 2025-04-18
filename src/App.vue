@@ -44,9 +44,31 @@
                       <div class="preset-option preset-text" @click="deleteConversation(conversation.id)">
                         删除对话
                       </div>
-                      <div class="preset-option preset-text" @click="renameConversation(conversation.id)">
-                        重新命名
-                      </div>
+
+                      <a-popover trigger="click" placement="right">
+                        <template #content>
+                          <div class="no-select" style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="xs-input">
+                              <a-input v-model:value="value" :bordered="false"/>
+                            </div>
+                            <div style="display: flex; gap: 1em;">
+                              <div class="preset-option preset-text"
+                                style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em ;">
+                                确定
+                              </div>
+                              <div class="preset-option preset-text"
+                                style="cursor: pointer; margin: 0; padding: 1em 3em ;">
+                                取消
+                              </div>
+                            </div>
+                          </div>
+                        </template>
+                        <div class="preset-option preset-text" >  
+                          <!-- @click="renameConversation(conversation.id)" -->
+                          重新命名
+                        </div>
+                      </a-popover>
+
                     </div>
                   </template>
                   <div class="icon"><img src="/更多.svg" alt="more"></div>
@@ -96,7 +118,7 @@
                   <template #content>
                     <p class="ml-1.5" style="font-weight: bold; margin-bottom: 10px;user-select: none;">场景预设</p>
                     <div v-for="(preset, name) in presets" :key="name" class="preset-option" @click="applyPreset(name)"
-                      style="padding: 10px; cursor: pointer; margin-bottom: 5px; border-radius: 20px; transition: all 0.3s;">
+                      style="padding: 10px; cursor: pointer; margin-bottom: 5px; border-radius: 16px; transition: all 0.3s;">
                       {{ name }}
                       <div style="font-size: 12px; color: #999; margin-top: 2px;">{{ preset.description }}</div>
                     </div>
@@ -200,8 +222,9 @@ import { useModelStore } from "@/stores/modelStore";
 import { message } from 'ant-design-vue';
 import * as userService from '@/services/userService';
 import { useUserStore } from './stores/userStore';
-import { getConversationList, deleteConversations, deleteAllConversations } from '@/services/conversationService';
-
+import { getConversationList, deleteConversations, deleteAllConversations, updateConversationTitle } from '@/services/conversationService';
+import { ref } from 'vue';
+const value = ref('');
 
 export default {
   name: 'App',
@@ -430,7 +453,46 @@ export default {
     closeDeletePopover() {
       // 这里可以通过v-model控制弹窗关闭
       this.deletePopoverVisible = false;
-    }
+    },
+
+    // async renameConversation(id) {
+    //   try {
+    //     // 使用简单的浏览器原生prompt
+    //     const newTitle = prompt("请输入新标题", "");
+
+    //     if (!newTitle || newTitle.trim() === "") {
+    //       return; // 用户取消或输入为空
+    //     }
+
+    //     const result = await updateConversationTitle(id, newTitle);
+
+    //     if (result.success) {
+    //       message.success("标题已更新");
+
+    //       // 更新本地数据
+    //       const index = this.conversations.findIndex(conv => conv.id === id);
+    //       if (index !== -1) {
+    //         this.conversations[index].title = newTitle;
+    //       }
+
+    //       // 如果当前正在查看此对话，更新路由参数
+    //       if (Number(this.$route.params.id) === id) {
+    //         this.$router.replace({
+    //           path: this.$route.path,
+    //           query: { ...this.$route.query, title: newTitle }
+    //         });
+    //       }
+
+    //       // 刷新对话列表
+    //       this.fetchConversationList();
+    //     } else {
+    //       message.error("更新标题失败");
+    //     }
+    //   } catch (error) {
+    //     console.error("重命名对话失败:", error);
+    //     message.error("重命名对话失败");
+    //   }
+    // }
 
   },
 }

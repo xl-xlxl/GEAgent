@@ -370,6 +370,42 @@ const conversationApi = {
         }
     },
 
+    // 更新对话标题
+    async updateConversationTitle(conversationId, title) {
+        try {
+            const headers = {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            };
+
+            const response = await axios.put(`/api/chat/updateTitle/${conversationId}`,
+                { title },
+                { headers }
+            );
+
+            if (response.status === 200) {
+                return {
+                    success: response.data.success,
+                    message: response.data.message,
+                    conversationId: response.data.conversationId,
+                    title: response.data.title
+                };
+            } else {
+                throw {
+                    message: response.data?.message || "更新对话标题失败",
+                    status: response.status,
+                    isShowable: true,
+                };
+            }
+        } catch (error) {
+            console.error("更新对话标题错误:", error);
+            throw {
+                message: error.response?.data?.message || "更新对话标题失败",
+                isShowable: true,
+            };
+        }
+    },
+
 };
 
 export default conversationApi;

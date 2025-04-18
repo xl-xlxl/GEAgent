@@ -178,7 +178,14 @@ export default {
         }
       }
     },
-
+    '$route.query.title': {
+      immediate: true,
+      handler(newTitle) {
+        if (newTitle) {
+          this.title = newTitle;
+        }
+      }
+    },
     messages: {
       handler() {
         this.scrollToBottom();

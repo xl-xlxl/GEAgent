@@ -104,7 +104,7 @@ const handleLogin = async (values:any) => {
 
 .login-card {
   width: 380px;
-  border-radius: 20px;
+  border-radius: 18px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 

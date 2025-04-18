@@ -1,4 +1,5 @@
 import conversationApi from "@/assets/api/conversation";
+import axios from "axios";
 
 // 修改创建新会话的服务函数
 export async function createConversation(params, reasoningCallback, replyCallback) {
@@ -106,5 +107,26 @@ export async function deleteAllConversations() {
                 isShowable: error.isShowable === true
             }
         }
+    }
+}
+
+// 添加更新对话标题的服务函数
+export async function updateConversationTitle(conversationId, title) {
+    try {
+        const headers = {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        };
+
+        const response = await axios.put(
+            `/api/chat/updateTitle/${conversationId}`,
+            { title },
+            { headers }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.log("更新对话标题失败:", error);
+        return { success: false };
     }
 }
