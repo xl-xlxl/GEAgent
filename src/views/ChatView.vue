@@ -149,6 +149,10 @@ export default {
       async handler(newId) {
         if (newId) {
           this.conversationId = newId;
+          // 使用路由查询参数中的标题
+          if (this.$route.query.title) {
+            this.title = this.$route.query.title;
+          }
           // 如果有初始消息，自动发送
           if (this.$route.query.initialMessage) {
             this.userInput = this.$route.query.initialMessage;
@@ -158,21 +162,11 @@ export default {
             const response = await getConversationHistory(newId);
             if (response.success && response.conversation.messages) {
               this.messages = [];
-              this.title = response.conversation.title || "新对话";
-              // 提取 role、content 和 reasoning_content 并添加到消息列表
-              response.conversation.messages.forEach((msg) => {
-                this.messages.push({
-                  id: `${msg.id}-thinking`,
-                  role: "thinking",
-                  thinking: msg.reasoning_content,
-                });
-                this.messages.push({
-                  id: msg.id,
-                  role: msg.role,
-                  content: msg.content,
-                  thinking: msg.reasoning_content,
-                });
-              });
+              // 直接使用API层处理好的消息格式
+              this.messages = response.conversation.messages;
+
+              // 更新分页信息
+              this.pagination = response.pagination;
             } else {
               console.error("获取对话历史失败:", response);
               message.error("无法加载对话历史");
@@ -182,8 +176,9 @@ export default {
             message.error("加载对话历史失败");
           }
         }
-      },
+      }
     },
+
     messages: {
       handler() {
         this.scrollToBottom();
@@ -443,6 +438,28 @@ export default {
         this.scrollToBottom();
       }
     },
+
+    // 添加加载更多历史消息的方法
+    async loadMoreHistory(page) {
+      if (!this.conversationId) return;
+      try {
+        const response = await getConversationHistory(this.conversationId, page);
+        if (response.success && response.conversation.messages) {
+          // API层已经处理了消息格式，这里只需添加到消息列表
+          const historyMessages = response.conversation.messages;
+
+          // 将历史消息添加到当前消息列表的开头
+          this.messages.unshift(...historyMessages);
+
+          // 更新分页信息
+          this.pagination = response.pagination;
+        }
+      } catch (error) {
+        console.error("加载更多对话历史失败:", error);
+        message.error("加载更多历史失败");
+      }
+    }
+
   },
 };
 </script>

@@ -42,9 +42,9 @@ export async function continueConversation(params, conversationId, reasoningCall
 }
 
 // 添加获取对话列表的函数
-export async function getConversationList() {
+export async function getConversationList(page = 1, pageSize = 20) {
     try {
-        const response = await conversationApi.getConversationList();
+        const response = await conversationApi.getConversationList(page, pageSize);
         return response;
     } catch (error) {
         console.log("获取对话列表-服务层错误:", error);
@@ -59,9 +59,9 @@ export async function getConversationList() {
 }
 
 // 添加获取特定对话历史的函数
-export async function getConversationHistory(conversationId) {
+export async function getConversationHistory(conversationId, page = 1, pageSize = 10) {
     try {
-        const response = await conversationApi.getConversationHistory(conversationId);
+        const response = await conversationApi.getConversationHistory(conversationId, page, pageSize);
         return response;
     } catch (error) {
         console.log("获取对话历史-服务层错误:", error);

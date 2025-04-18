@@ -30,7 +30,7 @@
           <!-- 对话历史列表 -->
           <div class="history-list">
             <div v-for="conversation in conversations" :key="conversation.id" @click="goToConversation(conversation.id)"
-              class="conversation-item" :class="{ 'active': $route.params.id == conversation.id }">
+              class="conversation-item" :class="{ 'active': Number($route.params.id) === conversation.id }">
               <div>
                 <div class="truncate" style="font-weight: bold;">{{ conversation.title }}</div>
                 <div class="text-xs truncate">
@@ -63,10 +63,13 @@
                     确定要删除所有对话记录吗
                   </div>
                   <div style="display: flex; gap: 1em;">
-                    <div class="preset-option preset-text" style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em ;" @click="deleteAllConversations">
+                    <div class="preset-option preset-text"
+                      style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em ;"
+                      @click="deleteAllConversations">
                       删除
                     </div>
-                    <div class="preset-option preset-text" style="cursor: pointer; margin: 0; padding: 1em 3em ;" @click="closeDeletePopover">
+                    <div class="preset-option preset-text" style="cursor: pointer; margin: 0; padding: 1em 3em ;"
+                      @click="closeDeletePopover">
                       取消
                     </div>
                   </div>
@@ -319,26 +322,60 @@ export default {
 
     async goToConversation(id) {
       try {
-        if (this.$route.params.id === String(id)) {
-          return; // 如果已经是目标会话，直接返回
+        console.log("尝试跳转到会话，ID:", id);
+
+        if (!id) {
+          console.error("会话ID为空或无效");
+          message.error("无效的会话ID");
+          return;
         }
-        // 跳转到对应的对话页面
-        this.$router.push(`/chat/${id}`);
+
+        // 转换路由参数为数字进行比较
+        if (Number(this.$route.params.id) === id) {
+          console.log("已在当前会话页面");
+          return;
+        }
+
+        // 查找对话标题
+        const conversation = this.conversations.find(conv => conv.id === id);
+        if (conversation) {
+          // 带上标题参数进行路由跳转
+          console.log(`跳转到会话: ${conversation.title} (ID: ${id})`);
+          this.$router.push({
+            path: `/chat/${id}`,
+            query: { title: conversation.title }
+          });
+        } else {
+          // 如果找不到对话信息，直接跳转
+          console.log("跳转到会话路径:", `/chat/${id}`);
+          this.$router.push(`/chat/${id}`);
+        }
       } catch (error) {
         console.error("跳转到会话失败:", error);
-        message.error(error.message || "跳转到会话失败");
+        message.error("跳转到会话失败");
       }
     },
 
-    async fetchConversationList() {
+    async fetchConversationList(page = 1, pageSize = 20) {
       if (!localStorage.getItem('token')) return;
+
       try {
-        const response = await getConversationList();
+        const response = await getConversationList(page, pageSize);
 
-        this.conversations = response.conversations.sort((a, b) => {
-          return new Date(b.createdAt) - new Date(a.createdAt);
-        });
+        if (response.success) {
+          // 更新分页信息
+          this.pagination = response.pagination;
 
+          // 直接使用conversationId作为id，保持整数类型
+          this.conversations = response.conversations.map(conv => ({
+            ...conv,
+            id: conv.conversationId // 保留整数类型
+          })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+          console.log("处理后的会话列表:", this.conversations);
+        } else {
+          console.error("获取对话列表失败:", response.error);
+        }
       } catch (error) {
         console.error("获取对话列表失败:", error);
       }
@@ -349,10 +386,10 @@ export default {
         const result = await deleteConversations([id]);
         if (result.success) {
           message.success(`已删除对话`);
-          // 重新获取对话列表
           await this.fetchConversationList();
-          // 如果删除的是当前对话，则返回首页
-          if (this.$route.params.id === String(id)) {
+
+          // 使用Number()转换路由参数进行比较
+          if (Number(this.$route.params.id) === id) {
             this.$router.push('/');
           }
         } else {

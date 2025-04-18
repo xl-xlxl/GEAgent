@@ -156,18 +156,25 @@ const conversationApi = {
     },
 
 
-    // 添加获取对话列表的方法
-    async getConversationList() {
+    // 修改获取对话列表的方法
+    async getConversationList(page = 1, pageSize = 20) {
         try {
             const headers = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
-            // 使用 axios 发送 GET 请求
-            const response = await axios.get("/api/chat/list", { headers });
+
+            // 添加分页参数
+            const response = await axios.get(`/api/chat/list?page=${page}&pageSize=${pageSize}`, { headers });
+
             // 检查 HTTP 状态码并返回数据
             if (response.status === 200) {
-                return response.data; // 返回响应数据
+                // 返回完整的分页和会话数据
+                return {
+                    success: response.data.success,
+                    pagination: response.data.conversationsList.pagination,
+                    conversations: response.data.conversationsList.conversations
+                };
             } else {
                 throw {
                     message: response.data?.message || "获取对话列表失败",
@@ -194,20 +201,28 @@ const conversationApi = {
     },
 
 
-    // 获取特定对话的历史记录
-    async getConversationHistory(conversationId) {
+    // 修改获取特定对话的历史记录
+    async getConversationHistory(conversationId, page = 1, pageSize = 10) {
         try {
             const headers = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
 
-            // 使用 axios 发送 GET 请求
-            const response = await axios.get(`/api/chat/list/${conversationId}`, { headers });
+            // 使用 axios 发送 GET 请求，添加分页参数
+            const response = await axios.get(`/api/chat/list/${conversationId}?page=${page}&pageSize=${pageSize}`, { headers });
 
             // 检查 HTTP 状态码并返回数据
             if (response.status === 200) {
-                return response.data; // 返回响应数据
+                // 将新结构的数据转换为应用所需的格式
+                return {
+                    success: response.data.success,
+                    pagination: response.data.pagingInteractions.pagination,
+                    conversation: {
+                        id: conversationId,
+                        messages: this._processMessages(response.data.pagingInteractions.interactions.rows)
+                    }
+                };
             } else {
                 throw {
                     message: response.data?.message || "获取对话历史失败",
@@ -217,22 +232,64 @@ const conversationApi = {
             }
         } catch (error) {
             console.error("获取对话历史错误:", error);
-
-            // 处理 axios 错误
-            if (error.response) {
-                throw {
-                    message: error.response.data?.message || "获取对话历史失败",
-                    status: error.response.status,
-                    isShowable: true,
-                };
-            } else {
-                throw {
-                    message: error.message || "获取对话历史时发生错误",
-                    isShowable: true,
-                };
-            }
+            throw {
+                message: error.response?.data?.message || "获取对话历史失败",
+                isShowable: true,
+            };
         }
     },
+
+    // 更新处理消息的辅助方法，适配新的数据结构
+    _processMessages(interactions) {
+        const messages = [];
+
+        // 对交互按时间排序，确保最早的交互在前面
+        const sortedInteractions = [...interactions].sort((a, b) =>
+            new Date(a.createdAt) - new Date(b.createdAt)
+        );
+
+        sortedInteractions.forEach(interaction => {
+            // 添加用户消息
+            messages.push({
+                id: `user-${interaction.id}`,
+                role: 'user',
+                content: interaction.user_input
+            });
+
+            // 处理该交互下的所有助手消息
+            if (interaction.messages && interaction.messages.length > 0) {
+                // 按轮次排序消息
+                const sortedMessages = [...interaction.messages].sort((a, b) => a.round - b.round);
+
+                sortedMessages.forEach(msg => {
+                    if (msg.assistant_output && msg.assistant_output.includes("<tool_call>")) {
+                        return;
+                    }
+
+                    // 添加思考消息
+                    if (msg.assistant_reasoning_output) {
+                        messages.push({
+                            id: `thinking-${msg.id}`,
+                            role: 'thinking',
+                            thinking: msg.assistant_reasoning_output
+                        });
+                    }
+
+                    if (msg.assistant_output) {
+                        if (msg.assistant_output && msg.assistant_output.trim()) {
+                            messages.push({
+                                id: String(msg.id),
+                                role: 'assistant',
+                                content: msg.assistant_output
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        return messages;
+    },
+
 
     // 删除对话
     async deleteConversations(conversationIds) {
