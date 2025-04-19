@@ -66,3 +66,23 @@ export async function getUserInfo() {
         }
     }
 }
+
+export async function getUserAvatarUrl() {
+    try {
+        const avatarUrlRes = await authApi.getUserAvatarUrl();
+        if (avatarUrlRes.data.success == true) {
+            return avatarUrlRes.data;
+        } else {
+           return{
+            success: false,
+            url: null
+                 } 
+            }
+        }catch (error) {
+            return {
+                success: false,
+                error
+            } 
+        }
+    
+}

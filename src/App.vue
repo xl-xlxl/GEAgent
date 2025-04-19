@@ -183,20 +183,22 @@
       </div>
 
       <div class="user-container" style="height: 8vh; align-items: center;">
-        <a-popover trigger="click" placement="topRight">
+        <a-popover v-if="userStore.loggedIn" trigger="click" placement="topRight">
           <template #content>
             <div class="no-select">
               <div class="preset-option preset-text">
                 修改信息
               </div>
-              <div class="preset-option preset-text">
+              <div class="preset-option preset-text" @click="handleLogout">
                 退出登录
               </div>
             </div>
           </template>
+          <!-- 已登录状态显示 -->
           <div v-if="!collapsed">
             <div class="bubble icon-container" :class="{ collapsed: collapsed }">
-              <a-avatar :size="40" src=""></a-avatar>
+              <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
+              <span class="username-text">{{ userStore.getUserInfo.userName || '用户' }}</span>
               <img src="/user.svg" alt="user" class="icon" />
             </div>
           </div>
@@ -206,6 +208,20 @@
             </div>
           </div>
         </a-popover>
+        <div v-else @click="goToHomeForLogin">
+          <div v-if="!collapsed">
+            <div class="bubble icon-container" :class="{ collapsed: collapsed }">
+              <a-avatar :size="40" src="/default-avatar.png"></a-avatar>
+              <span class="username-text">未登录</span>
+              <img src="/user.svg" alt="user" class="icon" />
+            </div>
+          </div>
+          <div v-else>
+            <div class="icon-container" :class="{ collapsed: collapsed }">
+              <img src="/user.svg" alt="user" class="icon" />
+            </div>
+          </div>
+        </div>
       </div>
 
     </a-layout-sider>
@@ -235,6 +251,7 @@ export default {
 
   data() {
     const modelStore = useModelStore();
+    const userStore = useUserStore();
     return {
       collapsed: true,
       max_tokens: modelStore.max_tokens,
@@ -243,6 +260,7 @@ export default {
       top_k: modelStore.top_k,
       frequency_penalty: modelStore.frequency_penalty,
       modelStore,
+      userStore,
       currentModel: modelStore.currentModel,
       PopoverVisible: false,
       conversations: [],
@@ -306,8 +324,8 @@ export default {
           console.log('refreshToken', refreshToken.token);
           message.success('用户恢复登录');
           const userStore = useUserStore();
-          const userInfo = await userService.getUserInfo();
-          userStore.login(userInfo, refreshToken.token);
+
+          userStore.login(refreshToken.token);
         }
       } catch (error) {
         console.error('初始化用户失败:', error);
@@ -340,6 +358,18 @@ export default {
     },
 
     goToHome() {
+      this.$router.push('/');
+    },
+
+    goToHomeForLogin() {
+      this.$router.push('/');
+      this.userStore.showLogin = true;
+    },
+
+    handleLogout() {
+      this.userStore.logout();
+      localStorage.removeItem('token');
+      message.success('已退出登录');
       this.$router.push('/');
     },
 

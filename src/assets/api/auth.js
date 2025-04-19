@@ -102,9 +102,22 @@ const authApi = {
             };
 
         } 
+    },
+
+    async getUserAvatarUrl(){
+        try {
+            return await api.get('/user/avatar')           
+        }catch (error) {
+            let head = '获取用户头像失败';
+            let errorMessage = '获取用户头像失败，请稍后重试';
+            errorMessage = SelectMessageError(error);
+            throw {
+                success: false,
+                head,
+                message: errorMessage
+            };
+        }
     }
 }
-
-
 
 export default authApi;

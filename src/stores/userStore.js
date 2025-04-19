@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import * as userService from "@/services/userService";
-
 export const useUserStore = defineStore("userStore", {
   state: () => ({
     isLoggedIn: false,
@@ -9,26 +8,41 @@ export const useUserStore = defineStore("userStore", {
     avatarUrl: null,
     email: null,
     fullName: null,
+    showLogin: false,
   }),
   
   getters: {
     // 获取登录状态
     loggedIn: (state) => state.isLoggedIn,
     // 获取用户信息
-    getUserInfo: (state) => state.userInfo,
+    getUserInfo: (state) => ({
+      userName: state.userName,
+      avatarUrl: state.avatarUrl,
+      email: state.email,
+      fullName: state.fullName
+    }),
   },
   
   actions: {
     // 登录成功后调用
-    login(userInfo, token) {
-      this.isLoggedIn = true;
-      this.token = token;
-      this.userName = userInfo.userName;
-      this.avatarUrl = userInfo.avatarUrl;
-      this.email = userInfo.email;
-      this.fullName = userInfo.fullName;
-      // 将token存储到localStorage，便于持久化
-      localStorage.setItem('token', token);
+    async login(token) {
+      try {
+        // 使用await等待异步请求完成
+        const userInfoResponse = await userService.getUserInfo();
+        
+        this.isLoggedIn = true;
+        this.token = token;
+        this.userName = userInfoResponse.user.username;
+        this.email = userInfoResponse.user.email;
+        this.fullName = userInfoResponse.user.fullName;
+        const avatarUrlResponse = await userService.getUserAvatarUrl();
+        this.avatarUrl = avatarUrlResponse.url;
+        // 将token存储到localStorage，便于持久化
+        localStorage.setItem('token', token);
+      } catch (error) {
+        console.error(error);
+        // 可以选择是否在这里处理错误
+      }
     },
     
     // 退出登录

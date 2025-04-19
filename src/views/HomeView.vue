@@ -52,13 +52,13 @@
 import { message, Flex, Button, Select } from 'ant-design-vue';
 import { SendOutlined } from '@ant-design/icons-vue';
 import { Sender } from 'ant-design-x-vue';
-import { onWatcherCleanup, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import LoginCard from '@/components/LoginCard.vue';
 import RegisterCard from '@/components/RegisterCard.vue';
 import { useModelStore } from '@/stores/modelStore';
 import { useUserStore } from '@/stores/userStore';
 import * as userService from '@/services/userService';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useConversationStore } from '@/stores/conversationStore';
 
 const [messageApi, contextHolder] = message.useMessage();
@@ -71,6 +71,7 @@ const webSearch = ref<boolean>(false);
 
 const router = useRouter();
 
+const userStore = useUserStore();
 // 使用 modelStore
 const modelStore = useModelStore();
 const models = modelStore.models;
@@ -84,7 +85,6 @@ const switchModel = (value: string) => {//统一命名为switchModel
 
 // 处理提交
 const handleSubmit = async () => {
-    const userStore = useUserStore();
 
     // 检查输入是否为空
     if (!userInput.value.trim() || loading.value) return;
@@ -175,6 +175,25 @@ const switchWebSearch = () => {
     webSearch.value = !webSearch.value;
     console.log('联网模式: ' + (webSearch.value ? '开启' : '关闭'));
 };
+
+
+console.log (userStore.showLogin);
+// 监听userStore中的showLogin状态
+watch(() => userStore.showLogin, (newVal) => {
+  if (newVal) {
+    showLoginCard.value = true;
+    // 重置状态，避免影响下次操作
+    userStore.showLogin = false;
+  }
+});
+
+// 组件挂载时检查状态
+onMounted(() => {
+  if (userStore.showLogin) {
+    showLoginCard.value = true;
+    userStore.showLogin = false;
+  }
+});
 </script>
 
 <style scoped>
