@@ -191,13 +191,6 @@ const handleKeyDown = (event) => {
     }
 };
 
-// 切换联网搜索模式
-const switchWebSearch = () => {
-    webSearch.value = !webSearch.value;
-    console.log('联网模式: ' + (webSearch.value ? '开启' : '关闭'));
-};
-
-
 console.log (userStore.showLogin);
 // 监听userStore中的showLogin状态
 watch(() => userStore.showLogin, (newVal) => {
