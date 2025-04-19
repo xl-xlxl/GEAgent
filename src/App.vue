@@ -25,7 +25,7 @@
         </div>
       </div>
 
-      <div class="history-container" style="height:70vh;">
+      <div class="history-container" style="height:70vh;"  @scroll="handleScroll">
         <div v-if="!collapsed">
           <!-- 对话历史列表 -->
           <div class="history-list">
@@ -38,37 +38,38 @@
                 </div>
               </div>
               <div class="-mt-9">
-                <a-popover trigger="click" placement="topRight">
+                <a-popover trigger="click" placement="topRight" v-model:open="morePopoverVisible[conversation.id]">
                   <template #content>
                     <div class="no-select">
                       <div class="preset-option preset-text" @click="deleteConversation(conversation.id)">
                         删除对话
                       </div>
 
-                      <a-popover trigger="click" placement="right">
+                      <a-popover trigger="click" placement="right" v-model:open="renamePopoverVisible[conversation.id]">
                         <template #content>
-                          <div class="no-select" style="display: flex; flex-direction: column; align-items: center;">
+                          <div class="no-select" style="display: flex; flex-direction: column; align-items: center;"
+                            @click.stop>
                             <div class="xs-input">
-                              <a-input v-model:value="value" :bordered="false"/>
+                              <a-input v-model:value="newTitle" :bordered="false" placeholder="输入新标题" @click.stop  @keyup.enter="confirmRename(conversation.id)"  />
                             </div>
                             <div style="display: flex; gap: 1em;">
                               <div class="preset-option preset-text"
-                                style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em ;">
+                                style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em;"
+                                @click.stop="confirmRename(conversation.id)">
                                 确定
                               </div>
                               <div class="preset-option preset-text"
-                                style="cursor: pointer; margin: 0; padding: 1em 3em ;">
+                                style="cursor: pointer; margin: 0; padding: 1em 3em;"
+                                @click.stop="cancelRename(conversation.id)">
                                 取消
                               </div>
                             </div>
                           </div>
                         </template>
-                        <div class="preset-option preset-text" >  
-                          <!-- @click="renameConversation(conversation.id)" -->
+                        <div class="preset-option preset-text" @click.stop>
                           重新命名
                         </div>
                       </a-popover>
-
                     </div>
                   </template>
                   <div class="icon"><img src="/更多.svg" alt="more"></div>
@@ -247,6 +248,10 @@ export default {
       PopoverVisible: false,
       conversations: [],
       deletePopoverVisible: false,
+      collapsed: true,
+      newTitle: "",
+      renamePopoverVisible: {},
+      morePopoverVisible: {},
       // 添加预设场景配置
       presets: {
         "创意文本": {
@@ -455,44 +460,62 @@ export default {
       this.deletePopoverVisible = false;
     },
 
-    // async renameConversation(id) {
-    //   try {
-    //     // 使用简单的浏览器原生prompt
-    //     const newTitle = prompt("请输入新标题", "");
+    // 确认重命名
+    async confirmRename(conversationId) {
+      if (!this.newTitle.trim()) {
+        message.warning("标题不能为空");
+        return;
+      }
 
-    //     if (!newTitle || newTitle.trim() === "") {
-    //       return; // 用户取消或输入为空
-    //     }
+      try {
+        const result = await updateConversationTitle(conversationId, this.newTitle);
+        if (result.success) {
+          message.success("重命名成功");
+          this.renamePopoverVisible[conversationId] = false; // 关闭重命名弹窗
+          this.morePopoverVisible[conversationId] = false; // 同时关闭外层弹窗
 
-    //     const result = await updateConversationTitle(id, newTitle);
+          // 更新本地对话列表中的标题
+          const conversation = this.conversations.find(c => c.id === conversationId);
+          if (conversation) {
+            conversation.title = this.newTitle;
+          }
+          // 如果当前正在查看的是被重命名的对话，更新路由参数
+          if (Number(this.$route.params.id) === conversationId) {
+            this.$router.replace({
+              path: this.$route.path,
+              query: { ...this.$route.query, title: this.newTitle }
+            });
+          }
+          // 清空输入
+          this.newTitle = "";
+        } else {
+          message.error(result.error?.message || "重命名失败");
+        }
+      } catch (error) {
+        console.error("重命名对话失败:", error);
+        message.error("重命名对话失败");
+      }
+    },
 
-    //     if (result.success) {
-    //       message.success("标题已更新");
+    // 取消重命名
+    cancelRename(conversationId) {
+      this.renamePopoverVisible[conversationId] = false; // 关闭重命名弹窗
+      this.morePopoverVisible[conversationId] = false; // 同时关闭外层弹窗
+      this.newTitle = ""; // 清空输入
+    },
 
-    //       // 更新本地数据
-    //       const index = this.conversations.findIndex(conv => conv.id === id);
-    //       if (index !== -1) {
-    //         this.conversations[index].title = newTitle;
-    //       }
-
-    //       // 如果当前正在查看此对话，更新路由参数
-    //       if (Number(this.$route.params.id) === id) {
-    //         this.$router.replace({
-    //           path: this.$route.path,
-    //           query: { ...this.$route.query, title: newTitle }
-    //         });
-    //       }
-
-    //       // 刷新对话列表
-    //       this.fetchConversationList();
-    //     } else {
-    //       message.error("更新标题失败");
-    //     }
-    //   } catch (error) {
-    //     console.error("重命名对话失败:", error);
-    //     message.error("重命名对话失败");
-    //   }
-    // }
+    handleScroll() {
+    for (const conversationId in this.morePopoverVisible) {
+      if (this.morePopoverVisible[conversationId]) {
+        this.morePopoverVisible[conversationId] = false;
+      }
+    }
+    for (const conversationId in this.renamePopoverVisible) {
+      if (this.renamePopoverVisible[conversationId]) {
+        this.renamePopoverVisible[conversationId] = false;
+      }
+    }
+  },
 
   },
 }
