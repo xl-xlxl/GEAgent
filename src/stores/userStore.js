@@ -25,20 +25,26 @@ export const useUserStore = defineStore("userStore", {
   
   actions: {
     // 登录成功后调用
-    async login(token) {
+    async login(Credential) {
       try {
         // 使用await等待异步请求完成
-        const userInfoResponse = await userService.getUserInfo();
+        const loginResponse = await userService.login(Credential); 
+        if (loginResponse.success == true){
+          this.token = loginResponse.token;
+          localStorage.setItem('token', loginResponse.token);
+          this.isLoggedIn = true;
+          const userInfoResponse = await userService.getUserInfo();
+          console.log(userInfoResponse);
+          this.userName = userInfoResponse.user.username;
+          this.email = userInfoResponse.user.email;
+          this.fullName = userInfoResponse.user.fullName;
+          const avatarUrlResponse = await userService.getUserAvatarUrl();
+          this.avatarUrl = avatarUrlResponse.url;
+          return ({success: true});
+        }else if (loginResponse.success == false){
+          return (loginResponse);
+        }
         
-        this.isLoggedIn = true;
-        this.token = token;
-        this.userName = userInfoResponse.user.username;
-        this.email = userInfoResponse.user.email;
-        this.fullName = userInfoResponse.user.fullName;
-        const avatarUrlResponse = await userService.getUserAvatarUrl();
-        this.avatarUrl = avatarUrlResponse.url;
-        // 将token存储到localStorage，便于持久化
-        localStorage.setItem('token', token);
       } catch (error) {
         console.error(error);
         // 可以选择是否在这里处理错误
@@ -61,15 +67,49 @@ export const useUserStore = defineStore("userStore", {
     handleAuthError() {
       this.isLoggedIn = false;
       this.token = null;
-      this.userInfo = null;
+      this.userName = null;
+      this.avatarUrl = null;
+      this.email = null;
+      this.fullName = null;
       // 清除localStorage中的数据
       localStorage.removeItem('token');
     },
-  
+    
+    async refreshUserInfo() {
+      try {
+        const userInfoResponse = await userService.getUserInfo();
+          console.log(userInfoResponse);
+          this.userName = userInfoResponse.user.username;
+          this.email = userInfoResponse.user.email;
+          this.fullName = userInfoResponse.user.fullName;
+          const avatarUrlResponse = await userService.getUserAvatarUrl();
+          this.avatarUrl = avatarUrlResponse.url;
+      } catch (error) {
+        console.error(error);
+      }
+    },
     
     // 刷新token
-    refreshToken(newToken) {
-      this.token = newToken;
+    async refreshToken() {
+      try {
+        const newToken = await userService.refreshToken(); 
+        if(newToken.success == true){
+          this.token = newToken.token;
+          localStorage.setItem('token', newToken.token);
+          this.isLoggedIn = true;
+          return newToken.token;
+        }else if(newToken.success == false){
+          this.handleAuthError();
+          console.error(newToken.error.message);
+          return null;
+        }
+        
+      } catch (error) {
+        console.error(error);
+        this.handleAuthError();
+        return null; 
+      }
+      
     }
   },
 });

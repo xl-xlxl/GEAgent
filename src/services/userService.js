@@ -6,9 +6,6 @@ export async function login(credentials) {
     try {
         const loginRes = await authApi.login(credentials);
         if (loginRes.data.success == true) {
-            const userStore = useUserStore();
-            // 使用store的login action而不是直接设置loggedIn属性
-            userStore.login(loginRes.data.user, loginRes.data.token);
             return loginRes.data;
         } else {
             throw new Error(loginRes.data.message);

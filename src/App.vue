@@ -323,14 +323,13 @@ export default {
     // 添加初始化用户方法
     async initializeUser() {
       try {
-        const refreshToken = await userService.refreshToken();
+        
+        const refreshToken = await this.userStore.refreshToken();
 
-        if (refreshToken.token) {
-          console.log('refreshToken', refreshToken.token);
+        if (refreshToken) {
+          console.log('refreshToken', refreshToken);
+          await this.userStore.refreshUserInfo();
           message.success('用户恢复登录');
-          const userStore = useUserStore();
-
-          userStore.login(refreshToken.token);
         }
       } catch (error) {
         console.error('初始化用户失败:', error);

@@ -51,10 +51,11 @@ import { message, Form, Input, Button, Checkbox, Card, Row, Col } from 'ant-desi
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
 import * as userService from '@/services/userService';
 import authApi from '@/assets/api/auth';
+import { useUserStore } from '@/stores/userStore';
 defineOptions({ name: 'LoginCard' });
 
 const [messageApi, contextHolder] = message.useMessage();
-
+const userStore = useUserStore();
 const loading = ref<boolean>(false);
 const loginForm = ref({
   username: '',
@@ -73,7 +74,7 @@ const handleLogin = async (values:any) => {
       password: values.password 
     }
     
-    const loginRes = await userService.login(Credential);
+    const loginRes = await userStore.login(Credential);
     console.log(loginRes);
     if (loginRes.success === true) {
       // 登录成功
