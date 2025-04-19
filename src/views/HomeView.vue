@@ -11,21 +11,23 @@
                 <div style="display: flex;justify-content: space-between;">
                     <div class="model-select">
                         <!-- 模型选择 -->
-                        <a-select :default-value="currentModel" v-model="currentModel" @change="switchModel"
-                            style=" width: 150px" size="small" :disabled="loading">
-                            <a-select-option v-for="model in models" :key="model.value" :value="model.value">
-                                {{ model.alias }}
+                        <a-select v-model:value="modelStore.currentModel" style="width: 150px" size="small"
+                            :disabled="loading" @change="switchModel">
+                            <a-select-option v-for="model in modelStore.models" :key="model.value" :value="model.LLMID">
+                                {{ model.value }}
                             </a-select-option>
                         </a-select>
                     </div>
                     <div class="input-actions">
                         <!-- MCP按钮 -->
-                        <button class="feature-button" :class="{ 'active-feature': enableMCPService }" @click="switchMCPService" :disabled="loading">
+                        <button class="feature-button" :class="{ 'active-feature': enableMCPService }"
+                            @click="switchMCPService" :disabled="loading">
                             <span class="feature-icon"><img src="/mcp.svg" /></span>
                             MCP
                         </button>
                         <!-- 联网搜索按钮 -->
-                        <button class="feature-button" :class="{ 'active-feature': webSearch }" @click="switchWebSearch" :disabled="loading">
+                        <button class="feature-button" :class="{ 'active-feature': webSearch }" @click="switchWebSearch"
+                            :disabled="loading">
                             <span class="feature-icon"><img src="/互联网搜索.svg" /></span>
                             联网搜索
                         </button>
@@ -56,7 +58,7 @@
 import { message, Flex, Button, Select } from 'ant-design-vue';
 import { SendOutlined } from '@ant-design/icons-vue';
 import { Sender } from 'ant-design-x-vue';
-import { onMounted,onWatcherCleanup, ref, watch, computed } from 'vue';
+import { onMounted, onWatcherCleanup, ref, watch, computed } from 'vue';
 import LoginCard from '@/components/LoginCard.vue';
 import RegisterCard from '@/components/RegisterCard.vue';
 import { useModelStore } from '@/stores/modelStore';
@@ -96,12 +98,12 @@ const switchMCPService = () => {
 // 使用 modelStore
 const modelStore = useModelStore();
 const models = modelStore.models;
-const currentModel = ref(modelStore.currentModel)
 
 // 更新模型选择
-const switchModel = (value: string) => {//统一命名为switchModel
-    currentModel.value = value;
-    modelStore.switchModel(value);
+const switchModel = (modelId: number) => {
+    // 直接修改 currentModel，而不是调用 store 的方法
+    modelStore.currentModel = modelId;
+    console.log(`已切换到模型ID: ${modelId}`);
 };
 
 // 处理提交
@@ -191,22 +193,22 @@ const handleKeyDown = (event) => {
     }
 };
 
-console.log (userStore.showLogin);
+console.log(userStore.showLogin);
 // 监听userStore中的showLogin状态
 watch(() => userStore.showLogin, (newVal) => {
-  if (newVal) {
-    showLoginCard.value = true;
-    // 重置状态，避免影响下次操作
-    userStore.showLogin = false;
-  }
+    if (newVal) {
+        showLoginCard.value = true;
+        // 重置状态，避免影响下次操作
+        userStore.showLogin = false;
+    }
 });
 
 // 组件挂载时检查状态
 onMounted(() => {
-  if (userStore.showLogin) {
-    showLoginCard.value = true;
-    userStore.showLogin = false;
-  }
+    if (userStore.showLogin) {
+        showLoginCard.value = true;
+        userStore.showLogin = false;
+    }
 });
 </script>
 

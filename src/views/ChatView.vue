@@ -64,10 +64,10 @@
         <div style="display: flex; justify-content: space-between">
           <div class="model-select">
             <!-- 模型选择 -->
-            <a-select :default-value="currentModel" v-model="currentModel" @change="switchModel" style="width: 150px"
-              size="small" :disabled="loading">
-              <a-select-option v-for="model in models" :key="model.value" :value="model.value">
-                {{ model.alias }}
+            <a-select style="width: 150px" size="small" :disabled="loading" v-model:value="modelStore.currentModel"
+              @change="handleModelChange">
+              <a-select-option v-for="model in modelStore.models" :key="model.value" :value="model.LLMID">
+                {{ model.value }}
               </a-select-option>
             </a-select>
           </div>
@@ -124,14 +124,12 @@ export default {
     Avatar,
   },
   data() {
-    const modelStore = useModelStore();
     const featureStore = useFeatureStore();
+    const modelStore = useModelStore();
     return {
-      currentModel: modelStore.currentModel,
       messages: [],
       userInput: "",
       loading: false,
-      models: modelStore.models,
       modelStore,
       featureStore,
       autoScroll: true,
@@ -227,6 +225,10 @@ export default {
   },
 
   methods: {
+    handleModelChange(modelId) {
+      this.modelStore.switchModel(modelId);
+      console.log(`已切换到模型ID: ${modelId}, 模型名称: ${this.modelStore.getCurrentModel.value}`);
+    },
 
     handleScroll() {
       const scrollArea = this.$refs.scrollArea;
@@ -268,17 +270,11 @@ export default {
       return false;
     },
 
-    switchModel(value) {
-      this.currentModel = value;
-      this.modelStore.switchModel(value);
-    },
-
     switchWebSearch() {
       this.featureStore.webSearch = !this.featureStore.webSearch;
       console.log("联网模式: " + (this.featureStore.webSearch ? "开启" : "关闭"));
     },
 
-    // 修改切换 MCP 方法
     switchMCPService() {
       this.featureStore.enableMCPService = !this.featureStore.enableMCPService;
       console.log("MCP服务: " + (this.featureStore.enableMCPService ? "开启" : "关闭"));
@@ -400,10 +396,12 @@ export default {
       try {
         const params = {
           message: userQuery,
-          LLMID: 3,
+          LLMID: this.modelStore.currentModel,
           webSearch: this.featureStore.webSearch,
           enableMCPService: this.featureStore.enableMCPService,
         };
+
+        console.log("发送请求参数:", params); // 添加参数日志
 
         // 如果没有会话ID，则创建新会话
         if (!this.conversationId) {
@@ -426,7 +424,7 @@ export default {
 
               // 如果当前路由不是新创建的会话，则跳转
               if (this.$route.params.id !== String(this.conversationId)) {
-                this.$router.push(`/chat/${this.conversationId}`);
+                this.$router.push(`/chat/${this.conversationId}?title=${encodeURIComponent(this.title)}`);
               }
 
               console.log("创建新会话完成，会话ID:", this.conversationId);
