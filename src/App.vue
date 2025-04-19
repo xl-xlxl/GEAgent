@@ -110,12 +110,12 @@
       </div>
 
       <div class="setting-container" style="height: 7vh; padding-top: 0.5em;">
-        <a-popover trigger="click">
-          <template #content>
-            <div class="no-select">
-              <div style="display: flex;">
-                <h1 style=" font-weight: bold; margin-bottom: 15px;">模型设置</h1>
-                <a-popover trigger="click" v-model:open="PopoverVisible">
+    <a-popover trigger="click" v-model:open="settingPopoverVisible" @visibleChange="handleSettingPopoverChange">
+      <template #content>
+        <div class="no-select">
+          <div style="display: flex;">
+            <h1 style=" font-weight: bold; margin-bottom: 15px;">模型设置</h1>
+            <a-popover trigger="click" v-model:open="PopoverVisible">
                   <template #content>
                     <p class="ml-1.5" style="font-weight: bold; margin-bottom: 10px;user-select: none;">场景预设</p>
                     <div v-for="(preset, name) in presets" :key="name" class="preset-option" @click="applyPreset(name)"
@@ -126,49 +126,48 @@
                   </template>
                   <div class="size-5 ml-46" style="cursor: pointer; display: flex; "><img src="/预设.svg"></div>
                 </a-popover>
-              </div>
-              <div v-for="model in modelStore.models" :key="model.value">
+          </div>
+          <div v-for="model in modelStore.models" :key="model.value">
             <div v-if="modelStore.currentModel === model.LLMID">
               <label>
                 <a-tooltip title="数值越高，模型可输入与输出文本长度越长；数值越低，模型可输入与输出文本长度越短（该值过低与文本长度不匹配时会导致生成中止）">
                   <span style="cursor: pointer; color: #1890ff;">!</span>
                 </a-tooltip>
                 max_tokens:
-                <a-slider v-model:value="maxTokens" :step="1" :min="0" :max="model.maxTokens"
-                  @change="onSettingChange" />
-              </label>
-                </div>
-              </div>
-              <label>
-                <a-tooltip title="数值越高，模型输出越随机，创造力越强；数值越低，输出越确定">
-                  <span style="cursor: pointer; color: #1890ff;">!</span>
-                </a-tooltip>
-                temperature:
-                <a-slider v-model:value="temperature" :step="0.1" :min="0" :max="2" @change="onSettingChange" />
-              </label>
-              <label>
-                <a-tooltip title="数值越高，生成的文本多样性越强；数值越低，生成的文本越集中在高概率的词汇上">
-                  <span style="cursor: pointer; color: #1890ff;">!</span>
-                </a-tooltip>
-                top_p:
-                <a-slider v-model:value="top_p" :step="0.1" :min="0.1" :max="1" @change="onSettingChange" />
-              </label>
-              <label>
-                <a-tooltip title="数值越高，模型从更多候选词中选择词汇，生成的文本可能更丰富；数值越低，模型从较少候选词中选择词汇，生成的文本可能更稳定">
-                  <span style="cursor: pointer; color: #1890ff;">!</span>
-                </a-tooltip>
-                top_k:
-                <a-slider v-model:value="top_k" :step="1" :min="0" :max="100" @change="onSettingChange" />
-              </label>
-              <label>
-                <a-tooltip title="数值越高，模型越倾向于使用新词而不是重复已用词；数值越低，模型越倾向于重复已用词">
-                  <span style="cursor: pointer; color: #1890ff;">!</span>
-                </a-tooltip>
-                frequency_penalty:
-                <a-slider v-model:value="frequency_penalty" :step="0.1" :min="-2" :max="2" @change="onSettingChange" />
+                <a-slider v-model:value="maxTokens" :step="1" :min="0" :max="model.maxTokens" />
               </label>
             </div>
-          </template>
+          </div>
+          <label>
+            <a-tooltip title="数值越高，模型输出越随机，创造力越强；数值越低，输出越确定">
+              <span style="cursor: pointer; color: #1890ff;">!</span>
+            </a-tooltip>
+            temperature:
+            <a-slider v-model:value="temperature" :step="0.1" :min="0" :max="2" />
+          </label>
+          <label>
+            <a-tooltip title="数值越高，生成的文本多样性越强；数值越低，生成的文本越集中在高概率的词汇上">
+              <span style="cursor: pointer; color: #1890ff;">!</span>
+            </a-tooltip>
+            top_p:
+            <a-slider v-model:value="top_p" :step="0.1" :min="0.1" :max="1" />
+          </label>
+          <label>
+            <a-tooltip title="数值越高，模型从更多候选词中选择词汇，生成的文本可能更丰富；数值越低，模型从较少候选词中选择词汇，生成的文本可能更稳定">
+              <span style="cursor: pointer; color: #1890ff;">!</span>
+            </a-tooltip>
+            top_k:
+            <a-slider v-model:value="top_k" :step="1" :min="0" :max="100" />
+          </label>
+          <label>
+            <a-tooltip title="数值越高，模型越倾向于使用新词而不是重复已用词；数值越低，模型越倾向于重复已用词">
+              <span style="cursor: pointer; color: #1890ff;">!</span>
+            </a-tooltip>
+            frequency_penalty:
+            <a-slider v-model:value="frequency_penalty" :step="0.1" :min="-2" :max="2" />
+          </label>
+        </div>
+      </template>
           <div v-if="!collapsed">
             <div class="bubble icon-container" :class="{ collapsed: collapsed }">
               模型设置
@@ -266,6 +265,14 @@ export default {
       newTitle: "",
       renamePopoverVisible: {},
       morePopoverVisible: {},
+      settingPopoverVisible: false,
+      originalSettings: {
+        max_tokens: 0,
+        temperature: 0,
+        top_p: 0,
+        top_k: 0,
+        frequency_penalty: 0
+      },
       // 添加预设场景配置
       presets: {
         "创意文本": {
@@ -451,12 +458,40 @@ export default {
     },
 
     
-    onSettingChange() {
-      // 同步到后端
-      this.modelStore.syncSettingsToBackend();
+    handleSettingPopoverChange(visible) {
+      if (visible) {
+        // 气泡框打开时，保存当前设置以便需要时可以取消操作
+        this.originalSettings = {
+          max_tokens: this.modelStore.max_tokens,
+          temperature: this.modelStore.temperature,
+          top_p: this.modelStore.top_p,
+          top_k: this.modelStore.top_k,
+          frequency_penalty: this.modelStore.frequency_penalty,
+        };
+      } else {
+        // 气泡框关闭时，将修改同步到后端
+        this.syncSettingsToBackend();
+      }
     },
     
-    // 应用预设
+    // 同步设置到后端
+    async syncSettingsToBackend() {
+      // 检查是否有变更
+      if (
+        this.originalSettings.max_tokens !== this.modelStore.max_tokens ||
+        this.originalSettings.temperature !== this.modelStore.temperature ||
+        this.originalSettings.top_p !== this.modelStore.top_p ||
+        this.originalSettings.top_k !== this.modelStore.top_k ||
+        this.originalSettings.frequency_penalty !== this.modelStore.frequency_penalty
+      ) {
+        console.log('参数已修改，同步到后端...');
+        await this.modelStore.syncSettingsToBackend();
+      } else {
+        console.log('参数未变更，无需同步');
+      }
+    },
+    
+    // 应用预设方法仍需要立即同步
     async applyPreset(presetName) {
       const preset = this.presets[presetName];
       if (!preset) return;
@@ -469,10 +504,10 @@ export default {
         frequency_penalty: preset.frequency_penalty,
       });
       
-      // 同步到后端
+      // 同步到后端 - 预设应用仍然需要立即同步
       await this.modelStore.syncSettingsToBackend();
       
-      this.$message.success(`已应用"${presetName}"预设`);
+      message.success(`已应用"${presetName}"预设`);
       this.PopoverVisible = false;
     },
 
