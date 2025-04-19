@@ -128,15 +128,15 @@
                 </a-popover>
               </div>
               <div v-for="model in modelStore.models" :key="model.value">
-                <div v-if="modelStore.currentModel === model.value">
-                  <label>
-                    <a-tooltip title="数值越高，模型可输入与输出文本长度越长；数值越低，模型可输入与输出文本长度越短（该值过低与文本长度不匹配时会导致生成中止）">
-                      <span style="cursor: pointer; color: #1890ff;">!</span>
-                    </a-tooltip>
-                    max_tokens:
-                    <a-slider v-model:value="max_tokens" :step="1" :min="0" :max="model.maxTokens"
-                      @change="switchSettings" style="width: 250px;" />
-                  </label>
+            <div v-if="modelStore.currentModel === model.LLMID">
+              <label>
+                <a-tooltip title="数值越高，模型可输入与输出文本长度越长；数值越低，模型可输入与输出文本长度越短（该值过低与文本长度不匹配时会导致生成中止）">
+                  <span style="cursor: pointer; color: #1890ff;">!</span>
+                </a-tooltip>
+                max_tokens:
+                <a-slider v-model:value="maxTokens" :step="1" :min="0" :max="model.maxTokens"
+                  @change="onSettingChange" />
+              </label>
                 </div>
               </div>
               <label>
@@ -144,28 +144,28 @@
                   <span style="cursor: pointer; color: #1890ff;">!</span>
                 </a-tooltip>
                 temperature:
-                <a-slider v-model:value="temperature" :step="0.1" :min="0" :max="2" @change="switchSettings" />
+                <a-slider v-model:value="temperature" :step="0.1" :min="0" :max="2" @change="onSettingChange" />
               </label>
               <label>
                 <a-tooltip title="数值越高，生成的文本多样性越强；数值越低，生成的文本越集中在高概率的词汇上">
                   <span style="cursor: pointer; color: #1890ff;">!</span>
                 </a-tooltip>
                 top_p:
-                <a-slider v-model:value="top_p" :step="0.1" :min="0.1" :max="1" @change="switchSettings" />
+                <a-slider v-model:value="top_p" :step="0.1" :min="0.1" :max="1" @change="onSettingChange" />
               </label>
               <label>
                 <a-tooltip title="数值越高，模型从更多候选词中选择词汇，生成的文本可能更丰富；数值越低，模型从较少候选词中选择词汇，生成的文本可能更稳定">
                   <span style="cursor: pointer; color: #1890ff;">!</span>
                 </a-tooltip>
                 top_k:
-                <a-slider v-model:value="top_k" :step="1" :min="0" :max="100" @change="switchSettings" />
+                <a-slider v-model:value="top_k" :step="1" :min="0" :max="100" @change="onSettingChange" />
               </label>
               <label>
                 <a-tooltip title="数值越高，模型越倾向于使用新词而不是重复已用词；数值越低，模型越倾向于重复已用词">
                   <span style="cursor: pointer; color: #1890ff;">!</span>
                 </a-tooltip>
                 frequency_penalty:
-                <a-slider v-model:value="frequency_penalty" :step="0.1" :min="-2" :max="2" @change="switchSettings" />
+                <a-slider v-model:value="frequency_penalty" :step="0.1" :min="-2" :max="2" @change="onSettingChange" />
               </label>
             </div>
           </template>
@@ -240,6 +240,7 @@ import { message } from 'ant-design-vue';
 import * as userService from '@/services/userService';
 import { useUserStore } from './stores/userStore';
 import { getConversationList, deleteConversations, deleteAllConversations, updateConversationTitle } from '@/services/conversationService';
+import { modelConfigService } from '@/services/modelConfigService';
 import { ref } from 'vue';
 const value = ref('');
 
@@ -255,11 +256,6 @@ export default {
     const userStore = useUserStore();
     return {
       collapsed: true,
-      max_tokens: modelStore.max_tokens,
-      temperature: modelStore.temperature,
-      top_p: modelStore.top_p,
-      top_k: modelStore.top_k,
-      frequency_penalty: modelStore.frequency_penalty,
       modelStore,
       userStore,
       currentModel: modelStore.currentModel,
@@ -310,6 +306,15 @@ export default {
       console.log("路由变化:", from.fullPath, "->", to.fullPath);
       this.fetchConversationList(); // 每次路由变化时调用
     },
+  'modelStore.currentModel': {
+      immediate: true, // 确保组件创建时也会执行
+      handler(newModelId) {
+        console.log(`模型ID: ${newModelId}，准备加载配置`);
+        if (newModelId !== undefined) {
+          this.loadModelConfig(newModelId);
+        }
+      }
+    }
   },
 
   created() {
@@ -317,6 +322,52 @@ export default {
     this.initializeUser();
     // 加载对话列表
     this.fetchConversationList();
+    // 新增：加载当前模型配置
+    this.loadModelConfig(this.modelStore.currentModel);
+  },
+
+  computed: {
+    // 使用计算属性创建双向绑定
+    maxTokens: {
+      get() {
+        return this.modelStore.max_tokens;
+      },
+      set(value) {
+        this.modelStore.max_tokens = value;
+      }
+    },
+    temperature: {
+      get() {
+        return this.modelStore.temperature;
+      },
+      set(value) {
+        this.modelStore.temperature = value;
+      }
+    },
+    top_p: {
+      get() {
+        return this.modelStore.top_p;
+      },
+      set(value) {
+        this.modelStore.top_p = value;
+      }
+    },
+    top_k: {
+      get() {
+        return this.modelStore.top_k;
+      },
+      set(value) {
+        this.modelStore.top_k = value;
+      }
+    },
+    frequency_penalty: {
+      get() {
+        return this.modelStore.frequency_penalty;
+      },
+      set(value) {
+        this.modelStore.frequency_penalty = value;
+      }
+    },
   },
 
   methods: {
@@ -340,24 +391,88 @@ export default {
     toggleCollapsed() {
       this.collapsed = !this.collapsed;
     },
-    switchSettings() {
-      this.modelStore.switchSettings({
+
+    async loadModelConfig(modelId) {
+      try {
+        // 检查登录状态
+        if (!localStorage.getItem('token')) {
+          console.log('用户未登录，使用默认模型配置');
+          return;
+        }
+        
+        console.log(`正在加载模型${modelId}的配置...`);
+        const configs = await modelConfigService.getModelConfig(modelId);
+        
+        if (configs) {
+          console.log(`成功获取模型${modelId}配置:`, configs);
+          
+          // 更新modelStore中的设置
+          this.modelStore.switchSettings({
+            max_tokens: configs.max_tokens,
+            temperature: configs.temperature,
+            top_p: configs.top_p,
+            top_k: configs.top_k,
+            frequency_penalty: configs.frequency_penalty
+          });
+          
+          console.log(`已从后端加载并更新模型${modelId}的配置`);
+        }
+      } catch (error) {
+        console.error(`加载模型${modelId}配置时出错:`, error);
+        // 服务层已处理错误，这里不再显示提示
+      }
+    },
+
+    async switchSettings() {
+      // 本地更新
+      const configParams = {
         max_tokens: this.max_tokens,
         temperature: this.temperature,
         top_p: this.top_p,
         top_k: this.top_k,
         frequency_penalty: this.frequency_penalty,
-      });
+      };
+      
+      // 更新 modelStore
+      this.modelStore.switchSettings(configParams);
+      
+      // 同步到后端
+      if (localStorage.getItem('token')) {
+        const success = await modelConfigService.updateModelConfig(
+          this.modelStore.currentModel,
+          configParams
+        );
+        
+        if (success) {
+          console.log(`成功更新模型${this.modelStore.currentModel}的配置到后端`);
+        }
+        // 服务层已处理错误反馈，这里不再显示提示
+      }
     },
-    applyPreset(presetName) {
+
+    
+    onSettingChange() {
+      // 同步到后端
+      this.modelStore.syncSettingsToBackend();
+    },
+    
+    // 应用预设
+    async applyPreset(presetName) {
       const preset = this.presets[presetName];
       if (!preset) return;
-      this.temperature = preset.temperature;
-      this.top_p = preset.top_p;
-      this.top_k = preset.top_k;
-      this.frequency_penalty = preset.frequency_penalty;
-      this.switchSettings();
-      message.success(`已应用"${presetName}"预设`);
+      
+      // 更新 modelStore 中的设置
+      this.modelStore.switchSettings({
+        temperature: preset.temperature,
+        top_p: preset.top_p,
+        top_k: preset.top_k,
+        frequency_penalty: preset.frequency_penalty,
+      });
+      
+      // 同步到后端
+      await this.modelStore.syncSettingsToBackend();
+      
+      this.$message.success(`已应用"${presetName}"预设`);
       this.PopoverVisible = false;
     },
 
