@@ -19,10 +19,14 @@
                         </a-select>
                     </div>
                     <div class="input-actions">
+                        <!-- MCP按钮 -->
+                        <button class="feature-button" :class="{ 'active-feature': enableMCPService }" @click="switchMCPService" :disabled="loading">
+                            <span class="feature-icon"><img src="/mcp.svg" /></span>
+                            MCP
+                        </button>
                         <!-- 联网搜索按钮 -->
-                        <button class="webServe-button" :disabled="loading" :class="{ 'active-search': webSearch }"
-                            @click="switchWebSearch">
-                            <span class="webServe-icon"><img src="/互联网搜索.svg"></span>
+                        <button class="feature-button" :class="{ 'active-feature': webSearch }" @click="switchWebSearch" :disabled="loading">
+                            <span class="feature-icon"><img src="/互联网搜索.svg" /></span>
                             联网搜索
                         </button>
                         <!-- 发送按钮 -->
@@ -52,10 +56,11 @@
 import { message, Flex, Button, Select } from 'ant-design-vue';
 import { SendOutlined } from '@ant-design/icons-vue';
 import { Sender } from 'ant-design-x-vue';
-import { onWatcherCleanup, ref, watch } from 'vue';
+import { onWatcherCleanup, ref, watch, computed } from 'vue';
 import LoginCard from '@/components/LoginCard.vue';
 import RegisterCard from '@/components/RegisterCard.vue';
 import { useModelStore } from '@/stores/modelStore';
+import { useFeatureStore } from "@/stores/featureStore";
 import { useUserStore } from '@/stores/userStore';
 import * as userService from '@/services/userService';
 import { useRouter } from 'vue-router';
@@ -66,10 +71,26 @@ const userInput = ref<any>('');
 const loading = ref<boolean>(false);
 const showLoginCard = ref<boolean>(false);
 const showRegisterCard = ref<boolean>(false);
-// 临时写一个无意义的变量，后续会改为真正的联网搜索功能
-const webSearch = ref<boolean>(false);
 
 const router = useRouter();
+
+// 使用 featureStore 替换本地状态
+const featureStore = useFeatureStore();
+// 使用计算属性获取状态
+const webSearch = computed(() => featureStore.webSearch);
+const enableMCPService = computed(() => featureStore.enableMCPService);
+
+// 切换联网搜索模式
+const switchWebSearch = () => {
+    featureStore.webSearch = !featureStore.webSearch;
+    console.log('联网模式: ' + (featureStore.webSearch ? '开启' : '关闭'));
+};
+
+// 切换MCP服务
+const switchMCPService = () => {
+    featureStore.enableMCPService = !featureStore.enableMCPService;
+    console.log('MCP服务: ' + (featureStore.enableMCPService ? '开启' : '关闭'));
+};
 
 // 使用 modelStore
 const modelStore = useModelStore();
@@ -168,12 +189,6 @@ const handleKeyDown = (event) => {
         }
         // 按下Shift+Enter时浏览器默认行为生效(插入换行符)
     }
-};
-
-// 切换联网搜索模式
-const switchWebSearch = () => {
-    webSearch.value = !webSearch.value;
-    console.log('联网模式: ' + (webSearch.value ? '开启' : '关闭'));
 };
 </script>
 
