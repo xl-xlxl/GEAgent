@@ -72,10 +72,16 @@
             </a-select>
           </div>
           <div class="input-actions">
-            <!-- 联网搜索按钮 -->
-            <button class="webServe-button" :class="{ 'active-search': webSearch }" @click="switchWebSearch"
+            <!-- MCP按钮 -->
+            <button class="feature-button" :class="{ 'active-feature': enableMCPService }" @click="switchMCPService"
               :disabled="loading">
-              <span class="webServe-icon"><img src="/互联网搜索.svg" /></span>
+              <span class="feature-icon"><img src="/mcp.svg" /></span>
+              MCP
+            </button>
+            <!-- 联网搜索按钮 -->
+            <button class="feature-button" :class="{ 'active-feature': webSearch }" @click="switchWebSearch"
+              :disabled="loading">
+              <span class="feature-icon"><img src="/互联网搜索.svg" /></span>
               联网搜索
             </button>
             <!-- 发送按钮 -->
@@ -95,6 +101,7 @@ import { qianfanService } from "@/services/qianfanService";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import { useModelStore } from "@/stores/modelStore";
+import { useFeatureStore } from "@/stores/featureStore";
 import { Flex, Select, Button, message } from "ant-design-vue";
 import { Sender } from "ant-design-x-vue";
 import { SendOutlined } from "@ant-design/icons-vue";
@@ -118,14 +125,15 @@ export default {
   },
   data() {
     const modelStore = useModelStore();
+    const featureStore = useFeatureStore();
     return {
       currentModel: modelStore.currentModel,
       messages: [],
       userInput: "",
       loading: false,
-      webSearch: true,
       models: modelStore.models,
       modelStore,
+      featureStore,
       autoScroll: true,
       conversationId: null,
       userInput: '',
@@ -210,6 +218,12 @@ export default {
     frequency_penalty() {
       return useModelStore().frequency_penalty;
     },
+    webSearch() {
+      return this.featureStore.webSearch;
+    },
+    enableMCPService() {
+      return this.featureStore.enableMCPService;
+    },
   },
 
   methods: {
@@ -260,8 +274,14 @@ export default {
     },
 
     switchWebSearch() {
-      this.webSearch = !this.webSearch;
-      console.log("联网模式: " + (this.webSearch ? "开启" : "关闭"));
+      this.featureStore.webSearch = !this.featureStore.webSearch;
+      console.log("联网模式: " + (this.featureStore.webSearch ? "开启" : "关闭"));
+    },
+
+    // 修改切换 MCP 方法
+    switchMCPService() {
+      this.featureStore.enableMCPService = !this.featureStore.enableMCPService;
+      console.log("MCP服务: " + (this.featureStore.enableMCPService ? "开启" : "关闭"));
     },
 
     handleKeyDown(event) {
@@ -381,8 +401,8 @@ export default {
         const params = {
           message: userQuery,
           LLMID: 3,
-          webSearch: true,
-          enableMCPService: true,
+          webSearch: this.featureStore.webSearch,
+          enableMCPService: this.featureStore.enableMCPService,
         };
 
         // 如果没有会话ID，则创建新会话
