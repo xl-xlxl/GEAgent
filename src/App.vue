@@ -205,7 +205,7 @@
           </div>
           <div v-else>
             <div class="icon-container" :class="{ collapsed: collapsed }">
-              <img src="/user.svg" alt="user" class="icon" />
+              <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
             </div>
           </div>
         </a-popover>
