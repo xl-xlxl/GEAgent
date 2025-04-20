@@ -75,8 +75,8 @@
             <!-- MCP按钮 -->
             <button class="feature-button" :class="{ 'active-feature': enableMCPService }" @click="switchMCPService"
               :disabled="loading">
-              <span class="feature-icon"><img src="/mcp.svg" /></span>
-              MCP
+              <span class="feature-icon"><img src="/MCP服务.svg" /></span>
+              Function Call
             </button>
             <!-- 联网搜索按钮 -->
             <button class="feature-button" :class="{ 'active-feature': webSearch }" @click="switchWebSearch"
