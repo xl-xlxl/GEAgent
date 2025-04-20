@@ -1,27 +1,26 @@
-/* 以下全是跟输入框区域有关的样式 */
 /* 输入框区域 */
 .input-area {
     border-radius: 18px;
-    margin-left: 10%;
-    margin-right: 10%;
+    margin-left: 20%;  /* 从10%增加到15% */
+    margin-right: 20%; /* 从10%增加到15% */
     display: flex;
     flex-direction: column;
 }
 
 .input-container {
-    padding: 10px;
-    padding-bottom: 5px;
-    margin: 5px;
+    padding:25px;     /* 从10px增加到15px */
+    padding-bottom: 10px; /* 从5px增加到10px */
+    margin: 10px;
     background-color: #f0f0f0;
     border-radius: 18px;
     box-shadow: -2px 2px 2px rgba(0, 0, 0, 0.1);
+    height: 15em;
 }
 
 /* 输入框 */
 .message-input {
     width: 100%;
-    min-height: 40px;
-    max-height: 200px;
+    height: 75%;
     border: none;
     background-color: transparent;
     resize: none;
@@ -31,8 +30,22 @@
     line-height: 1.5;
     padding: 0;
     overflow-y: auto;
-    overflow: hidden;
     user-select: none;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.message-input::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+@media (max-width: 768px) {
+    .input-area {
+        margin-left: 10%;
+        margin-right: 10%;
+    }
 }
 
 .message-input::placeholder {
@@ -45,19 +58,17 @@
     justify-content: flex-end;
 }
 
-/* 联网按钮 */
 .feature-button {
     display: flex;
     align-items: center;
-    padding: 6px 12px;
+    padding: 0.375em 0.75em; /* 从6px 12px改为em单位 */
     background: white;
     border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 18px;
-    font-size: 12px;
+    border-radius: 1.125em; /* 从18px改为em单位 */
+    font-size: 0.75rem; /* 从12px改为rem单位 */
     cursor: pointer;
     color: #777777;
     font-weight: bold;
-
 }
 
 .feature-button:disabled {
@@ -69,15 +80,15 @@
 }
 
 .feature-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 5px;
+    width: 1.25em; /* 从20px改为em单位 */
+    height: 1.25em; /* 从20px改为em单位 */
+    margin-right: 0.3125em; /* 从5px改为em单位 */
 }
 
 /* 发送按钮 */
 .send-button {
-    width: 36px;
-    height: 36px;
+    width: 2.25em; /* 从36px改为em单位 */
+    height: 2.25em; /* 从36px改为em单位 */
     border-radius: 50%;
     border: none;
     display: flex;
@@ -97,12 +108,35 @@
 }
 
 .send-icon {
-    width: 16px;
-    height: 16px;
+    width: 1em; /* 从16px改为em单位 */
+    height: 1em; /* 从16px改为em单位 */
 }
 
 /* 模型选择下拉框 */
 .model-select {
-    min-width: 120px;
+    min-width: 7.5em; /* 从120px改为em单位 */
     justify-content: flex-start;
+}
+
+/* 添加响应式调整 */
+@media (max-width: 768px) {
+    .feature-button {
+        padding: 0.3125em 0.625em; /* 更小的内边距 */
+        font-size: 0.7rem;
+    }
+    
+    .feature-icon {
+        width: 1.1em;
+        height: 1.1em;
+        margin-right: 0.25em;
+    }
+    
+    .send-button {
+        width: 2em !important;
+        height: 2em !important;
+    }
+    
+    .model-select {
+        min-width: 6em;
+    }
 }

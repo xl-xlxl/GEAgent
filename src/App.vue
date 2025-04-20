@@ -30,7 +30,7 @@
         </div>
       </div>
 
-      <div class="history-container" style="height:68vh;" @scroll.passive="handleScroll">
+      <div class="history-container" style="height:68vh;padding-top: 0.5em;" @scroll.passive="handleScroll">
         <div v-if="!collapsed">
           <!-- 对话历史列表 -->
           <div class="history-list">

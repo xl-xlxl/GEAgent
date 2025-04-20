@@ -138,8 +138,16 @@
     flex: 1;
     overflow-y: auto;
     overflow: hidden;
-    margin-left: 10%;
-    margin-right: 10%;
+    margin-left: 15%;
+    margin-right: 15%;
+}
+
+/* 中等屏幕上减小边距 */
+@media (max-width: 768px) {
+    .messages-area {
+        margin-left: 5%;
+        margin-right: 5%;
+    }
 }
 
 .message {
@@ -156,12 +164,11 @@
     align-self: flex-start;
 }
 
-/* 以下全是跟输入框区域有关的样式 */
 /* 输入框区域 */
 .input-area {
     border-radius: 18px;
-    margin-left: 10%;
-    margin-right: 10%;
+    margin-left: 15%;
+    margin-right: 15%;
     margin-bottom: 5px;
 }
 
@@ -175,11 +182,9 @@
     box-shadow: -2px 2px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* 输入框 */
 .message-input {
     width: 100%;
     min-height: 40px;
-    max-height: 200px;
     border: none;
     background-color: transparent;
     resize: none;
@@ -191,6 +196,13 @@
     overflow-y: auto;
     overflow: hidden;
     user-select: none;
+}
+
+/* 小屏幕设备上减小输入框高度 */
+@media (max-width: 768px) {
+    .message-input {
+        min-height: 10px; /* 从40px减小到30px */
+    }
 }
 
 .message-input::placeholder {
