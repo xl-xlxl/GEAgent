@@ -8,7 +8,7 @@ export const useModelStore = defineStore("modelStore", {
       { value: "DeepSeek-R1", maxTokens: 16384, LLMID: 0 },
       { value: "DeepSeek-V3", maxTokens: 8192, LLMID: 1 },
       { value: "DS-R1-D-QW-32B", maxTokens: 16384, LLMID: 2 },
-      { value: "QwQ-32B", maxTokens: 32520, LLMID: 3 },
+      { value: "QwQ-32B", maxTokens: 16384, LLMID: 3 },
       { value: "QW2.5-72B-I-128K", maxTokens: 4096, LLMID: 4 },
     ],
     max_tokens: 2048,

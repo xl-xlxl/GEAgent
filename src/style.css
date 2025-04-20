@@ -11,3 +11,18 @@ body {
 .ant-layout-sider-trigger {
     display: none !important;
 }
+
+.ant-layout-sider-zero-width-trigger .anticon {
+    display: none !important;
+}
+
+.ant-layout-sider-zero-width-trigger::after {
+    content: "" !important;
+    background-image: url('/收起.svg') !important;
+    background-size: contain !important;
+    width: 23px !important;
+    height: 23px !important;
+    display: inline-block !important;
+    margin-left: 10px !important;
+    margin-top: 8px !important;
+}

@@ -1,8 +1,8 @@
 <template>
   <a-layout style="min-height: 100vh;">
-    <a-layout-sider v-model:collapsed="collapsed" collapsible :width="260" :collapsedWidth="70"
-      style=" padding: 0; user-select: none; height: 100vh;">
-
+    <a-layout-sider style=" padding: 0; user-select: none; height: 100vh;" v-model:collapsed="collapsed" collapsible
+      :trigger="!collapsed ? null : undefined" :width="screenWidth < 768 ? screenWidth : 260"
+      :collapsedWidth="screenWidth < 768 ? 0 : 70" :zeroWidthTriggerStyle="{ background: 'transparent', top: '2%', }">
       <div class="close-container" style="height: 10vh;">
         <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
           <span v-if="!collapsed" class="title">GEAgent</span>
@@ -25,7 +25,7 @@
         </div>
       </div>
 
-      <div class="history-container" style="height:70vh;"  @scroll="handleScroll">
+      <div class="history-container" style="height:70vh;" @scroll.passive="handleScroll">
         <div v-if="!collapsed">
           <!-- 对话历史列表 -->
           <div class="history-list">
@@ -50,7 +50,8 @@
                           <div class="no-select" style="display: flex; flex-direction: column; align-items: center;"
                             @click.stop>
                             <div class="xs-input">
-                              <a-input v-model:value="newTitle" :bordered="false" placeholder="输入新标题" @click.stop  @keyup.enter="confirmRename(conversation.id)"  />
+                              <a-input v-model:value="newTitle" :bordered="false" placeholder="输入新标题" @click.stop
+                                @keyup.enter="confirmRename(conversation.id)" />
                             </div>
                             <div style="display: flex; gap: 1em;">
                               <div class="preset-option preset-text"
@@ -110,12 +111,12 @@
       </div>
 
       <div class="setting-container" style="height: 7vh; padding-top: 0.5em;">
-    <a-popover trigger="click" v-model:open="settingPopoverVisible" @visibleChange="handleSettingPopoverChange">
-      <template #content>
-        <div class="no-select">
-          <div style="display: flex;">
-            <h1 style=" font-weight: bold; margin-bottom: 15px;">模型设置</h1>
-            <a-popover trigger="click" v-model:open="PopoverVisible">
+        <a-popover trigger="click" v-model:open="settingPopoverVisible" @openChange="handleSettingPopoverChange">
+          <template #content>
+            <div class="no-select">
+              <div style="display: flex;">
+                <h1 style=" font-weight: bold; margin-bottom: 15px;">模型设置</h1>
+                <a-popover trigger="click" v-model:open="PopoverVisible">
                   <template #content>
                     <p class="ml-1.5" style="font-weight: bold; margin-bottom: 10px;user-select: none;">场景预设</p>
                     <div v-for="(preset, name) in presets" :key="name" class="preset-option" @click="applyPreset(name)"
@@ -126,48 +127,48 @@
                   </template>
                   <div class="size-5 ml-46" style="cursor: pointer; display: flex; "><img src="/预设.svg"></div>
                 </a-popover>
-          </div>
-          <div v-for="model in modelStore.models" :key="model.value">
-            <div v-if="modelStore.currentModel === model.LLMID">
+              </div>
+              <div v-for="model in modelStore.models" :key="model.value">
+                <div v-if="modelStore.currentModel === model.LLMID">
+                  <label>
+                    max_tokens
+                    <a-tooltip title="数值越高，模型可输入与输出文本长度越长；数值越低，模型可输入与输出文本长度越短（该值过低与文本长度不匹配时会导致生成中止）">
+                      <span style="cursor: pointer; color: #777777;">✿</span>
+                    </a-tooltip>
+                    <a-slider v-model:value="maxTokens" :step="1" :min="0" :max="model.maxTokens" />
+                  </label>
+                </div>
+              </div>
               <label>
-                <a-tooltip title="数值越高，模型可输入与输出文本长度越长；数值越低，模型可输入与输出文本长度越短（该值过低与文本长度不匹配时会导致生成中止）">
-                  <span style="cursor: pointer; color: #1890ff;">!</span>
+                temperature
+                <a-tooltip title="数值越高，模型输出越随机，创造力越强；数值越低，输出越确定">
+                  <span style="cursor: pointer; color: #777777;">✿</span>
                 </a-tooltip>
-                max_tokens:
-                <a-slider v-model:value="maxTokens" :step="1" :min="0" :max="model.maxTokens" />
+                <a-slider v-model:value="temperature" :step="0.1" :min="0.1" :max="1.5" />
+              </label>
+              <label>
+                top_p
+                <a-tooltip title="数值越高，生成的文本多样性越强；数值越低，生成的文本越集中在高概率的词汇上">
+                  <span style="cursor: pointer; color: #777777;">✿</span>
+                </a-tooltip>
+                <a-slider v-model:value="top_p" :step="0.1" :min="0.1" :max="1" />
+              </label>
+              <label>
+                top_k
+                <a-tooltip title="数值越高，模型从更多候选词中选择词汇，生成的文本可能更丰富；数值越低，模型从较少候选词中选择词汇，生成的文本可能更稳定">
+                  <span style="cursor: pointer; color: #777777;">✿</span>
+                </a-tooltip>
+                <a-slider v-model:value="top_k" :step="1" :min="5" :max="80" />
+              </label>
+              <label>
+                frequency_penalty
+                <a-tooltip title="数值越高，模型越倾向于使用新词而不是重复已用词；数值越低，模型越倾向于重复已用词">
+                  <span style="cursor: pointer; color: #777777;">✿</span>
+                </a-tooltip>
+                <a-slider v-model:value="frequency_penalty" :step="0.1" :min="-0.5" :max="1" />
               </label>
             </div>
-          </div>
-          <label>
-            <a-tooltip title="数值越高，模型输出越随机，创造力越强；数值越低，输出越确定">
-              <span style="cursor: pointer; color: #1890ff;">!</span>
-            </a-tooltip>
-            temperature:
-            <a-slider v-model:value="temperature" :step="0.1" :min="0" :max="2" />
-          </label>
-          <label>
-            <a-tooltip title="数值越高，生成的文本多样性越强；数值越低，生成的文本越集中在高概率的词汇上">
-              <span style="cursor: pointer; color: #1890ff;">!</span>
-            </a-tooltip>
-            top_p:
-            <a-slider v-model:value="top_p" :step="0.1" :min="0.1" :max="1" />
-          </label>
-          <label>
-            <a-tooltip title="数值越高，模型从更多候选词中选择词汇，生成的文本可能更丰富；数值越低，模型从较少候选词中选择词汇，生成的文本可能更稳定">
-              <span style="cursor: pointer; color: #1890ff;">!</span>
-            </a-tooltip>
-            top_k:
-            <a-slider v-model:value="top_k" :step="1" :min="0" :max="100" />
-          </label>
-          <label>
-            <a-tooltip title="数值越高，模型越倾向于使用新词而不是重复已用词；数值越低，模型越倾向于重复已用词">
-              <span style="cursor: pointer; color: #1890ff;">!</span>
-            </a-tooltip>
-            frequency_penalty:
-            <a-slider v-model:value="frequency_penalty" :step="0.1" :min="-2" :max="2" />
-          </label>
-        </div>
-      </template>
+          </template>
           <div v-if="!collapsed">
             <div class="bubble icon-container" :class="{ collapsed: collapsed }">
               模型设置
@@ -183,7 +184,7 @@
       </div>
 
       <div class="user-container" style="height: 8vh; align-items: center;">
-        <a-popover v-if="userStore.loggedIn" trigger="click" placement="topRight">
+        <a-popover v-if="userStore.loggedIn" trigger="click" placement="topRight" v-model:open="userPopoverVisible">
           <template #content>
             <div class="no-select">
               <div class="preset-option preset-text">
@@ -266,6 +267,7 @@ export default {
       renamePopoverVisible: {},
       morePopoverVisible: {},
       settingPopoverVisible: false,
+      userPopoverVisible: false,
       originalSettings: {
         max_tokens: 0,
         temperature: 0,
@@ -273,6 +275,7 @@ export default {
         top_k: 0,
         frequency_penalty: 0
       },
+      screenWidth: window.innerWidth, // 添加屏幕宽度属性
       // 添加预设场景配置
       presets: {
         "创意文本": {
@@ -313,7 +316,7 @@ export default {
       console.log("路由变化:", from.fullPath, "->", to.fullPath);
       this.fetchConversationList(); // 每次路由变化时调用
     },
-  'modelStore.currentModel': {
+    'modelStore.currentModel': {
       immediate: true, // 确保组件创建时也会执行
       handler(newModelId) {
         console.log(`模型ID: ${newModelId}，准备加载配置`);
@@ -377,11 +380,38 @@ export default {
     },
   },
 
+  mounted() {
+    // 添加窗口大小变化监听
+    this.handleResize();
+    window.addEventListener('resize', this.handleResize);
+
+    // 屏幕较小时自动折叠菜单
+    if (this.screenWidth < 768 && !this.collapsed) {
+      this.collapsed = true;
+    }
+  },
+
+  beforeUnmount() {
+    // 清理事件监听器
+    window.removeEventListener('resize', this.handleResize);
+  },
+
   methods: {
+
+    // 添加处理窗口大小变化的方法
+    handleResize() {
+      this.screenWidth = window.innerWidth;
+
+      // 在小屏幕上自动折叠侧边栏
+      if (this.screenWidth < 768 && !this.collapsed) {
+        this.collapsed = true;
+      }
+    },
+
     // 添加初始化用户方法
     async initializeUser() {
       try {
-        
+
         const refreshToken = await this.userStore.refreshToken();
 
         if (refreshToken) {
@@ -406,13 +436,13 @@ export default {
           console.log('用户未登录，使用默认模型配置');
           return;
         }
-        
+
         console.log(`正在加载模型${modelId}的配置...`);
         const configs = await modelConfigService.getModelConfig(modelId);
-        
+
         if (configs) {
           console.log(`成功获取模型${modelId}配置:`, configs);
-          
+
           // 更新modelStore中的设置
           this.modelStore.switchSettings({
             max_tokens: configs.max_tokens,
@@ -421,7 +451,7 @@ export default {
             top_k: configs.top_k,
             frequency_penalty: configs.frequency_penalty
           });
-          
+
           console.log(`已从后端加载并更新模型${modelId}的配置`);
         }
       } catch (error) {
@@ -439,17 +469,17 @@ export default {
         top_k: this.top_k,
         frequency_penalty: this.frequency_penalty,
       };
-      
+
       // 更新 modelStore
       this.modelStore.switchSettings(configParams);
-      
+
       // 同步到后端
       if (localStorage.getItem('token')) {
         const success = await modelConfigService.updateModelConfig(
           this.modelStore.currentModel,
           configParams
         );
-        
+
         if (success) {
           console.log(`成功更新模型${this.modelStore.currentModel}的配置到后端`);
         }
@@ -457,7 +487,7 @@ export default {
       }
     },
 
-    
+
     handleSettingPopoverChange(visible) {
       if (visible) {
         // 气泡框打开时，保存当前设置以便需要时可以取消操作
@@ -473,7 +503,7 @@ export default {
         this.syncSettingsToBackend();
       }
     },
-    
+
     // 同步设置到后端
     async syncSettingsToBackend() {
       // 检查是否有变更
@@ -490,12 +520,12 @@ export default {
         console.log('参数未变更，无需同步');
       }
     },
-    
+
     // 应用预设方法仍需要立即同步
     async applyPreset(presetName) {
       const preset = this.presets[presetName];
       if (!preset) return;
-      
+
       // 更新 modelStore 中的设置
       this.modelStore.switchSettings({
         temperature: preset.temperature,
@@ -503,10 +533,10 @@ export default {
         top_k: preset.top_k,
         frequency_penalty: preset.frequency_penalty,
       });
-      
+
       // 同步到后端 - 预设应用仍然需要立即同步
       await this.modelStore.syncSettingsToBackend();
-      
+
       message.success(`已应用"${presetName}"预设`);
       this.PopoverVisible = false;
     },
@@ -684,17 +714,34 @@ export default {
     },
 
     handleScroll() {
-    for (const conversationId in this.morePopoverVisible) {
-      if (this.morePopoverVisible[conversationId]) {
-        this.morePopoverVisible[conversationId] = false;
-      }
+  // 关闭设置弹层
+  if (this.settingPopoverVisible) {
+    this.settingPopoverVisible = false;
+  }
+  // 关闭场景预设弹层
+  if (this.PopoverVisible) {
+    this.PopoverVisible = false;
+  }
+  // 关闭用户信息弹层
+  if (this.userPopoverVisible) {
+    this.userPopoverVisible = false;
+  }
+  // 关闭删除确认弹层
+  if (this.deletePopoverVisible) {
+    this.deletePopoverVisible = false;
+  }
+  // 已有的关闭其他弹层的代码
+  for (const conversationId in this.morePopoverVisible) {
+    if (this.morePopoverVisible[conversationId]) {
+      this.morePopoverVisible[conversationId] = false;
     }
-    for (const conversationId in this.renamePopoverVisible) {
-      if (this.renamePopoverVisible[conversationId]) {
-        this.renamePopoverVisible[conversationId] = false;
-      }
+  }
+  for (const conversationId in this.renamePopoverVisible) {
+    if (this.renamePopoverVisible[conversationId]) {
+      this.renamePopoverVisible[conversationId] = false;
     }
-  },
+  }
+}
 
   },
 }
