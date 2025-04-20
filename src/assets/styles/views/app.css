@@ -179,3 +179,30 @@
     margin-bottom: 6%;
     user-select: none;
 }
+
+.floating-sider {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    height: 100vh !important;
+  }
+  
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 999;
+    transition: opacity 0.3s ease;
+  }
+  
+  /* 确保主内容区在小屏幕时占满宽度 */
+  .app-container {
+    width: 100%;
+    transition: all 0.3s ease;
+  }

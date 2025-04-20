@@ -1,8 +1,13 @@
 <template>
   <a-layout style="min-height: 100vh;">
-    <a-layout-sider style=" padding: 0; user-select: none; height: 100vh;" v-model:collapsed="collapsed" collapsible
-      :trigger="!collapsed ? null : undefined" :width="screenWidth < 768 ? screenWidth : 260"
+    <!-- 遮罩层 -->
+    <div v-if="screenWidth < 768 && !collapsed" class="sidebar-overlay" @click="toggleCollapsed">
+    </div>
+    <a-layout-sider :class="{ 'floating-sider': screenWidth < 768 }"
+      style="padding: 0; user-select: none; height: 100vh;" v-model:collapsed="collapsed" collapsible
+      :trigger="!collapsed ? null : undefined" :width="screenWidth < 768 ? '70%' : '20%'"
       :collapsedWidth="screenWidth < 768 ? 0 : 70" :zeroWidthTriggerStyle="{ background: 'transparent', top: '2%', }">
+
       <div class="close-container" style="height: 10vh;">
         <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
           <span v-if="!collapsed" class="title">GEAgent</span>
@@ -25,7 +30,7 @@
         </div>
       </div>
 
-      <div class="history-container" style="height:70vh;" @scroll.passive="handleScroll">
+      <div class="history-container" style="height:68vh;" @scroll.passive="handleScroll">
         <div v-if="!collapsed">
           <!-- 对话历史列表 -->
           <div class="history-list">
@@ -110,7 +115,7 @@
         </div>
       </div>
 
-      <div class="setting-container" style="height: 7vh; padding-top: 0.5em;">
+      <div class="setting-container" style="height: 8vh; padding-top: 0.5em;">
         <a-popover trigger="click" v-model:open="settingPopoverVisible" @openChange="handleSettingPopoverChange">
           <template #content>
             <div class="no-select">
@@ -183,7 +188,7 @@
         </a-popover>
       </div>
 
-      <div class="user-container" style="height: 8vh; align-items: center;">
+      <div class="user-container" style="height: 6vh; align-items: center; ">
         <a-popover v-if="userStore.loggedIn" trigger="click" placement="topRight" v-model:open="userPopoverVisible">
           <template #content>
             <div class="no-select">
@@ -714,34 +719,34 @@ export default {
     },
 
     handleScroll() {
-  // 关闭设置弹层
-  if (this.settingPopoverVisible) {
-    this.settingPopoverVisible = false;
-  }
-  // 关闭场景预设弹层
-  if (this.PopoverVisible) {
-    this.PopoverVisible = false;
-  }
-  // 关闭用户信息弹层
-  if (this.userPopoverVisible) {
-    this.userPopoverVisible = false;
-  }
-  // 关闭删除确认弹层
-  if (this.deletePopoverVisible) {
-    this.deletePopoverVisible = false;
-  }
-  // 已有的关闭其他弹层的代码
-  for (const conversationId in this.morePopoverVisible) {
-    if (this.morePopoverVisible[conversationId]) {
-      this.morePopoverVisible[conversationId] = false;
+      // 关闭设置弹层
+      if (this.settingPopoverVisible) {
+        this.settingPopoverVisible = false;
+      }
+      // 关闭场景预设弹层
+      if (this.PopoverVisible) {
+        this.PopoverVisible = false;
+      }
+      // 关闭用户信息弹层
+      if (this.userPopoverVisible) {
+        this.userPopoverVisible = false;
+      }
+      // 关闭删除确认弹层
+      if (this.deletePopoverVisible) {
+        this.deletePopoverVisible = false;
+      }
+      // 已有的关闭其他弹层的代码
+      for (const conversationId in this.morePopoverVisible) {
+        if (this.morePopoverVisible[conversationId]) {
+          this.morePopoverVisible[conversationId] = false;
+        }
+      }
+      for (const conversationId in this.renamePopoverVisible) {
+        if (this.renamePopoverVisible[conversationId]) {
+          this.renamePopoverVisible[conversationId] = false;
+        }
+      }
     }
-  }
-  for (const conversationId in this.renamePopoverVisible) {
-    if (this.renamePopoverVisible[conversationId]) {
-      this.renamePopoverVisible[conversationId] = false;
-    }
-  }
-}
 
   },
 }
