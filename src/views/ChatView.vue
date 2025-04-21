@@ -49,14 +49,6 @@
               </div>
               <div class="ai-bubble">
                 <div v-html="renderMarkdown(message.content)"></div>
-                <img 
-      v-if="message.emojiUrl" 
-      :src="message.emojiUrl" 
-      class="message-emoji" 
-      alt="表情" 
-      @load="() => console.log('表情加载成功')"
-      @error="() => console.error('表情加载失败:', message.emojiUrl)"
-    />
               </div>
             </div>
           </div>
@@ -306,33 +298,21 @@ export default {
 
     // 处理回答内容回调的辅助函数
     handleReplyCallback(aiMessage, loadHide) {
-  return (reply, rawData) => {
-    const aiIndex = this.messages.findIndex(
-      (msg) => msg.id === aiMessage.id
-    );
-    if (aiIndex !== -1) {
-      if (!this.firstResponseReceived) {
-        loadHide();
-        this.firstResponseReceived = true;
-      }
-      
-      // 处理常规回复
-      if (typeof reply === 'string' && reply) {
-        const currentContent = this.messages[aiIndex].content || "";
-        const newContent = currentContent + reply;
-        this.messages[aiIndex].content = newContent;
-      }
-      
-      // 处理表情包信息 (确保 rawData 存在)
-      if (rawData && typeof rawData === 'string') {
-        // 检查是否包含表情包相关数据
-        if (rawData.includes('extraCall') || rawData.includes('emojiPack')) {
-          this.handleEmojiPack(rawData, aiMessage.id);
+      return (reply) => {
+        const aiIndex = this.messages.findIndex(
+          (msg) => msg.id === aiMessage.id
+        );
+        if (aiIndex !== -1) {
+          if (!this.firstResponseReceived) {
+            loadHide();
+            this.firstResponseReceived = true;
+          }
+          const currentContent = this.messages[aiIndex].content || "";
+          const newContent = currentContent + reply;
+          this.messages[aiIndex].content = newContent;
         }
-      }
-    }
-  };
-},
+      };
+    },
 
     getTitleFromMessage(message) {
       // 截取前20个字符，如果不足20个则使用整个消息
@@ -465,159 +445,7 @@ export default {
         console.error("加载更多对话历史失败:", error);
         message.error("加载更多历史失败");
       }
-    },
-
-    parseExtraCall(dataString) {
-  try {
-    // 移除数据前缀 "data: "
-    const jsonString = dataString.replace(/^data:\s/, '');
-    const data = JSON.parse(jsonString);
-    
-    // 检查是否是extraCall
-    if (data.extraCall) {
-      return data.extraCall;
     }
-    
-    // 检查是否是MCPStatus中包含表情包信息
-    if (data.MCPStatus && data.MCPStatus.fnCall && data.MCPStatus.fnCall.length > 0) {
-      // 查找emojiPack函数调用
-      const emojiCall = data.MCPStatus.fnCall.find(call => call.name === 'emojiPack');
-      if (emojiCall) {
-        return {
-          name: emojiCall.name,
-          arguments: emojiCall.arguments
-        };
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('解析extraCall失败:', error, dataString);
-    return null;
-  }
-},
-
-// 处理表情包数据
-async handleEmojiPack(rawData, aiMessageId) {
-  try {
-    // 查找当前的AI消息
-    const aiIndex = this.messages.findIndex(msg => msg.id === aiMessageId);
-    if (aiIndex === -1) {
-      console.error('未找到对应ID的AI消息:', aiMessageId);
-      return;
-    }
-    
-    // 解析原始数据
-    const extraCall = this.parseExtraCall(rawData);
-    
-    if (extraCall && extraCall.name === 'emojiPack') {
-      const id = extraCall.arguments.id;
-      console.log('表情包ID:', id);
-      
-      // 获取随机表情图片URL
-      const emojiUrl = await this.getRandomEmoji(id);
-      
-      if (emojiUrl) {
-        // 更新消息对象，添加表情URL
-        this.messages[aiIndex].emojiUrl = emojiUrl;
-      }
-    }
-  } catch (error) {
-    console.error('处理表情包数据失败:', error);
-  }
-},
-
-// 获取指定文件夹中的随机表情包
-async getRandomEmoji(id) {
-  try {
-    // 构建表情包基础路径
-    const basePath = `/静态 - 压缩/${id}/`;
-    
-    // 定义每个ID文件夹中的表情数量
-    const emojiCounts = {
-      0: 17, // ID为0的文件夹有17个表情
-      1: 13, 
-      2: 13,
-      3: 22,
-      4: 21,
-      5: 19,
-      6: 6,
-      7: 16,
-      8: 24,
-      9: 27,
-      10: 4,
-      11: 24,
-      12: 23,
-      // 可以根据实际文件夹添加更多
-    };
-    
-    const count = emojiCounts[id];
-    if (!count) {
-      console.error(`没有找到ID为${id}的表情包文件夹或表情数量未定义`);
-      return null;
-    }
-    
-    // 生成1到count的随机数
-    const randomIndex = Math.floor(Math.random() * count) + 1;
-    return `${basePath}${randomIndex}.webp`;
-  } catch (error) {
-    console.error('获取随机表情包失败:', error);
-    return null;
-  }
-},
-
-async processHistoryEmoji() {
-  try {
-    console.log('开始处理历史消息中的表情包');
-    let updatedCount = 0;
-    
-    // 遍历所有消息
-    for (const message of this.messages) {
-      // 检查消息是否包含 mcp_service_status 字段中的表情包信息
-      if (message.role === 'assistant' && message.mcp_service_status && !message.emojiUrl) {
-        try {
-          const mcpStatus = typeof message.mcp_service_status === 'string'
-            ? JSON.parse(message.mcp_service_status)
-            : message.mcp_service_status;
-            
-          // 查找 fnCall 数组中的 emojiPack 调用
-          if (mcpStatus.fnCall && Array.isArray(mcpStatus.fnCall)) {
-            const emojiCall = mcpStatus.fnCall.find(call => call.name === 'emojiPack');
-            if (emojiCall && emojiCall.arguments && emojiCall.arguments.id !== undefined) {
-              const emojiId = emojiCall.arguments.id;
-              console.log(`历史消息ID ${message.id} 包含表情包ID: ${emojiId}`);
-              
-              // 获取表情包URL
-              const emojiUrl = await this.getRandomEmoji(emojiId);
-              if (emojiUrl) {
-                console.log(`为历史消息设置表情URL: ${emojiUrl}`);
-                message.emojiUrl = emojiUrl;
-                updatedCount++;
-              }
-            }
-          }
-        } catch (e) {
-          console.error('解析历史消息中的 mcp_service_status 失败:', e);
-        }
-      }
-      
-      // 检查消息是否包含 emojiId 字段
-      else if (message.role === 'assistant' && message.emojiId !== undefined && !message.emojiUrl) {
-        console.log(`历史消息ID ${message.id} 包含直接的表情ID: ${message.emojiId}`);
-        const emojiUrl = await this.getRandomEmoji(message.emojiId);
-        if (emojiUrl) {
-          console.log(`为历史消息设置表情URL: ${emojiUrl}`);
-          message.emojiUrl = emojiUrl;
-          updatedCount++;
-        }
-      }
-    }
-    
-    console.log(`历史消息处理完成，更新了 ${updatedCount} 条消息的表情`);
-  } catch (error) {
-    console.error('处理历史消息表情包时出错:', error);
-  }
-},
 
   },
 };
