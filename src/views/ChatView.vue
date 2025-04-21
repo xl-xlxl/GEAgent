@@ -59,14 +59,14 @@
     <div class="input-area">
       <div class="input-container">
         <!-- 输入框 -->
-        <textarea class="message-input" :placeholder="loading ? ' GEAgent 思考中，请稍后' : '给 GEAgent 发送消息'"
+        <textarea class="message-input" :placeholder="loading ? ' GEAgent 思考中，请稍后 . . .' : '给 GEAgent 发送消息'"
           v-model="userInput" @keydown="handleKeyDown" :disabled="loading"
           :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
         <div style="display: flex; justify-content: space-between">
           <div class="model-select">
             <!-- 模型选择 -->
             <a-select style="width: 150px" size="small" :disabled="loading" v-model:value="modelStore.currentModel"
-              @change=" modelStore.switchModel(currentModel);">
+              @change="modelStore.switchModel">
               <a-select-option v-for="model in modelStore.models" :key="model.value" :value="model.LLMID">
                 {{ model.value }}
               </a-select-option>
@@ -74,14 +74,14 @@
           </div>
           <div class="input-actions">
             <!-- MCP按钮 -->
-            <button class="feature-button" :class="{ 'active-feature': enableMCPService }" @click="switchMCPService"
-              :disabled="loading">
+            <button class="feature-button" :class="{ 'active-feature': enableMCPService }"
+              @click="() => featureStore.enableMCPService = !featureStore.enableMCPService" :disabled="loading">
               <span class="feature-icon"><img src="/MCP服务.svg" /></span>
               Function Call
             </button>
             <!-- 联网搜索按钮 -->
-            <button class="feature-button" :class="{ 'active-feature': webSearch }" @click="switchWebSearch"
-              :disabled="loading">
+            <button class="feature-button" :class="{ 'active-feature': webSearch }"
+              @click="() => featureStore.webSearch = !featureStore.webSearch" :disabled="loading">
               <span class="feature-icon"><img src="/互联网搜索.svg" /></span>
               联网搜索
             </button>
@@ -265,16 +265,6 @@ export default {
         }
       }
       return false;
-    },
-
-    switchWebSearch() {
-      this.featureStore.webSearch = !this.featureStore.webSearch;
-      console.log("联网模式: " + (this.featureStore.webSearch ? "开启" : "关闭"));
-    },
-
-    switchMCPService() {
-      this.featureStore.enableMCPService = !this.featureStore.enableMCPService;
-      console.log("MCP服务: " + (this.featureStore.enableMCPService ? "开启" : "关闭"));
     },
 
     handleKeyDown(event) {

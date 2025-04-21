@@ -235,6 +235,7 @@
 </template>
 
 <script>
+import { mapWritableState } from 'pinia';
 import { useModelStore } from "@/stores/modelStore";
 import { message } from 'ant-design-vue';
 import { useUserStore } from './stores/userStore';
@@ -314,7 +315,7 @@ export default {
   },
 
   watch: {
-    $route(to, from) {
+    $route(to) {
       if (to.path.includes('/chat/') && to.params.id) {
         this.fetchConversationList();
       }
@@ -330,47 +331,13 @@ export default {
   },
 
   computed: {
-    // 使用计算属性创建双向绑定
-    maxTokens: {
-      get() {
-        return this.modelStore.max_tokens;
-      },
-      set(value) {
-        this.modelStore.max_tokens = value;
-      }
-    },
-    temperature: {
-      get() {
-        return this.modelStore.temperature;
-      },
-      set(value) {
-        this.modelStore.temperature = value;
-      }
-    },
-    top_p: {
-      get() {
-        return this.modelStore.top_p;
-      },
-      set(value) {
-        this.modelStore.top_p = value;
-      }
-    },
-    top_k: {
-      get() {
-        return this.modelStore.top_k;
-      },
-      set(value) {
-        this.modelStore.top_k = value;
-      }
-    },
-    frequent_penalty: {
-      get() {
-        return this.modelStore.frequent_penalty;
-      },
-      set(value) {
-        this.modelStore.frequent_penalty = value;
-      }
-    },
+    ...mapWritableState(useModelStore, {
+      maxTokens: 'max_tokens',
+      temperature: 'temperature',
+      top_p: 'top_p',
+      top_k: 'top_k',
+      frequent_penalty: 'frequent_penalty'
+    })
   },
 
   mounted() {

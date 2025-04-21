@@ -195,20 +195,15 @@ const conversationApi = {
     },
 
 
-    // 修改获取特定对话的历史记录
+    // 获取特定对话的历史记录
     async getConversationHistory(conversationId, page = 1, pageSize = 10) {
         try {
             const headers = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
-
-            // 使用 axios 发送 GET 请求，添加分页参数
             const response = await axios.get(`/api/chat/list/${conversationId}?page=${page}&pageSize=${pageSize}`, { headers });
-
-            // 检查 HTTP 状态码并返回数据
             if (response.status === 200) {
-                // 将新结构的数据转换为应用所需的格式
                 return {
                     success: response.data.success,
                     pagination: response.data.pagingInteractions.pagination,

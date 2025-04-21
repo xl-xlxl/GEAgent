@@ -12,7 +12,8 @@
                     <div class="model-select">
                         <!-- 模型选择 -->
                         <a-select v-model:value="modelStore.currentModel" style="width: 150px" size="small"
-                            :disabled="loading" @change="switchModel">
+                            :disabled="loading"
+                            @change="(currentModel) => modelStore.currentModel = Number(currentModel)">
                             <a-select-option v-for="model in modelStore.models" :key="model.value" :value="model.LLMID">
                                 {{ model.value }}
                             </a-select-option>
@@ -21,13 +22,14 @@
                     <div class="input-actions">
                         <!-- MCP按钮 -->
                         <button class="feature-button" :class="{ 'active-feature': enableMCPService }"
-                            @click="switchMCPService" :disabled="loading">
+                            @click="() => featureStore.enableMCPService = !featureStore.enableMCPService"
+                            :disabled="loading">
                             <span class="feature-icon"><img src="/MCP服务.svg" /></span>
                             Function Call
                         </button>
                         <!-- 联网搜索按钮 -->
-                        <button class="feature-button" :class="{ 'active-feature': webSearch }" @click="switchWebSearch"
-                            :disabled="loading">
+                        <button class="feature-button" :class="{ 'active-feature': webSearch }"
+                            @click="() => featureStore.webSearch = !featureStore.webSearch" :disabled="loading">
                             <span class="feature-icon"><img src="/互联网搜索.svg" /></span>
                             联网搜索
                         </button>
@@ -56,16 +58,13 @@
 
 <script setup lang="ts">
 import { message, Flex, Button, Select } from 'ant-design-vue';
-import { SendOutlined } from '@ant-design/icons-vue';
-import { Sender } from 'ant-design-x-vue';
 import { onMounted, onWatcherCleanup, ref, watch, computed } from 'vue';
 import LoginCard from '@/components/LoginCard.vue';
 import RegisterCard from '@/components/RegisterCard.vue';
 import { useModelStore } from '@/stores/modelStore';
 import { useFeatureStore } from "@/stores/featureStore";
 import { useUserStore } from '@/stores/userStore';
-import * as userService from '@/services/userService';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { useConversationStore } from '@/stores/conversationStore';
 
 const [messageApi, contextHolder] = message.useMessage();
@@ -75,6 +74,8 @@ const showLoginCard = ref<boolean>(false);
 const showRegisterCard = ref<boolean>(false);
 
 const router = useRouter();
+
+const modelStore = useModelStore();
 
 const userStore = useUserStore();
 // 使用 featureStore 替换本地状态
@@ -93,17 +94,6 @@ const switchWebSearch = () => {
 const switchMCPService = () => {
     featureStore.enableMCPService = !featureStore.enableMCPService;
     console.log('MCP服务: ' + (featureStore.enableMCPService ? '开启' : '关闭'));
-};
-
-// 使用 modelStore
-const modelStore = useModelStore();
-const models = modelStore.models;
-
-// 更新模型选择
-const switchModel = (currentModel: number) => {
-    // 直接修改 currentModel，而不是调用 store 的方法
-    modelStore.currentModel = currentModel;
-    console.log(`已切换到模型ID: ${currentModel}`);
 };
 
 // 处理提交
