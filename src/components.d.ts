@@ -13,7 +13,6 @@ declare module 'vue' {
     ACard: typeof import('ant-design-vue/es')['Card']
     ACheckbox: typeof import('ant-design-vue/es')['Checkbox']
     ACol: typeof import('ant-design-vue/es')['Col']
-    ADivider: typeof import('ant-design-vue/es')['Divider']
     AForm: typeof import('ant-design-vue/es')['Form']
     AFormItem: typeof import('ant-design-vue/es')['FormItem']
     AInput: typeof import('ant-design-vue/es')['Input']
@@ -26,8 +25,10 @@ declare module 'vue' {
     ASelectOption: typeof import('ant-design-vue/es')['SelectOption']
     ASlider: typeof import('ant-design-vue/es')['Slider']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
+    LoginByEmail: typeof import('./components/LoginByEmail.vue')['default']
     LoginCard: typeof import('./components/LoginCard.vue')['default']
     RegisterCard: typeof import('./components/RegisterCard.vue')['default']
+    ResetPassword: typeof import('./components/ResetPassword.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

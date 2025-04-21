@@ -18,6 +18,70 @@ export async function login(credentials) {
     }
 }
 
+export async function emailLogin(email) {
+    try {
+        const loginByEmailRes = await authApi.LoginByEmail(email);
+        if (loginByEmailRes.data.success == true) {
+            return loginByEmailRes.data;
+        } else {
+            throw new Error(loginByEmailRes.data.message);
+        }
+    } catch (error) {
+        return {
+            success: false,
+            error
+        }
+    }
+}
+
+export async function sendVerificationCode(credentials) {
+    try {
+        const sendCodeRes = await authApi.sendVerificationCode(credentials);
+        if (sendCodeRes.data.success == true) {
+            return sendCodeRes.data;
+        } else {
+            throw new Error(sendCodeRes.data.message);
+        }
+    } catch (error) {
+        return {
+            success: false,
+            error
+        }
+    }
+}
+
+export async function resetPasswordCode(email) {
+    try {
+        const resetPasswordCodeRes = await authApi.resetPasswordCode(email);
+        if (resetPasswordCodeRes.data.success == true) {
+            return resetPasswordCodeRes.data;
+        } else {
+            throw new Error(resetPasswordCodeRes.data.message);
+        }
+    } catch (error) {
+        return {
+            success: false,
+            error
+        }
+    }
+}
+
+export async function resetPassword(data) {
+    try {
+        const resetPasswordRes = await authApi.resetPassword(data);
+        if (resetPasswordRes.data.success == true) {
+            return resetPasswordRes.data;
+        } else {
+            throw new Error(resetPasswordRes.data.message);
+        }
+    } catch (error) {
+        return {
+            success: false,
+            error
+        }
+    }
+}
+
 export async function register(userData) {
     try {
         const registerRes = await authApi.register(userData);
