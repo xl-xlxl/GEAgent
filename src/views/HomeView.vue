@@ -24,13 +24,13 @@
                         <button class="feature-button" :class="{ 'active-feature': enableMCPService }"
                             @click="() => featureStore.enableMCPService = !featureStore.enableMCPService"
                             :disabled="loading">
-                            <span class="feature-icon"><img src="/MCP服务.svg" /></span>
-                            Function Call
+                            <span class="MCP-icon"><img src="/mcp.svg" /></span>
+                            MCP Services
                         </button>
                         <!-- 联网搜索按钮 -->
                         <button class="feature-button" :class="{ 'active-feature': webSearch }"
                             @click="() => featureStore.webSearch = !featureStore.webSearch" :disabled="loading">
-                            <span class="feature-icon"><img src="/互联网搜索.svg" /></span>
+                            <span class="web-icon"><img src="/互联网搜索.svg" /></span>
                             联网搜索
                         </button>
                         <!-- 发送按钮 -->
@@ -57,8 +57,8 @@
 </template>
 
 <script setup lang="ts">
-import { message, Flex, Button, Select } from 'ant-design-vue';
-import { onMounted, onWatcherCleanup, ref, watch, computed } from 'vue';
+import { message } from 'ant-design-vue';
+import { onMounted, ref, watch, computed } from 'vue';
 import LoginCard from '@/components/LoginCard.vue';
 import RegisterCard from '@/components/RegisterCard.vue';
 import { useModelStore } from '@/stores/modelStore';

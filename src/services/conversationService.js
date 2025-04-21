@@ -1,7 +1,6 @@
 import conversationApi from "@/assets/api/conversation";
-import axios from "axios";
 
-// 修改创建新会话的服务函数
+// 创建新会话的服务函数
 export async function createConversation(params, reasoningCallback, replyCallback) {
     try {
         const response = await conversationApi.createConversation(
@@ -20,7 +19,7 @@ export async function createConversation(params, reasoningCallback, replyCallbac
     }
 }
 
-// 添加继续对话的服务函数
+// 继续对话的服务函数
 export async function continueConversation(params, conversationId, reasoningCallback, replyCallback) {
     try {
         const response = await conversationApi.continueConversation(

@@ -79,10 +79,16 @@
     background: linear-gradient(135deg, #FFECE8, #E8F8FF, #F4FFE8);
 }
 
-.feature-icon {
+.web-icon {
     width: 1.25em; /* 从20px改为em单位 */
     height: 1.25em; /* 从20px改为em单位 */
     margin-right: 0.3125em; /* 从5px改为em单位 */
+}
+
+.MCP-icon {
+    width: 1.7em; 
+    height: 1.7em; 
+    margin-right: 0.3125em; 
 }
 
 /* 发送按钮 */

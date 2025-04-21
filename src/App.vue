@@ -369,9 +369,7 @@ export default {
 
     async initializeUser() {
       try {
-
         const refreshToken = await this.userStore.refreshToken();
-
         if (refreshToken) {
           console.log('refreshToken', refreshToken);
           await this.userStore.refreshUserInfo();
@@ -608,7 +606,7 @@ export default {
           this.renamePopoverVisible[conversationId] = false;
         }
       }
-      // 检测滚动更多数据
+      // 检测滚动更多历史数据
       const { scrollHeight, scrollTop, clientHeight } = event.target;
       const scrollBottom = scrollHeight - scrollTop - clientHeight;
       if (scrollBottom < 100 && this.hasMorePages && !this.isLoading) {

@@ -76,13 +76,13 @@
             <!-- MCP按钮 -->
             <button class="feature-button" :class="{ 'active-feature': enableMCPService }"
               @click="() => featureStore.enableMCPService = !featureStore.enableMCPService" :disabled="loading">
-              <span class="feature-icon"><img src="/MCP服务.svg" /></span>
-              Function Call
+              <span class="MCP-icon"><img src="/mcp.svg" /></span>
+              MCP Services
             </button>
             <!-- 联网搜索按钮 -->
             <button class="feature-button" :class="{ 'active-feature': webSearch }"
               @click="() => featureStore.webSearch = !featureStore.webSearch" :disabled="loading">
-              <span class="feature-icon"><img src="/互联网搜索.svg" /></span>
+              <span class="web-icon"><img src="/互联网搜索.svg" /></span>
               联网搜索
             </button>
             <!-- 发送按钮 -->
@@ -97,16 +97,9 @@
 </template>
 
 <script>
-import { chatService } from "@/services/aiService";
-import { qianfanService } from "@/services/qianfanService";
-import { marked } from "marked";
-import DOMPurify from "dompurify";
 import { useModelStore } from "@/stores/modelStore";
 import { useFeatureStore } from "@/stores/featureStore";
-import { Flex, Select, Button, message } from "ant-design-vue";
-import { Sender } from "ant-design-x-vue";
-import { SendOutlined } from "@ant-design/icons-vue";
-import { Avatar } from "ant-design-vue";
+import { message, Avatar } from "ant-design-vue";
 import { createConversation, continueConversation, getConversationHistory, getConversationList } from "@/services/conversationService";
 import { message as messageApi } from "ant-design-vue";
 import { useConversationStore } from '@/stores/conversationStore';
@@ -117,11 +110,6 @@ import "highlight.js/styles/github.css"
 export default {
   name: "ChatView",
   components: {
-    Flex,
-    Select,
-    Button,
-    Sender,
-    SendOutlined,
     Avatar,
   },
   data() {
@@ -135,8 +123,6 @@ export default {
       featureStore,
       autoScroll: true,
       conversationId: null,
-      userInput: '',
-      messages: [],
       title: "新对话",
     };
   },
@@ -160,18 +146,12 @@ export default {
           if (this.$route.query.title) {
             this.title = this.$route.query.title;
           }
-          // 如果有初始消息，自动发送
-          if (this.$route.query.initialMessage) {
-            this.userInput = this.$route.query.initialMessage;
-            this.sendMessage();
-          }
           try {
             const response = await getConversationHistory(newId);
             if (response.success && response.conversation.messages) {
               this.messages = [];
               // 直接使用API层处理好的消息格式
               this.messages = response.conversation.messages;
-
               // 更新分页信息
               this.pagination = response.pagination;
             } else {
@@ -290,7 +270,7 @@ export default {
               console.error("代码高亮失败:", __);
             }
           }
-          return ""; // 如果语言不支持，返回空字符串
+          return "";
         },
       });
       // 解析 Markdown 文本为 HTML
@@ -388,8 +368,6 @@ export default {
           enableMCPService: this.featureStore.enableMCPService,
         };
 
-        console.log("发送请求参数:", params); // 添加参数日志
-
         // 如果没有会话ID，则创建新会话
         if (!this.conversationId) {
           params.title = this.getTitleFromMessage(userQuery);
@@ -457,12 +435,9 @@ export default {
       try {
         const response = await getConversationHistory(this.conversationId, page);
         if (response.success && response.conversation.messages) {
-          // API层已经处理了消息格式，这里只需添加到消息列表
           const historyMessages = response.conversation.messages;
-
           // 将历史消息添加到当前消息列表的开头
           this.messages.unshift(...historyMessages);
-
           // 更新分页信息
           this.pagination = response.pagination;
         }
