@@ -281,3 +281,10 @@
     min-width: 120px;
     justify-content: flex-start;
 }
+
+.message-emoji {
+    max-width: 200px;
+    max-height: 200px;
+    margin-top: 8px;
+    border-radius: 8px;
+  }
