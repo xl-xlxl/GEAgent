@@ -49,6 +49,10 @@
               </div>
               <div class="ai-bubble">
                 <div v-html="renderMarkdown(message.content)"></div>
+                <div v-if="message.emojiUrls && message.emojiUrls.length" class="emoji-container">
+                  <img v-for="(url, index) in message.emojiUrls" :key="`emoji-${message.id}-${index}`" :src="url"
+                    alt="表情包" class="emoji-image" />
+                </div>
               </div>
             </div>
           </div>
@@ -309,17 +313,25 @@ export default {
     // 处理回答内容回调的辅助函数
     handleReplyCallback(aiMessage, loadHide) {
       return (reply) => {
-        const aiIndex = this.messages.findIndex(
-          (msg) => msg.id === aiMessage.id
-        );
+        if (!this.firstResponseReceived) {
+          loadHide();
+          this.firstResponseReceived = true;
+        }
+        const aiIndex = this.messages.findIndex((msg) => msg.id === aiMessage.id);
         if (aiIndex !== -1) {
-          if (!this.firstResponseReceived) {
-            loadHide();
-            this.firstResponseReceived = true;
+          // 处理表情包数据
+          if (typeof reply === 'object' && reply.type === 'emoji') {
+            if (!this.messages[aiIndex].emojiUrls) {
+              this.messages[aiIndex].emojiUrls = [];
+            }
+            // 添加表情包URL
+            this.messages[aiIndex].emojiUrls.push(reply.url);
+          } else {
+            // 处理文本内容
+            const currentContent = this.messages[aiIndex].content || "";
+            const newContent = currentContent + reply;
+            this.messages[aiIndex].content = newContent;
           }
-          const currentContent = this.messages[aiIndex].content || "";
-          const newContent = currentContent + reply;
-          this.messages[aiIndex].content = newContent;
         }
       };
     },

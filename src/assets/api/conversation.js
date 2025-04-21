@@ -42,6 +42,16 @@ const conversationApi = {
                             // 初始连接，获取会话ID
                             conversationId = data.conversationId;
                         }
+                        // 处理表情包数据
+                        if (data.extraCall && data.extraCall.name === "emojiPack" && data.extraCall.arguments?.url) {
+                            if (replyCallback) {
+                                replyCallback({
+                                    type: 'emoji',
+                                    url: data.extraCall.arguments.url
+                                });
+                            }
+                            continue;
+                        }
                         // 跳过特定的空内容
                         else if (data.content === "\n\n" && data.reasoning_content === null) {
                             continue;
@@ -114,6 +124,17 @@ const conversationApi = {
                         // 移除"data: "前缀并解析JSON
                         const jsonStr = line.startsWith('data: ') ? line.substring(6) : line;
                         data = JSON.parse(jsonStr);
+
+                        // 处理表情包数据
+                        if (data.extraCall && data.extraCall.name === "emojiPack" && data.extraCall.arguments?.url) {
+                            if (replyCallback) {
+                                replyCallback({
+                                    type: 'emoji',
+                                    url: data.extraCall.arguments.url
+                                });
+                            }
+                            continue;
+                        }
 
                         // 添加条件：跳过特定的空内容
                         if (data.content === "\n\n" && data.reasoning_content === null) {
@@ -193,86 +214,108 @@ const conversationApi = {
 
 
     // 获取特定对话的历史记录
-async getConversationHistory(conversationId, page = 1, pageSize = 10) {
-    try {
-        const headers = {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-        };
-        const response = await axios.get(`/api/chat/list/${conversationId}?page=${page}&pageSize=${pageSize}`, { headers });
-        if (response.status === 200) {
-            return {
-                success: response.data.success,
-                pagination: response.data.pagingInteractions.pagination,
-                conversation: {
-                    id: conversationId,
-                    messages: this.processMessages(response.data.pagingInteractions.interactions.rows)
-                }
+    async getConversationHistory(conversationId, page = 1, pageSize = 10) {
+        try {
+            const headers = {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
-        } else {
+            const response = await axios.get(`/api/chat/list/${conversationId}?page=${page}&pageSize=${pageSize}`, { headers });
+            if (response.status === 200) {
+                return {
+                    success: response.data.success,
+                    pagination: response.data.pagingInteractions.pagination,
+                    conversation: {
+                        id: conversationId,
+                        messages: this.processMessages(response.data.pagingInteractions.interactions.rows)
+                    }
+                };
+            } else {
+                throw {
+                    message: response.data?.message || "获取对话历史失败",
+                    status: response.status,
+                    isShowable: true,
+                };
+            }
+        } catch (error) {
+            console.error("获取对话历史错误:", error);
             throw {
-                message: response.data?.message || "获取对话历史失败",
-                status: response.status,
+                message: error.response?.data?.message || "获取对话历史失败",
                 isShowable: true,
             };
         }
-    } catch (error) {
-        console.error("获取对话历史错误:", error);
-        throw {
-            message: error.response?.data?.message || "获取对话历史失败",
-            isShowable: true,
-        };
-    }
-},
+    },
 
-    // 更新处理消息的辅助方法，适配新的数据结构
+    // 处理消息格式化的方法
     processMessages(interactions) {
+        if (!interactions || !Array.isArray(interactions)) {
+            return [];
+        }
+
         const messages = [];
 
-        // 对交互按时间排序，确保最早的交互在前面
-        const sortedInteractions = [...interactions].sort((a, b) =>
-            new Date(a.createdAt) - new Date(b.createdAt)
-        );
-
-        sortedInteractions.forEach(interaction => {
-            // 添加用户消息
-            messages.push({
-                id: `user-${interaction.id}`,
-                role: 'user',
-                content: interaction.user_input
-            });
-
-            // 处理该交互下的所有助手消息
-            if (interaction.messages && interaction.messages.length > 0) {
-                // 按轮次排序消息
-                const sortedMessages = [...interaction.messages].sort((a, b) => a.round - b.round);
-
-                sortedMessages.forEach(msg => {
-                    if (msg.assistant_output && msg.assistant_output.includes("<tool_call>")) {
-                        return;
-                    }
-
-                    // 添加思考消息
-                    if (msg.assistant_reasoning_output) {
-                        messages.push({
-                            id: `thinking-${msg.id}`,
-                            role: 'thinking',
-                            thinking: msg.assistant_reasoning_output
-                        });
-                    }
-
-                    if (msg.assistant_output) {
-                        if (msg.assistant_output && msg.assistant_output.trim()) {
-                            messages.push({
-                                id: String(msg.id),
-                                role: 'assistant',
-                                content: msg.assistant_output
-                            });
-                        }
-                    }
+        // 遍历每个交互
+        for (const interaction of interactions) {
+            if (interaction.user_input) {
+                messages.push({
+                    id: `user-${interaction.id}`,
+                    role: 'user',
+                    content: interaction.user_input
                 });
             }
-        });
+            if (!interaction.messages) {
+                continue;
+            }
+            // 收集所有思考内容
+            let allReasoning = '';
+            interaction.messages.forEach(msg => {
+                if (msg.assistant_reasoning_output) {
+                    allReasoning += msg.assistant_reasoning_output.trim() + '\n\n';
+                }
+            });
+            // 添加思考消息
+            if (allReasoning.trim()) {
+                messages.push({
+                    id: `thinking-${interaction.id}`,
+                    role: 'thinking',
+                    thinking: allReasoning.trim()
+                });
+            }
+            // 收集所有表情包
+            let allContent = '';
+            const allEmojiUrls = [];
+            interaction.messages.forEach(msg => {
+                if (msg.assistant_output ) {
+                    let cleanedOutput = msg.assistant_output
+                        .replace(/<tool_call>/g, '')
+                        .replace(/<del>/g, '')
+                        .trim();
+                    if (cleanedOutput) {
+                        allContent += cleanedOutput + ' ';
+                    }
+                }
+                // 处理表情包URL
+                if (msg.mcp_service_status && msg.mcp_service_status.extraCall) {
+                    const extraCalls = Array.isArray(msg.mcp_service_status.extraCall)
+                        ? msg.mcp_service_status.extraCall
+                        : [msg.mcp_service_status.extraCall];
+                    extraCalls.forEach(call => {
+                        if (call && call.name === 'emojiPack' && call.arguments && call.arguments.url) {
+                            allEmojiUrls.push(call.arguments.url);
+                        }
+                    });
+                }
+            });
+            // 添加助手回复消息
+            if (allContent.trim() || allEmojiUrls.length > 0) {
+                messages.push({
+                    id: `assistant-${interaction.id}`,
+                    role: 'assistant',
+                    content: allContent.trim(),
+                    emojiUrls: allEmojiUrls
+                });
+            }
+        }
         return messages;
     },
 
