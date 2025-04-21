@@ -26,8 +26,10 @@ declare module 'vue' {
     ASlider: typeof import('ant-design-vue/es')['Slider']
     ASpin: typeof import('ant-design-vue/es')['Spin']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
+    LoginByEmail: typeof import('./components/LoginByEmail.vue')['default']
     LoginCard: typeof import('./components/LoginCard.vue')['default']
     RegisterCard: typeof import('./components/RegisterCard.vue')['default']
+    ResetPassword: typeof import('./components/ResetPassword.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

@@ -43,15 +43,43 @@
         </div>
 
         <!-- 登录卡片弹层 -->
-        <div class="login-overlay" v-if="showLoginCard">
-            <LoginCard @login-success="handleLoginSuccess" @cancel="showLoginCard = false"
-                @switch-to-register="switchToRegister" />
+        <div class="login-overlay" v-if="showLoginCard" @click="closeAllCards">
+            <LoginCard 
+                @login-success="handleLoginSuccess" 
+                @cancel="showLoginCard = false"
+                @switch-to-register="switchToRegister" 
+                @switch-to-emailLogin="switchToEmailLogin"
+                @switch-to-reset-password="switchToResetPassword"
+            />
         </div>
 
         <!-- 注册卡片弹层 -->
-        <div class="login-overlay" v-if="showRegisterCard">
-            <RegisterCard @register-success="handleRegisterSuccess" @cancel="showRegisterCard = false"
-                @switch-to-login="switchToLogin" />
+        <div class="login-overlay" v-if="showRegisterCard" @click="closeAllCards">
+            <RegisterCard 
+                @register-success="handleRegisterSuccess" 
+                @cancel="showRegisterCard = false"
+                @switch-to-login="switchToLogin" 
+            />
+        </div>
+
+        <!-- 邮箱登录卡片弹层 -->
+        <div class="login-overlay" v-if="showEmailLoginCard" @click="closeAllCards">
+            <LoginByEmail 
+                @login-success="handleEmailLoginSuccess" 
+                @cancel="showEmailLoginCard = false"
+                @switch-to-login="switchToLogin"
+                @switch-to-register="switchToRegister"
+                @switch-to-reset-password="switchToResetPassword"
+            />
+        </div>
+
+        <!-- 重置密码卡片弹层 -->
+        <div class="login-overlay" v-if="showResetPasswordCard" @click="closeAllCards">
+            <ResetPassword
+                @reset-success="handleResetSuccess"
+                @cancel="showResetPasswordCard = false"
+                @switch-to-login="switchToLogin"
+            />
         </div>
     </div>
 </template>
@@ -61,6 +89,8 @@ import { message } from 'ant-design-vue';
 import { onMounted, ref, watch, computed } from 'vue';
 import LoginCard from '@/components/LoginCard.vue';
 import RegisterCard from '@/components/RegisterCard.vue';
+import LoginByEmail from '@/components/LoginByEmail.vue';
+import ResetPassword from '@/components/ResetPassword.vue';
 import { useModelStore } from '@/stores/modelStore';
 import { useFeatureStore } from "@/stores/featureStore";
 import { useUserStore } from '@/stores/userStore';
@@ -72,6 +102,8 @@ const userInput = ref<any>('');
 const loading = ref<boolean>(false);
 const showLoginCard = ref<boolean>(false);
 const showRegisterCard = ref<boolean>(false);
+const showEmailLoginCard = ref<boolean>(false); // 添加邮箱登录显示状态
+const showResetPasswordCard = ref<boolean>(false); // 添加重置密码显示状态
 
 const router = useRouter();
 
@@ -144,16 +176,60 @@ const handleLoginSuccess = (loginResult) => {
     }
 };
 
+// 邮箱登录成功处理函数
+const handleEmailLoginSuccess = (loginResult) => {
+    // 确保登录成功
+    if (loginResult) {
+        showEmailLoginCard.value = false;
+        // 登录成功后自动弹窗消息
+        messageApi.success('登录成功！');
+
+        // 如果输入框有内容，尝试发送消息
+        if (userInput.value.trim()) {
+            handleSubmit();
+        }
+    } else {
+        messageApi.error('登录未完成，请重试');
+    }
+};
+
+// 处理密码重置成功
+const handleResetSuccess = () => {
+    showResetPasswordCard.value = false;
+    messageApi.success('密码重置成功，请使用新密码登录');
+    showLoginCard.value = true;
+};
+
 // 切换到注册卡片
 const switchToRegister = () => {
     showLoginCard.value = false;
+    showEmailLoginCard.value = false;
+    showResetPasswordCard.value = false;
     showRegisterCard.value = true;
 };
 
 // 切换到登录卡片
 const switchToLogin = () => {
     showRegisterCard.value = false;
+    showEmailLoginCard.value = false;
+    showResetPasswordCard.value = false;
     showLoginCard.value = true;
+};
+
+// 切换到邮箱登录卡片
+const switchToEmailLogin = () => {
+    showLoginCard.value = false;
+    showRegisterCard.value = false;
+    showResetPasswordCard.value = false;
+    showEmailLoginCard.value = true;
+};
+
+// 切换到重置密码卡片
+const switchToResetPassword = () => {
+    showLoginCard.value = false;
+    showRegisterCard.value = false;
+    showEmailLoginCard.value = false;
+    showResetPasswordCard.value = true;
 };
 
 // 处理注册成功
@@ -176,6 +252,17 @@ const handleKeyDown = (event) => {
             handleSubmit();
         }
         // 按下Shift+Enter时浏览器默认行为生效(插入换行符)
+    }
+};
+
+// 添加关闭所有卡片的方法
+const closeAllCards = (event) => {
+    // 确保点击的是背景而不是卡片内容
+    if (event.target.classList.contains('login-overlay')) {
+        showLoginCard.value = false;
+        showRegisterCard.value = false;
+        showEmailLoginCard.value = false;
+        showResetPasswordCard.value = false;
     }
 };
 

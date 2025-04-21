@@ -19,13 +19,19 @@
             <template #prefix><lock-outlined /></template>
           </a-input-password>
         </a-form-item>
-        <a-form-item>
-          <a-row :gutter="8">
-            <a-col :span="12">
-              <a-checkbox v-model:checked="loginForm.remember">记住我</a-checkbox>
-            </a-col>
+        
+        <!-- 添加邮箱登录和忘记密码链接 -->
+        <a-form-item class="links-container">
+          <a-row :gutter="8" style="display: flex; justify-content: space-between;">
+            <div class="emailLogin-link">
+              <a href="#" @click.prevent="$emit('switch-to-emailLogin')">邮箱登录</a>
+            </div>
+            <div class="resetPassword-link">
+              <a href="#" @click.prevent="$emit('switch-to-reset-password')">忘记密码？</a>
+            </div>
           </a-row>
         </a-form-item>
+        
         <a-form-item>
           <a-button type="primary" html-type="submit" :loading="loading" block size="large">
             登录
@@ -47,7 +53,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { message, Form, Input, Button, Checkbox, Card, Row, Col } from 'ant-design-vue';
+import { message, Form, Input, Button, Card, Row, Col } from 'ant-design-vue';
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
 import * as userService from '@/services/userService';
 import authApi from '@/assets/api/auth';
@@ -63,14 +69,14 @@ const loginForm = ref({
   remember: false
 });
 
-const emit = defineEmits(['login-success', 'cancel', 'switch-to-register']);
+const emit = defineEmits(['login-success', 'cancel', 'switch-to-register', 'switch-to-emailLogin', 'switch-to-reset-password']);
 
 // 处理登录
 const handleLogin = async (values:any) => {
   loading.value = true; 
   try {
     const Credential = {
-      credential: values.username,
+      username: values.username,
       password: values.password 
     }
     
@@ -116,7 +122,7 @@ const handleLogin = async (values:any) => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border-radius: 20px 8px 0 0;
+  border-radius: 20px 20px 0 0;
 }
 
 .website-title {
@@ -144,5 +150,23 @@ const handleLogin = async (values:any) => {
 .register-link {
   text-align: center;
   margin-top: 16px;
+}
+
+/* 添加邮箱登录和忘记密码的样式 */
+.links-container {
+  margin-bottom: 10px;
+  margin-top: -10px;
+}
+
+.emailLogin-link {
+  text-align: left;
+  margin-top: 0;
+  padding-left: 8px;
+}
+
+.resetPassword-link {
+  text-align: right;
+  margin-top: 0;
+  padding-right: 8px;
 }
 </style>

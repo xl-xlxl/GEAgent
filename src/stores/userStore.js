@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import * as userService from "@/services/userService";
+import { ExclamationCircleFilled } from "@ant-design/icons-vue";
 export const useUserStore = defineStore("userStore", {
   state: () => ({
     isLoggedIn: false,
@@ -43,6 +44,32 @@ export const useUserStore = defineStore("userStore", {
           return ({success: true});
         }else if (loginResponse.success == false){
           return (loginResponse);
+        }
+        
+      } catch (error) {
+        console.error(error);
+        // 可以选择是否在这里处理错误
+      }
+    },
+    
+    async emailLogin(Credential) {
+      try {
+        // 使用await等待异步请求完成
+        const emailLoginResponse = await userService.emailLogin(Credential); 
+        if (emailLoginResponse.success == true){
+          this.token = emailLoginResponse.token;
+          localStorage.setItem('token', emailLoginResponse.token);
+          this.isLoggedIn = true;
+          const userInfoResponse = await userService.getUserInfo();
+          console.log(userInfoResponse);
+          this.userName = userInfoResponse.user.username;
+          this.email = userInfoResponse.user.email;
+          this.fullName = userInfoResponse.user.fullName;
+          const avatarUrlResponse = await userService.getUserAvatarUrl();
+          this.avatarUrl = avatarUrlResponse.url;
+          return ({success: true});
+        }else if (emailLoginResponse.success == false){
+          return (emailLoginResponse);
         }
         
       } catch (error) {

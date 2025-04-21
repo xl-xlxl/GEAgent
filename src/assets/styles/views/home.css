@@ -179,3 +179,59 @@
     align-items: center;
     z-index: 1000;
 }
+
+/* 为登录弹层添加毛玻璃效果 */
+.login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1); /* 更透明的背景 */
+    backdrop-filter: blur(2px); /* 添加模糊效果 */
+    -webkit-backdrop-filter: blur(2px); /* Safari 兼容 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s;
+  }
+  
+  /* 增加卡片进入动画 */
+  .login-card-container {
+    animation: cardEnter 0.4s ease-out;
+    transform-origin: center;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes cardEnter {
+    from { 
+      opacity: 0; 
+      transform: scale(0.95) translateY(-20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1) translateY(0); 
+    }
+  }
+  
+  /* 增加媒体查询以提高在低性能设备上的表现 */
+  @media (prefers-reduced-motion: reduce) {
+    .login-overlay {
+      backdrop-filter: none;
+      background-color: rgba(0, 0, 0, 0.75);
+    }
+    
+    .login-card-container {
+      animation: simpleEnter 0.3s;
+    }
+    
+    @keyframes simpleEnter {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  }
