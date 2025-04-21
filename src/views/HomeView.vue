@@ -12,7 +12,8 @@
                     <div class="model-select">
                         <!-- 模型选择 -->
                         <a-select v-model:value="modelStore.currentModel" style="width: 150px" size="small"
-                            :disabled="loading" @change="switchModel">
+                            :disabled="loading"
+                            @change="(currentModel) => modelStore.currentModel = Number(currentModel)">
                             <a-select-option v-for="model in modelStore.models" :key="model.value" :value="model.LLMID">
                                 {{ model.value }}
                             </a-select-option>
@@ -21,14 +22,15 @@
                     <div class="input-actions">
                         <!-- MCP按钮 -->
                         <button class="feature-button" :class="{ 'active-feature': enableMCPService }"
-                            @click="switchMCPService" :disabled="loading">
-                            <span class="feature-icon"><img src="/MCP服务.svg" /></span>
-                            Function Call
+                            @click="() => featureStore.enableMCPService = !featureStore.enableMCPService"
+                            :disabled="loading">
+                            <span class="MCP-icon"><img src="/mcp.svg" /></span>
+                            MCP Services
                         </button>
                         <!-- 联网搜索按钮 -->
-                        <button class="feature-button" :class="{ 'active-feature': webSearch }" @click="switchWebSearch"
-                            :disabled="loading">
-                            <span class="feature-icon"><img src="/互联网搜索.svg" /></span>
+                        <button class="feature-button" :class="{ 'active-feature': webSearch }"
+                            @click="() => featureStore.webSearch = !featureStore.webSearch" :disabled="loading">
+                            <span class="web-icon"><img src="/互联网搜索.svg" /></span>
                             联网搜索
                         </button>
                         <!-- 发送按钮 -->
@@ -55,17 +57,14 @@
 </template>
 
 <script setup lang="ts">
-import { message, Flex, Button, Select } from 'ant-design-vue';
-import { SendOutlined } from '@ant-design/icons-vue';
-import { Sender } from 'ant-design-x-vue';
-import { onMounted, onWatcherCleanup, ref, watch, computed } from 'vue';
+import { message } from 'ant-design-vue';
+import { onMounted, ref, watch, computed } from 'vue';
 import LoginCard from '@/components/LoginCard.vue';
 import RegisterCard from '@/components/RegisterCard.vue';
 import { useModelStore } from '@/stores/modelStore';
 import { useFeatureStore } from "@/stores/featureStore";
 import { useUserStore } from '@/stores/userStore';
-import * as userService from '@/services/userService';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { useConversationStore } from '@/stores/conversationStore';
 
 const [messageApi, contextHolder] = message.useMessage();
@@ -75,6 +74,8 @@ const showLoginCard = ref<boolean>(false);
 const showRegisterCard = ref<boolean>(false);
 
 const router = useRouter();
+
+const modelStore = useModelStore();
 
 const userStore = useUserStore();
 // 使用 featureStore 替换本地状态
@@ -95,24 +96,10 @@ const switchMCPService = () => {
     console.log('MCP服务: ' + (featureStore.enableMCPService ? '开启' : '关闭'));
 };
 
-// 使用 modelStore
-const modelStore = useModelStore();
-const models = modelStore.models;
-
-// 更新模型选择
-const switchModel = (currentModel: number) => {
-    // 直接修改 currentModel，而不是调用 store 的方法
-    modelStore.currentModel = currentModel;
-    console.log(`已切换到模型ID: ${currentModel}`);
-};
-
 // 处理提交
 const handleSubmit = async () => {
-
-    // 检查输入是否为空
     if (!userInput.value.trim() || loading.value) return;
 
-    // 检查token是否存在，如果不存在则通过store的action更新登录状态
     if (!localStorage.getItem('token')) {
         userStore.logout();
     }
@@ -124,7 +111,7 @@ const handleSubmit = async () => {
         return;
     }
 
-    // 保存消息内容，准备传递到聊天页面
+    // 保存消息内容
     const messageContent = userInput.value.trim();
     userInput.value = '';
 
@@ -132,7 +119,6 @@ const handleSubmit = async () => {
         // 将初始消息存储到状态管理中
         const conversationStore = useConversationStore();
         conversationStore.setInitialMessage(messageContent);
-        // 跳转到 /chat 页面
         router.push('/chat');
         // 刷新对话列表
     } catch (error) {
@@ -214,36 +200,4 @@ onMounted(() => {
 
 <style scoped>
 @import '@/assets/styles/views/home.css';
-
-.home-container {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.website-title {
-    text-align: center;
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #1890ff;
-    margin-bottom: 30px;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
-    user-select: none;
-}
-
-.login-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
 </style>

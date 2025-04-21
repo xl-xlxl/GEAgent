@@ -237,10 +237,16 @@
     background: linear-gradient(135deg, #FFECE8, #E8F8FF, #F4FFE8);
 }
 
-.feature-icon {
+.web-icon {
     width: 20px;
     height: 20px;
     margin-right: 5px;
+}
+
+.MCP-icon {
+    width: 1.7em; 
+    height: 1.7em;
+    margin-right: 0.3125em;
 }
 
 /* 发送按钮 */
@@ -275,3 +281,10 @@
     min-width: 120px;
     justify-content: flex-start;
 }
+
+.message-emoji {
+    max-width: 200px;
+    max-height: 200px;
+    margin-top: 8px;
+    border-radius: 8px;
+  }

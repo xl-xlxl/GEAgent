@@ -2,7 +2,6 @@ import axios from 'axios'
 
 // 创建新对话
 const conversationApi = {
-    // 修改创建新对话方法
     async createConversation(params, reasoningCallback, replyCallback) {
         try {
             const headers = {
@@ -10,7 +9,6 @@ const conversationApi = {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
 
-            // 创建请求
             const response = await fetch("/api/chat/create", {
                 method: 'POST',
                 headers: headers,
@@ -44,12 +42,11 @@ const conversationApi = {
                             // 初始连接，获取会话ID
                             conversationId = data.conversationId;
                         }
-                        // 添加条件：跳过特定的空内容
+                        // 跳过特定的空内容
                         else if (data.content === "\n\n" && data.reasoning_content === null) {
                             continue;
-                            // 其他需要过滤的响应类型
-                        } else if (data.webSearchStatus || data.success === false || data.MCPStatus || data.content === "<tool_call>") {
                             // 忽略这些特定类型的响应
+                        } else if (data.webSearchStatus || data.success === false || data.MCPStatus || data.content === "<tool_call>") {
                             continue;
                         } else if (data.postConversationRequest) {
                             // 更新当前轮次
@@ -82,7 +79,7 @@ const conversationApi = {
     },
 
 
-    // 修改继续对话方法
+    // 继续对话方法
     async continueConversation(params, conversationId, reasoningCallback, replyCallback) {
         try {
             const headers = {
@@ -195,20 +192,15 @@ const conversationApi = {
     },
 
 
-    // 修改获取特定对话的历史记录
+    // 获取特定对话的历史记录
     async getConversationHistory(conversationId, page = 1, pageSize = 10) {
         try {
             const headers = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
-
-            // 使用 axios 发送 GET 请求，添加分页参数
             const response = await axios.get(`/api/chat/list/${conversationId}?page=${page}&pageSize=${pageSize}`, { headers });
-
-            // 检查 HTTP 状态码并返回数据
             if (response.status === 200) {
-                // 将新结构的数据转换为应用所需的格式
                 return {
                     success: response.data.success,
                     pagination: response.data.pagingInteractions.pagination,
