@@ -59,7 +59,7 @@
     <div class="input-area">
       <div class="input-container">
         <!-- 输入框 -->
-        <textarea class="message-input" placeholder="给 GEAgent 发送消息" v-model="userInput" @keydown="handleKeyDown"
+        <textarea class="message-input" :placeholder="loading ? ' GEAgent 思考中，请稍后' : '给 GEAgent 发送消息'"  v-model="userInput" @keydown="handleKeyDown"
           :disabled="loading" :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
         <div style="display: flex; justify-content: space-between">
           <div class="model-select">

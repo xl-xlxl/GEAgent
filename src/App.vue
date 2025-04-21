@@ -17,13 +17,14 @@
       <div class="add-container" style="height:5vh;">
         <!-- 新增对话按钮 -->
         <div v-if="!collapsed">
-          <div class="bubble icon-container whitespace-nowrap" :class="{ collapsed: collapsed }" @click="goToHome">
+          <div class="bubble icon-container whitespace-nowrap" :class="{ collapsed: collapsed }"
+            @click="$router.push('/')">
             开启新的对话
             <img src="/新增对话.svg" alt="add" class="icon" />
           </div>
         </div>
         <div v-else>
-          <div class="icon-container" :class="{ collapsed: collapsed }" @click="goToHome">
+          <div class="icon-container" :class="{ collapsed: collapsed }" @click="$router.push('/')">
             <img src="/新增对话.svg" alt="add" class="icon" />
           </div>
         </div>
@@ -50,15 +51,21 @@
                       </div>
                       <a-popover trigger="click" placement="right" v-model:open="renamePopoverVisible[conversation.id]">
                         <template #content>
-                          <div class="no-select" style="display: flex; flex-direction: column; align-items: center;" @click.stop>
+                          <div class="no-select" style="display: flex; flex-direction: column; align-items: center;"
+                            @click.stop>
                             <div class="xs-input">
-                              <a-input v-model:value="newTitle" :bordered="false" placeholder="输入新标题" @click.stop @keyup.enter="confirmRename(conversation.id)" />
+                              <a-input v-model:value="newTitle" :bordered="false" placeholder="输入新标题" @click.stop
+                                @keyup.enter="confirmRename(conversation.id)" />
                             </div>
                             <div style="display: flex; gap: 1em;">
-                              <div class="preset-option preset-text" style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em;" @click.stop="confirmRename(conversation.id)">
+                              <div class="preset-option preset-text"
+                                style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em;"
+                                @click.stop="confirmRename(conversation.id)">
                                 确定
                               </div>
-                              <div class="preset-option preset-text" style="cursor: pointer; margin: 0; padding: 1em 3em;" @click.stop="cancelRename(conversation.id)">
+                              <div class="preset-option preset-text"
+                                style="cursor: pointer; margin: 0; padding: 1em 3em;"
+                                @click.stop="cancelRename(conversation.id)">
                                 取消
                               </div>
                             </div>
@@ -75,7 +82,6 @@
               </div>
             </div>
           </div>
-
           <div class="clear-all-container" v-if="conversations.length > 1">
             <a-popover trigger="click" v-model:open="deletePopoverVisible">
               <template #content>
@@ -90,7 +96,7 @@
                       删除
                     </div>
                     <div class="preset-option preset-text" style="cursor: pointer; margin: 0; padding: 1em 3em ;"
-                      @click="closeDeletePopover">
+                      @click="deletePopoverVisible = false">
                       取消
                     </div>
                   </div>
@@ -101,7 +107,6 @@
               </div>
             </a-popover>
           </div>
-
         </div>
         <div v-else>
         </div>
@@ -245,6 +250,9 @@ export default {
     const modelStore = useModelStore();
     const userStore = useUserStore();
     return {
+      currentPage: 1,
+      hasMorePages: true,
+      isLoading: false,
       screenWidth: window.innerWidth,
       modelStore,
       userStore,
@@ -298,9 +306,18 @@ export default {
     };
   },
 
+
+  created() {
+    this.initializeUser();
+    this.fetchConversationList();
+    this.loadModelConfig(this.modelStore.currentModel);
+  },
+
   watch: {
     $route(to, from) {
-      this.fetchConversationList();
+      if (to.path.includes('/chat/') && to.params.id) {
+        this.fetchConversationList();
+      }
     },
     'modelStore.currentModel': {
       immediate: true,
@@ -310,15 +327,6 @@ export default {
         }
       }
     }
-  },
-
-  created() {
-    // 初始化用户
-    this.initializeUser();
-    // 加载对话列表
-    this.fetchConversationList();
-    // 新增：加载当前模型配置
-    this.loadModelConfig(this.modelStore.currentModel);
   },
 
   computed: {
@@ -382,7 +390,6 @@ export default {
   },
 
   methods: {
-
     // 添加处理窗口大小变化的方法
     handleResize() {
       this.screenWidth = window.innerWidth;
@@ -393,7 +400,6 @@ export default {
       }
     },
 
-    // 添加初始化用户方法
     async initializeUser() {
       try {
 
@@ -406,7 +412,6 @@ export default {
         }
       } catch (error) {
         console.error('初始化用户失败:', error);
-        // 响应拦截器会处理403错误，这里不需要额外处理
       }
     },
 
@@ -416,19 +421,14 @@ export default {
 
     async loadModelConfig(currentModel) {
       try {
-        // 检查登录状态
         if (!localStorage.getItem('token')) {
           console.log('用户未登录，使用默认模型配置');
           return;
         }
-
         console.log(`正在加载模型${currentModel}的配置...`);
         const configs = await modelConfigService.getModelConfig(currentModel);
-
         if (configs) {
           console.log(`成功获取模型${currentModel}配置:`, configs);
-
-          // 更新modelStore中的设置
           this.modelStore.switchSettings({
             max_tokens: configs.max_tokens,
             temperature: configs.temperature,
@@ -436,54 +436,10 @@ export default {
             top_k: configs.top_k,
             frequent_penalty: configs.frequent_penalty
           });
-
           console.log(`已从后端加载并更新模型${currentModel}的配置`);
         }
       } catch (error) {
         console.error(`加载模型${currentModel}配置时出错:`, error);
-        // 服务层已处理错误，这里不再显示提示
-      }
-    },
-
-    async switchSettings() {
-      // 本地更新
-      const configParams = {
-        max_tokens: this.max_tokens,
-        temperature: this.temperature,
-        top_p: this.top_p,
-        top_k: this.top_k,
-        frequent_penalty: this.frequent_penalty,
-      };
-
-      // 更新 modelStore
-      this.modelStore.switchSettings(configParams);
-
-      // 同步到后端
-      if (localStorage.getItem('token')) {
-        const success = await modelConfigService.updateModelConfig(
-          this.modelStore.currentModel,
-          configParams
-        );
-
-        if (success) {
-          console.log(`成功更新模型${this.modelStore.currentModel}的配置到后端`);
-        }
-        // 服务层已处理错误反馈，这里不再显示提示
-      }
-    },
-
-
-    handleSettingPopoverChange(visible) {
-      if (visible) {
-        this.originalSettings = {
-          max_tokens: this.modelStore.max_tokens,
-          temperature: this.modelStore.temperature,
-          top_p: this.modelStore.top_p,
-          top_k: this.modelStore.top_k,
-          frequent_penalty: this.modelStore.frequent_penalty,
-        };
-      } else {
-        this.settingsChange();
       }
     },
 
@@ -514,8 +470,18 @@ export default {
       });
     },
 
-    goToHome() {
-      this.$router.push('/');
+    handleSettingPopoverChange(visible) {
+      if (visible) {
+        this.originalSettings = {
+          max_tokens: this.modelStore.max_tokens,
+          temperature: this.modelStore.temperature,
+          top_p: this.modelStore.top_p,
+          top_k: this.modelStore.top_k,
+          frequent_penalty: this.modelStore.frequent_penalty,
+        };
+      } else {
+        this.settingsChange();
+      }
     },
 
     goToHomeForLogin() {
@@ -532,33 +498,23 @@ export default {
 
     async goToConversation(id) {
       try {
-        console.log("尝试跳转到会话，ID:", id);
-
         if (!id) {
           console.error("会话ID为空或无效");
           message.error("无效的会话ID");
           return;
         }
-
-        // 转换路由参数为数字进行比较
         if (Number(this.$route.params.id) === id) {
           console.log("已在当前会话页面");
           return;
         }
-
         // 查找对话标题
         const conversation = this.conversations.find(conv => conv.id === id);
         if (conversation) {
-          // 带上标题参数进行路由跳转
           console.log(`跳转到会话: ${conversation.title} (ID: ${id})`);
           this.$router.push({
             path: `/chat/${id}`,
             query: { title: conversation.title }
           });
-        } else {
-          // 如果找不到对话信息，直接跳转
-          console.log("跳转到会话路径:", `/chat/${id}`);
-          this.$router.push(`/chat/${id}`);
         }
       } catch (error) {
         console.error("跳转到会话失败:", error);
@@ -568,20 +524,14 @@ export default {
 
     async fetchConversationList(page = 1, pageSize = 20) {
       if (!localStorage.getItem('token')) return;
-
       try {
         const response = await getConversationList(page, pageSize);
-
         if (response.success) {
-          // 更新分页信息
           this.pagination = response.pagination;
-
-          // 直接使用conversationId作为id，保持整数类型
           this.conversations = response.conversations.map(conv => ({
             ...conv,
-            id: conv.conversationId // 保留整数类型
+            id: conv.conversationId
           })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
           console.log("处理后的会话列表:", this.conversations);
         } else {
           console.error("获取对话列表失败:", response.error);
@@ -593,15 +543,12 @@ export default {
 
     async deleteConversation(id) {
       try {
+        const isCurrentChat = Number(this.$route.params.id) === id;
         const result = await deleteConversations([id]);
         if (result.success) {
-          message.success(`已删除对话`);
-          await this.fetchConversationList();
-
-          // 使用Number()转换路由参数进行比较
-          if (Number(this.$route.params.id) === id) {
-            this.$router.push('/');
-          }
+          message.success('已删除对话');
+          this.conversations = this.conversations.filter(conv => conv.id !== id);
+          isCurrentChat && this.$router.push('/');
         } else {
           message.error(result.error?.message || "删除对话失败");
         }
@@ -616,14 +563,8 @@ export default {
         const result = await deleteAllConversations();
         if (result.success) {
           message.success(`成功删除了${result.deletedCount}个对话`);
-
-          // 关闭弹窗 - 提前关闭以提升用户体验
           this.deletePopoverVisible = false;
-
-          // 强制清空当前对话列表
           this.conversations = [];
-
-          // 如果当前在某个对话页，返回首页
           if (this.$route.path.startsWith('/chat/')) {
             this.$router.push('/');
           }
@@ -636,16 +577,11 @@ export default {
       }
     },
 
-    // 添加关闭弹窗方法
-    closeDeletePopover() {
-      // 这里可以通过v-model控制弹窗关闭
-      this.deletePopoverVisible = false;
-    },
-
     // 确认重命名
     async confirmRename(conversationId) {
       if (!this.newTitle.trim()) {
-        message.warning("标题不能为空");
+        this.renamePopoverVisible[conversationId] = false;
+        this.morePopoverVisible[conversationId] = false;
         return;
       }
 
@@ -686,24 +622,19 @@ export default {
       this.newTitle = ""; // 清空输入
     },
 
-    handleScroll() {
-      // 关闭设置弹层
+    handleScroll(event) {
       if (this.settingPopoverVisible) {
         this.settingPopoverVisible = false;
       }
-      // 关闭场景预设弹层
       if (this.PopoverVisible) {
         this.PopoverVisible = false;
       }
-      // 关闭用户信息弹层
       if (this.userPopoverVisible) {
         this.userPopoverVisible = false;
       }
-      // 关闭删除确认弹层
       if (this.deletePopoverVisible) {
         this.deletePopoverVisible = false;
       }
-      // 已有的关闭其他弹层的代码
       for (const conversationId in this.morePopoverVisible) {
         if (this.morePopoverVisible[conversationId]) {
           this.morePopoverVisible[conversationId] = false;
@@ -713,6 +644,35 @@ export default {
         if (this.renamePopoverVisible[conversationId]) {
           this.renamePopoverVisible[conversationId] = false;
         }
+      }
+      // 检测滚动更多数据
+      const { scrollHeight, scrollTop, clientHeight } = event.target;
+      const scrollBottom = scrollHeight - scrollTop - clientHeight;
+      if (scrollBottom < 100 && this.hasMorePages && !this.isLoading) {
+        this.loadMoreConversations();
+      }
+    },
+
+    async loadMoreConversations() {
+      this.isLoading = true;
+      this.currentPage += 1;
+      try {
+        const response = await getConversationList(this.currentPage, 20);
+        if (response.success && response.conversations.length > 0) {
+          const newConversations = response.conversations.map(conv => ({
+            ...conv,
+            id: conv.conversationId
+          })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          this.conversations = [...this.conversations, ...newConversations];
+          this.hasMorePages = this.currentPage < response.pagination.totalPages;
+        } else {
+          this.hasMorePages = false;
+        }
+      } catch (error) {
+        console.error("加载更多对话失败:", error);
+        this.hasMorePages = false;
+      } finally {
+        this.isLoading = false;
       }
     }
 

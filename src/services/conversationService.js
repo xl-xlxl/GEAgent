@@ -76,7 +76,7 @@ export async function getConversationHistory(conversationId, page = 1, pageSize 
     }
 }
 
-// 添加删除对话的函数
+// 删除对话的函数
 export async function deleteConversations(conversationIds) {
     try {
         const response = await conversationApi.deleteConversations(conversationIds);
@@ -93,7 +93,7 @@ export async function deleteConversations(conversationIds) {
     }
 }
 
-// 添加删除所有对话的函数
+// 删除所有对话的函数
 export async function deleteAllConversations() {
     try {
         const response = await conversationApi.deleteAllConversations();
@@ -113,20 +113,16 @@ export async function deleteAllConversations() {
 // 添加更新对话标题的服务函数
 export async function updateConversationTitle(conversationId, title) {
     try {
-        const headers = {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-        };
-
-        const response = await axios.put(
-            `/api/chat/updateTitle/${conversationId}`,
-            { title },
-            { headers }
-        );
-
-        return response.data;
+        const response = await conversationApi.updateConversationTitle(conversationId, title);
+        return response;
     } catch (error) {
-        console.log("更新对话标题失败:", error);
-        return { success: false };
+        console.log("更新对话标题-服务层错误:", error);
+        return {
+            success: false,
+            error: {
+                message: "无法更新对话标题",
+                isShowable: error.isShowable === true
+            }
+        }
     }
 }
