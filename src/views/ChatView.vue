@@ -124,6 +124,8 @@ export default {
       autoScroll: true,
       conversationId: null,
       title: "新对话",
+      pagination: null,
+      loadingHistory: false,
     };
   },
 
@@ -210,9 +212,17 @@ export default {
     handleScroll() {
       const scrollArea = this.$refs.scrollArea;
       if (!scrollArea) return;
-      const isAtBottom =
-        scrollArea.scrollTop >= scrollArea.scrollHeight - scrollArea.clientHeight - 5;
+      const isAtBottom = scrollArea.scrollTop >= scrollArea.scrollHeight - scrollArea.clientHeight - 5;
       this.autoScroll = isAtBottom;
+
+      // 历史消息加载逻辑（分页）
+      const scrollPercent = scrollArea.scrollTop / (scrollArea.scrollHeight - scrollArea.clientHeight) * 100;
+      if (this.loadingHistory || !this.pagination?.hasNextPage) return;
+      if (scrollPercent <= 10) {
+        this.loadingHistory = true;
+        this.loadMoreHistory(this.pagination.nextPage)
+          .finally(() => this.loadingHistory = false);
+      }
     },
 
     scrollToBottom() {
@@ -429,7 +439,7 @@ export default {
       }
     },
 
-    // 添加加载更多历史消息的方法
+    // 加载更多历史消息的方法
     async loadMoreHistory(page) {
       if (!this.conversationId) return;
       try {
@@ -440,12 +450,20 @@ export default {
           this.messages.unshift(...historyMessages);
           // 更新分页信息
           this.pagination = response.pagination;
+          return {
+            success: true,
+            hasMore: response.pagination.hasNextPage
+          };
         }
       } catch (error) {
         console.error("加载更多对话历史失败:", error);
         message.error("加载更多历史失败");
+        return {
+          success: false,
+          error
+        };
       }
-    }
+    },
 
   },
 };
