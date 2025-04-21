@@ -213,8 +213,8 @@ export default {
     top_k() {
       return useModelStore().top_k;
     },
-    frequency_penalty() {
-      return useModelStore().frequency_penalty;
+    frequent_penalty() {
+      return useModelStore().frequent_penalty;
     },
     webSearch() {
       return this.featureStore.webSearch;
@@ -225,9 +225,9 @@ export default {
   },
 
   methods: {
-    handleModelChange(modelId) {
-      this.modelStore.switchModel(modelId);
-      console.log(`已切换到模型ID: ${modelId}, 模型名称: ${this.modelStore.getCurrentModel.value}`);
+    handleModelChange(currentModel) {
+      this.modelStore.switchModel(currentModel);
+      console.log(`已切换到模型ID: ${currentModel}, 模型名称: ${this.modelStore.getCurrentModel.value}`);
     },
 
     handleScroll() {

@@ -1,6 +1,5 @@
 <template>
   <a-layout style="min-height: 100vh;">
-    <!-- 遮罩层 -->
     <div v-if="screenWidth < 768 && !collapsed" class="sidebar-overlay" @click="toggleCollapsed">
     </div>
     <a-layout-sider :class="{ 'floating-sider': screenWidth < 768 }"
@@ -49,24 +48,17 @@
                       <div class="preset-option preset-text" @click="deleteConversation(conversation.id)">
                         删除对话
                       </div>
-
                       <a-popover trigger="click" placement="right" v-model:open="renamePopoverVisible[conversation.id]">
                         <template #content>
-                          <div class="no-select" style="display: flex; flex-direction: column; align-items: center;"
-                            @click.stop>
+                          <div class="no-select" style="display: flex; flex-direction: column; align-items: center;" @click.stop>
                             <div class="xs-input">
-                              <a-input v-model:value="newTitle" :bordered="false" placeholder="输入新标题" @click.stop
-                                @keyup.enter="confirmRename(conversation.id)" />
+                              <a-input v-model:value="newTitle" :bordered="false" placeholder="输入新标题" @click.stop @keyup.enter="confirmRename(conversation.id)" />
                             </div>
                             <div style="display: flex; gap: 1em;">
-                              <div class="preset-option preset-text"
-                                style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em;"
-                                @click.stop="confirmRename(conversation.id)">
+                              <div class="preset-option preset-text" style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em;" @click.stop="confirmRename(conversation.id)">
                                 确定
                               </div>
-                              <div class="preset-option preset-text"
-                                style="cursor: pointer; margin: 0; padding: 1em 3em;"
-                                @click.stop="cancelRename(conversation.id)">
+                              <div class="preset-option preset-text" style="cursor: pointer; margin: 0; padding: 1em 3em;" @click.stop="cancelRename(conversation.id)">
                                 取消
                               </div>
                             </div>
@@ -166,11 +158,11 @@
                 <a-slider v-model:value="top_k" :step="1" :min="5" :max="80" />
               </label>
               <label>
-                frequency_penalty
+                frequent_penalty
                 <a-tooltip title="数值越高，模型越倾向于使用新词而不是重复已用词；数值越低，模型越倾向于重复已用词">
                   <span style="cursor: pointer; color: #777777;">✿</span>
                 </a-tooltip>
-                <a-slider v-model:value="frequency_penalty" :step="0.1" :min="-0.5" :max="1" />
+                <a-slider v-model:value="frequent_penalty" :step="0.1" :min="-0.5" :max="1" />
               </label>
             </div>
           </template>
@@ -238,11 +230,8 @@
 </template>
 
 <script>
-import HomeView from '@/views/HomeView.vue';
-import ChatView from './views/ChatView.vue';
 import { useModelStore } from "@/stores/modelStore";
 import { message } from 'ant-design-vue';
-import * as userService from '@/services/userService';
 import { useUserStore } from './stores/userStore';
 import { getConversationList, deleteConversations, deleteAllConversations, updateConversationTitle } from '@/services/conversationService';
 import { modelConfigService } from '@/services/modelConfigService';
@@ -251,16 +240,12 @@ const value = ref('');
 
 export default {
   name: 'App',
-  components: {
-    HomeView,
-    ChatView,
-  },
 
   data() {
     const modelStore = useModelStore();
     const userStore = useUserStore();
     return {
-      collapsed: true,
+      screenWidth: window.innerWidth,
       modelStore,
       userStore,
       currentModel: modelStore.currentModel,
@@ -278,37 +263,35 @@ export default {
         temperature: 0,
         top_p: 0,
         top_k: 0,
-        frequency_penalty: 0
+        frequent_penalty: 0
       },
-      screenWidth: window.innerWidth, // 添加屏幕宽度属性
-      // 添加预设场景配置
       presets: {
         "创意文本": {
           temperature: 0.9,
           top_p: 0.9,
           top_k: 50,
-          frequency_penalty: 0.6,
+          frequent_penalty: 0.6,
           description: "创造性和多样性高，适合文学创作、故事生成"
         },
         "问答系统": {
           temperature: 0.4,
           top_p: 0.7,
           top_k: 40,
-          frequency_penalty: 0.5,
+          frequent_penalty: 0.5,
           description: "平衡创造性和准确性，适合回答问题"
         },
         "代码生成": {
           temperature: 0.2,
           top_p: 0.9,
           top_k: 50,
-          frequency_penalty: 0.3,
+          frequent_penalty: 0.3,
           description: "输出更确定性和精确，适合生成代码"
         },
         "文本摘要": {
           temperature: 0.4,
           top_p: 0.8,
           top_k: 40,
-          frequency_penalty: 0.4,
+          frequent_penalty: 0.4,
           description: "减少重复，聚焦关键信息"
         }
       }
@@ -316,17 +299,14 @@ export default {
   },
 
   watch: {
-    // 监听路由变化
     $route(to, from) {
-      console.log("路由变化:", from.fullPath, "->", to.fullPath);
-      this.fetchConversationList(); // 每次路由变化时调用
+      this.fetchConversationList();
     },
     'modelStore.currentModel': {
-      immediate: true, // 确保组件创建时也会执行
-      handler(newModelId) {
-        console.log(`模型ID: ${newModelId}，准备加载配置`);
-        if (newModelId !== undefined) {
-          this.loadModelConfig(newModelId);
+      immediate: true,
+      handler(newcurrentModel) {
+        if (newcurrentModel !== undefined) {
+          this.loadModelConfig(newcurrentModel);
         }
       }
     }
@@ -375,12 +355,12 @@ export default {
         this.modelStore.top_k = value;
       }
     },
-    frequency_penalty: {
+    frequent_penalty: {
       get() {
-        return this.modelStore.frequency_penalty;
+        return this.modelStore.frequent_penalty;
       },
       set(value) {
-        this.modelStore.frequency_penalty = value;
+        this.modelStore.frequent_penalty = value;
       }
     },
   },
@@ -434,7 +414,7 @@ export default {
       this.collapsed = !this.collapsed;
     },
 
-    async loadModelConfig(modelId) {
+    async loadModelConfig(currentModel) {
       try {
         // 检查登录状态
         if (!localStorage.getItem('token')) {
@@ -442,11 +422,11 @@ export default {
           return;
         }
 
-        console.log(`正在加载模型${modelId}的配置...`);
-        const configs = await modelConfigService.getModelConfig(modelId);
+        console.log(`正在加载模型${currentModel}的配置...`);
+        const configs = await modelConfigService.getModelConfig(currentModel);
 
         if (configs) {
-          console.log(`成功获取模型${modelId}配置:`, configs);
+          console.log(`成功获取模型${currentModel}配置:`, configs);
 
           // 更新modelStore中的设置
           this.modelStore.switchSettings({
@@ -454,13 +434,13 @@ export default {
             temperature: configs.temperature,
             top_p: configs.top_p,
             top_k: configs.top_k,
-            frequency_penalty: configs.frequency_penalty
+            frequent_penalty: configs.frequent_penalty
           });
 
-          console.log(`已从后端加载并更新模型${modelId}的配置`);
+          console.log(`已从后端加载并更新模型${currentModel}的配置`);
         }
       } catch (error) {
-        console.error(`加载模型${modelId}配置时出错:`, error);
+        console.error(`加载模型${currentModel}配置时出错:`, error);
         // 服务层已处理错误，这里不再显示提示
       }
     },
@@ -472,7 +452,7 @@ export default {
         temperature: this.temperature,
         top_p: this.top_p,
         top_k: this.top_k,
-        frequency_penalty: this.frequency_penalty,
+        frequent_penalty: this.frequent_penalty,
       };
 
       // 更新 modelStore
@@ -495,29 +475,25 @@ export default {
 
     handleSettingPopoverChange(visible) {
       if (visible) {
-        // 气泡框打开时，保存当前设置以便需要时可以取消操作
         this.originalSettings = {
           max_tokens: this.modelStore.max_tokens,
           temperature: this.modelStore.temperature,
           top_p: this.modelStore.top_p,
           top_k: this.modelStore.top_k,
-          frequency_penalty: this.modelStore.frequency_penalty,
+          frequent_penalty: this.modelStore.frequent_penalty,
         };
       } else {
-        // 气泡框关闭时，将修改同步到后端
-        this.syncSettingsToBackend();
+        this.settingsChange();
       }
     },
 
-    // 同步设置到后端
-    async syncSettingsToBackend() {
-      // 检查是否有变更
+    async settingsChange() {
       if (
         this.originalSettings.max_tokens !== this.modelStore.max_tokens ||
         this.originalSettings.temperature !== this.modelStore.temperature ||
         this.originalSettings.top_p !== this.modelStore.top_p ||
         this.originalSettings.top_k !== this.modelStore.top_k ||
-        this.originalSettings.frequency_penalty !== this.modelStore.frequency_penalty
+        this.originalSettings.frequent_penalty !== this.modelStore.frequent_penalty
       ) {
         console.log('参数已修改，同步到后端...');
         await this.modelStore.syncSettingsToBackend();
@@ -526,24 +502,16 @@ export default {
       }
     },
 
-    // 应用预设方法仍需要立即同步
     async applyPreset(presetName) {
       const preset = this.presets[presetName];
       if (!preset) return;
 
-      // 更新 modelStore 中的设置
       this.modelStore.switchSettings({
         temperature: preset.temperature,
         top_p: preset.top_p,
         top_k: preset.top_k,
-        frequency_penalty: preset.frequency_penalty,
+        frequent_penalty: preset.frequent_penalty,
       });
-
-      // 同步到后端 - 预设应用仍然需要立即同步
-      await this.modelStore.syncSettingsToBackend();
-
-      message.success(`已应用"${presetName}"预设`);
-      this.PopoverVisible = false;
     },
 
     goToHome() {
