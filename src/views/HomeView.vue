@@ -100,10 +100,10 @@ const modelStore = useModelStore();
 const models = modelStore.models;
 
 // 更新模型选择
-const switchModel = (modelId: number) => {
+const switchModel = (currentModel: number) => {
     // 直接修改 currentModel，而不是调用 store 的方法
-    modelStore.currentModel = modelId;
-    console.log(`已切换到模型ID: ${modelId}`);
+    modelStore.currentModel = currentModel;
+    console.log(`已切换到模型ID: ${currentModel}`);
 };
 
 // 处理提交

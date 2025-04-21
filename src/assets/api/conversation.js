@@ -170,20 +170,15 @@ const conversationApi = {
     },
 
 
-    // 修改获取对话列表的方法
+    // 获取对话列表的方法
     async getConversationList(page = 1, pageSize = 20) {
         try {
             const headers = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
-
-            // 添加分页参数
             const response = await axios.get(`/api/chat/list?page=${page}&pageSize=${pageSize}`, { headers });
-
-            // 检查 HTTP 状态码并返回数据
             if (response.status === 200) {
-                // 返回完整的分页和会话数据
                 return {
                     success: response.data.success,
                     pagination: response.data.conversationsList.pagination,
@@ -198,7 +193,6 @@ const conversationApi = {
             }
         } catch (error) {
             console.error("获取对话列表错误:", error);
-            // 处理 axios 错误
             if (error.response) {
                 throw {
                     message: error.response.data?.message || "获取对话列表失败",
@@ -312,12 +306,10 @@ const conversationApi = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
-
             const response = await axios.delete("/api/chat/delete", {
                 headers,
                 data: { conversationIds }
             });
-
             if (response.status === 200) {
                 return response.data;
             } else {
@@ -329,7 +321,6 @@ const conversationApi = {
             }
         } catch (error) {
             console.error("删除对话错误:", error);
-
             if (error.response) {
                 throw {
                     message: error.response.data?.message || "删除对话失败",
@@ -352,11 +343,9 @@ const conversationApi = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
-
             const response = await axios.delete("/api/chat/deleteAll", {
                 headers
             });
-
             if (response.status === 200) {
                 return response.data;
             } else {
@@ -368,7 +357,6 @@ const conversationApi = {
             }
         } catch (error) {
             console.error("删除全部对话错误:", error);
-
             if (error.response) {
                 throw {
                     message: error.response.data?.message || "删除全部对话失败",
@@ -391,12 +379,10 @@ const conversationApi = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
-
             const response = await axios.put(`/api/chat/updateTitle/${conversationId}`,
                 { title },
                 { headers }
             );
-
             if (response.status === 200) {
                 return {
                     success: response.data.success,
