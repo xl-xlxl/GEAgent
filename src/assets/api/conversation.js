@@ -193,40 +193,40 @@ const conversationApi = {
 
 
     // 获取特定对话的历史记录
-    async getConversationHistory(conversationId, page = 1, pageSize = 10) {
-        try {
-            const headers = {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
+async getConversationHistory(conversationId, page = 1, pageSize = 10) {
+    try {
+        const headers = {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+        };
+        const response = await axios.get(`/api/chat/list/${conversationId}?page=${page}&pageSize=${pageSize}`, { headers });
+        if (response.status === 200) {
+            return {
+                success: response.data.success,
+                pagination: response.data.pagingInteractions.pagination,
+                conversation: {
+                    id: conversationId,
+                    messages: this.processMessages(response.data.pagingInteractions.interactions.rows)
+                }
             };
-            const response = await axios.get(`/api/chat/list/${conversationId}?page=${page}&pageSize=${pageSize}`, { headers });
-            if (response.status === 200) {
-                return {
-                    success: response.data.success,
-                    pagination: response.data.pagingInteractions.pagination,
-                    conversation: {
-                        id: conversationId,
-                        messages: this._processMessages(response.data.pagingInteractions.interactions.rows)
-                    }
-                };
-            } else {
-                throw {
-                    message: response.data?.message || "获取对话历史失败",
-                    status: response.status,
-                    isShowable: true,
-                };
-            }
-        } catch (error) {
-            console.error("获取对话历史错误:", error);
+        } else {
             throw {
-                message: error.response?.data?.message || "获取对话历史失败",
+                message: response.data?.message || "获取对话历史失败",
+                status: response.status,
                 isShowable: true,
             };
         }
-    },
+    } catch (error) {
+        console.error("获取对话历史错误:", error);
+        throw {
+            message: error.response?.data?.message || "获取对话历史失败",
+            isShowable: true,
+        };
+    }
+},
 
     // 更新处理消息的辅助方法，适配新的数据结构
-    _processMessages(interactions) {
+    processMessages(interactions) {
         const messages = [];
 
         // 对交互按时间排序，确保最早的交互在前面
