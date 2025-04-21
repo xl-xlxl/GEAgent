@@ -98,11 +98,8 @@ const switchMCPService = () => {
 
 // 处理提交
 const handleSubmit = async () => {
-
-    // 检查输入是否为空
     if (!userInput.value.trim() || loading.value) return;
 
-    // 检查token是否存在，如果不存在则通过store的action更新登录状态
     if (!localStorage.getItem('token')) {
         userStore.logout();
     }
@@ -114,7 +111,7 @@ const handleSubmit = async () => {
         return;
     }
 
-    // 保存消息内容，准备传递到聊天页面
+    // 保存消息内容
     const messageContent = userInput.value.trim();
     userInput.value = '';
 
@@ -122,7 +119,6 @@ const handleSubmit = async () => {
         // 将初始消息存储到状态管理中
         const conversationStore = useConversationStore();
         conversationStore.setInitialMessage(messageContent);
-        // 跳转到 /chat 页面
         router.push('/chat');
         // 刷新对话列表
     } catch (error) {
@@ -204,36 +200,4 @@ onMounted(() => {
 
 <style scoped>
 @import '@/assets/styles/views/home.css';
-
-.home-container {
-    height: 100%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
-}
-
-.website-title {
-    text-align: center;
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #1890ff;
-    margin-bottom: 30px;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
-    user-select: none;
-}
-
-.login-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
 </style>
