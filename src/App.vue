@@ -185,15 +185,36 @@
         </a-popover>
       </div>
 
-      <div class="user-container" style="height: 6vh; align-items: center; ">
-        <a-popover v-if="userStore.loggedIn" trigger="click" placement="topRight" v-model:open="userPopoverVisible">
+      <div class="user-container" style="height: 8vh; align-items: center;">
+        <a-popover v-if="userStore.loggedIn" trigger="click" placement="topRight" :overlayStyle="{ width: '300px' }">
           <template #content>
-            <div class="no-select">
-              <div class="preset-option preset-text">
-                修改信息
+            <div class="no-select user-info-card">
+              <div class="user-info-header">
+                <a-avatar :size="60" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
+                <div class="user-info-name">
+                  <h3>{{ userStore.getUserInfo.fullName || '用户' }}</h3>
+                  <p>{{ userStore.getUserInfo.email || '' }}</p>
+                </div>
               </div>
-              <div class="preset-option preset-text" @click="handleLogout">
-                退出登录
+              
+              <div class="user-info-details">
+                <div class="info-item">
+                  <span class="info-label">用户名:</span>
+                  <span class="info-value">{{ userStore.getUserInfo.userName || '未设置' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">邮箱:</span>
+                  <span class="info-value">{{ userStore.getUserInfo.email || '未设置' }}</span>
+                </div>
+              </div>
+              
+              <div class="user-actions">
+                <div class="preset-option preset-text action-button">
+                  修改信息
+                </div>
+                <div class="preset-option preset-text action-button" @click="handleLogout">
+                  退出登录
+                </div>
               </div>
             </div>
           </template>
