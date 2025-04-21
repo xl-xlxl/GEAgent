@@ -26,7 +26,6 @@ export const useModelStore = defineStore("modelStore", {
 
   actions: {
     async switchModel(currentModel) {
-      // 如果用户已登录，从后端加载对应模型配置
       if (localStorage.getItem("token")) {
         try {
           this.isLoading = true;

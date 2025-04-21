@@ -425,7 +425,6 @@ export default {
           console.log('用户未登录，使用默认模型配置');
           return;
         }
-        console.log(`正在加载模型${currentModel}的配置...`);
         const configs = await modelConfigService.getModelConfig(currentModel);
         if (configs) {
           console.log(`成功获取模型${currentModel}配置:`, configs);
@@ -584,27 +583,24 @@ export default {
         this.morePopoverVisible[conversationId] = false;
         return;
       }
-
       try {
         const result = await updateConversationTitle(conversationId, this.newTitle);
         if (result.success) {
           message.success("重命名成功");
-          this.renamePopoverVisible[conversationId] = false; // 关闭重命名弹窗
-          this.morePopoverVisible[conversationId] = false; // 同时关闭外层弹窗
-
+          this.renamePopoverVisible[conversationId] = false;
+          this.morePopoverVisible[conversationId] = false;
           // 更新本地对话列表中的标题
-          const conversation = this.conversations.find(c => c.id === conversationId);
+          const conversation = this.conversations.find(conversation => conversation.id === conversationId);
           if (conversation) {
             conversation.title = this.newTitle;
           }
-          // 如果当前正在查看的是被重命名的对话，更新路由参数
+          // 更新路由参数
           if (Number(this.$route.params.id) === conversationId) {
             this.$router.replace({
               path: this.$route.path,
               query: { ...this.$route.query, title: this.newTitle }
             });
           }
-          // 清空输入
           this.newTitle = "";
         } else {
           message.error(result.error?.message || "重命名失败");
@@ -617,9 +613,9 @@ export default {
 
     // 取消重命名
     cancelRename(conversationId) {
-      this.renamePopoverVisible[conversationId] = false; // 关闭重命名弹窗
-      this.morePopoverVisible[conversationId] = false; // 同时关闭外层弹窗
-      this.newTitle = ""; // 清空输入
+      this.renamePopoverVisible[conversationId] = false;
+      this.morePopoverVisible[conversationId] = false;
+      this.newTitle = "";
     },
 
     handleScroll(event) {

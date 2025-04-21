@@ -59,13 +59,14 @@
     <div class="input-area">
       <div class="input-container">
         <!-- 输入框 -->
-        <textarea class="message-input" :placeholder="loading ? ' GEAgent 思考中，请稍后' : '给 GEAgent 发送消息'"  v-model="userInput" @keydown="handleKeyDown"
-          :disabled="loading" :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
+        <textarea class="message-input" :placeholder="loading ? ' GEAgent 思考中，请稍后' : '给 GEAgent 发送消息'"
+          v-model="userInput" @keydown="handleKeyDown" :disabled="loading"
+          :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
         <div style="display: flex; justify-content: space-between">
           <div class="model-select">
             <!-- 模型选择 -->
             <a-select style="width: 150px" size="small" :disabled="loading" v-model:value="modelStore.currentModel"
-              @change="handleModelChange">
+              @change=" modelStore.switchModel(currentModel);">
               <a-select-option v-for="model in modelStore.models" :key="model.value" :value="model.LLMID">
                 {{ model.value }}
               </a-select-option>
@@ -225,10 +226,6 @@ export default {
   },
 
   methods: {
-    handleModelChange(currentModel) {
-      this.modelStore.switchModel(currentModel);
-      console.log(`已切换到模型ID: ${currentModel}, 模型名称: ${this.modelStore.getCurrentModel.value}`);
-    },
 
     handleScroll() {
       const scrollArea = this.$refs.scrollArea;
