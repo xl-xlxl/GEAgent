@@ -31,13 +31,13 @@ const conversationApi = {
                 const lines = chunk.split('\n').filter(line => line.trim());
 
                 for (const line of lines) {
+                    let data;
                     try {
-                        if (!line.trim() || line === "data: [DONE]") continue;
-                        
-                        // 去掉前缀
-                        const json = line.replace(/^data: /, "");
-                        const data = JSON.parse(json);
-                        
+                        // 移除"data: "前缀并解析JSON
+                        const jsonStr = line.startsWith('data: ') ? line.substring(6) : line;
+                        data = JSON.parse(jsonStr);
+
+                        // 处理不同类型的响应
                         if (data.connection && data.conversationId) {
                             // 初始连接，获取会话ID
                             conversationId = data.conversationId;
@@ -48,28 +48,19 @@ const conversationApi = {
                             // 忽略这些特定类型的响应
                         } else if (data.webSearchStatus || data.success === false || data.MCPStatus || data.content === "<tool_call>") {
                             continue;
-                        } else if (data.MCPStatus) {
-                            // 检查 MCPStatus 中是否包含表情包信息
-                            const hasEmojiPack = data.MCPStatus.fnCall && 
-                                                  data.MCPStatus.fnCall.some(call => call.name === 'emojiPack');
-                            if (hasEmojiPack && replyCallback) {
-                                console.log('发现表情包调用（MCPStatus）:', data.MCPStatus);
-                                replyCallback('', line); // 将原始数据传递给回调
-                            }
-                            continue;
-                        } else if (data.extraCall && data.extraCall.name === 'emojiPack') {
-                            // 直接处理 extraCall 表情包信息
-                            if (replyCallback) {
-                                console.log('发现表情包调用（extraCall）:', data.extraCall);
-                                replyCallback('', line); // 将原始数据传递给回调
-                            }
-                            continue;
                         } else if (data.postConversationRequest) {
-                            // 更新当前轮次...
+                            // 更新当前轮次
+                            currentRound = data.round;
                         } else if (data.content !== null && !data.reasoning_content) {
-                            // 处理回复内容...
+                            // 处理回复内容
+                            if (replyCallback && data.content) {
+                                replyCallback(data.content);
+                            }
                         } else if (data.reasoning_content) {
-                            // 处理思考过程...
+                            // 处理思考过程
+                            if (reasoningCallback && data.reasoning_content) {
+                                reasoningCallback(data.reasoning_content);
+                            }
                         }
                     } catch (error) {
                         console.error("解析响应数据错误:", error, line);
@@ -118,41 +109,32 @@ const conversationApi = {
                 const lines = chunk.split('\n').filter(line => line.trim());
 
                 for (const line of lines) {
+                    let data;
                     try {
-                        if (!line.trim() || line === "data: [DONE]") continue;
-                        
-                        const json = line.replace(/^data: /, "");
-                        const data = JSON.parse(json);
-                        
-                        if (data.connection) {
-                            // 处理连接信息...
-                        } else if (data.content === "\n\n" && data.reasoning_content === null) {
-                            // 处理空内容...
-                        } else if (data.webSearchStatus || data.success === false || data.content === "<tool_call>") {
-                            // 忽略这些特定类型的响应
+                        // 移除"data: "前缀并解析JSON
+                        const jsonStr = line.startsWith('data: ') ? line.substring(6) : line;
+                        data = JSON.parse(jsonStr);
+
+                        // 添加条件：跳过特定的空内容
+                        if (data.content === "\n\n" && data.reasoning_content === null) {
                             continue;
-                        } else if (data.MCPStatus) {
-                            // 检查 MCPStatus 中是否包含表情包信息
-                            const hasEmojiPack = data.MCPStatus.fnCall && 
-                                                  data.MCPStatus.fnCall.some(call => call.name === 'emojiPack');
-                            if (hasEmojiPack && replyCallback) {
-                                console.log('继续对话中发现表情包调用（MCPStatus）:', data.MCPStatus);
-                                replyCallback('', line); // 将原始数据传递给回调
-                            }
+                        }
+                        // 其他需要过滤的响应类型
+                        else if (data.webSearchStatus || data.success === false || data.MCPStatus || data.content === "<tool_call>") {
                             continue;
-                        } else if (data.extraCall && data.extraCall.name === 'emojiPack') {
-                            // 直接处理 extraCall 表情包信息
-                            if (replyCallback) {
-                                console.log('继续对话中发现表情包调用（extraCall）:', data.extraCall);
-                                replyCallback('', line); // 将原始数据传递给回调
-                            }
-                            continue;
-                        } else if (data.round) {
-                            // 更新当前轮次...
+                        } else if (data.postConversationRequest) {
+                            // 更新当前轮次
+                            currentRound = data.round;
                         } else if (data.content !== null && !data.reasoning_content) {
-                            // 处理回复内容...
+                            // 处理回复内容
+                            if (replyCallback && data.content) {
+                                replyCallback(data.content);
+                            }
                         } else if (data.reasoning_content) {
-                            // 处理思考过程...
+                            // 处理思考过程
+                            if (reasoningCallback && data.reasoning_content) {
+                                reasoningCallback(data.reasoning_content);
+                            }
                         }
                     } catch (error) {
                         console.error("解析响应数据错误:", error, line);
