@@ -132,22 +132,6 @@ const authApi = {
         }
     },
 
-    async resetPasswordCode(email) {
-        try {
-            return await api.post('/user/resetPassword',email)
-        } catch (error) {
-            console.log(error);
-            let head = '未知错误';
-            let errorMessage = '重置密码失败，请稍后重试';
-            errorMessage = SelectMessageError(error);
-            // 返回统一格式的错误
-            throw {
-                success: false,
-                head,
-                message: errorMessage
-            };
-        }
-    },
 
     async resetPassword(data) {
         try {
@@ -241,9 +225,27 @@ const authApi = {
                 message: errorMessage
             };
         }
+    },
+
+    async uploadAvatar(file)
+    {
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+            const response = await api.post('/user/avatar', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return response.data;
+        } catch (error) {
+            console.log(error);
+            throw (error.data)
+        }
     }
 }
 
+    
     
 
 export default authApi;

@@ -48,7 +48,7 @@
                 @login-success="handleLoginSuccess" 
                 @cancel="showLoginCard = false"
                 @switch-to-register="switchToRegister" 
-                @switch-to-emailLogin="switchToEmailLogin"
+                @switch-to-email-login="switchToEmailLogin" 
                 @switch-to-reset-password="switchToResetPassword"
             />
         </div>
