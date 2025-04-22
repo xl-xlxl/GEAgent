@@ -124,8 +124,12 @@
     
     codeSending.value = true;
     try {
+      const creditials = {
+        email: resetForm.value.email,
+        purpose: 'resetPassword'
+      };
       // 调用发送重置密码验证码API
-      const result = await userService.resetPasswordCode(resetForm.value.email);
+      const result = await userService.sendVerificationCode(creditials);
       if (result && result.success) {
         messageApi.success('验证码已发送，请查收邮件');
         // 开始倒计时
@@ -153,7 +157,8 @@
     try {
       const resetData = {
         code: resetForm.value.code,
-        newPassword: resetForm.value.newPassword
+        newPassword: resetForm.value.newPassword,
+        email: resetForm.value.email
       };
       
       const result = await userService.resetPassword(resetData);
@@ -161,7 +166,7 @@
         messageApi.success('密码重置成功');
         emit('reset-success');
       } else {
-        messageApi.error(result?.message || '密码重置失败，请检查验证码是否正确');
+        messageApi.error(result.message || '重置密码失败，请稍后重试');
       }
     } catch (error) {
       console.error('重置密码失败:', error);

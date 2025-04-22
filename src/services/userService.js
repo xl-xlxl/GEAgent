@@ -1,6 +1,7 @@
 import authApi from "@/assets/api/auth";
 import { ref } from "vue";
 import { useUserStore } from "@/stores/userStore";
+import { fromJSON } from "postcss";
 
 export async function login(credentials) {
     try {
@@ -41,22 +42,6 @@ export async function sendVerificationCode(credentials) {
             return sendCodeRes.data;
         } else {
             throw new Error(sendCodeRes.data.message);
-        }
-    } catch (error) {
-        return {
-            success: false,
-            error
-        }
-    }
-}
-
-export async function resetPasswordCode(email) {
-    try {
-        const resetPasswordCodeRes = await authApi.resetPasswordCode(email);
-        if (resetPasswordCodeRes.data.success == true) {
-            return resetPasswordCodeRes.data;
-        } else {
-            throw new Error(resetPasswordCodeRes.data.message);
         }
     } catch (error) {
         return {
@@ -147,3 +132,19 @@ export async function getUserAvatarUrl() {
         }
     
 }
+
+export async function uploadAvatar(file) {
+    try {
+        const uploadAvatarRes = await authApi.uploadAvatar(file);
+        if (uploadAvatarRes.success == true) {
+            return uploadAvatarRes;
+        } else {
+            throw new Error(uploadAvatarRes);
+        }
+    } catch (error) {
+        return {
+            success: false,
+            error
+        }
+    }
+}   

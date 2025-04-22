@@ -24,7 +24,7 @@
         <a-form-item class="links-container">
           <a-row :gutter="8" style="display: flex; justify-content: space-between;">
             <div class="emailLogin-link">
-              <a href="#" @click.prevent="$emit('switch-to-emailLogin')">邮箱登录</a>
+              <a href="#" @click.prevent="$emit('switch-to-email-login')">邮箱登录</a>
             </div>
             <div class="resetPassword-link">
               <a href="#" @click.prevent="$emit('switch-to-reset-password')">忘记密码？</a>
@@ -69,7 +69,7 @@ const loginForm = ref({
   remember: false
 });
 
-const emit = defineEmits(['login-success', 'cancel', 'switch-to-register', 'switch-to-emailLogin', 'switch-to-reset-password']);
+const emit = defineEmits(['login-success', 'cancel', 'switch-to-register', 'switch-to-email-login', 'switch-to-reset-password']);
 
 // 处理登录
 const handleLogin = async (values:any) => {

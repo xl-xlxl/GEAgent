@@ -279,3 +279,30 @@
     height: 16px;
     margin-right: 8px;
   }
+  /* 头像上传相关样式 */
+.avatar-upload-container {
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.avatar-upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  color: white;
+  font-size: 20px;
+}
+
+.avatar-upload-container:hover .avatar-upload-overlay {
+  opacity: 1;
+}

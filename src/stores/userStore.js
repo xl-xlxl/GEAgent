@@ -137,6 +137,22 @@ export const useUserStore = defineStore("userStore", {
         return null; 
       }
       
+    },
+
+    async uploadAvatar(file) {
+      try {
+        const uploadResponse = await userService.uploadAvatar(file);
+        console.log('11111',uploadResponse);
+        if (uploadResponse.success == true) {
+          this.avatarUrl = uploadResponse.url;
+          return uploadResponse;
+        } else if (uploadResponse.success == false) {
+          console.error(uploadResponse);
+          return uploadResponse;
+        }
+      } catch (error) {
+        console.error(error);
+      }
     }
   },
 });

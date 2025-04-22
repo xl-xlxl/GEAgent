@@ -190,7 +190,19 @@
           <template #content>
             <div class="no-select user-info-card">
               <div class="user-info-header">
-                <a-avatar :size="60" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
+                <div class="avatar-upload-container">
+                  <a-avatar :size="60" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
+                  <div class="avatar-upload-overlay" @click="triggerFileInput">
+                    <camera-outlined />
+                    <input 
+                      type="file" 
+                      ref="avatarFileInput" 
+                      style="display: none;" 
+                      accept="image/*"
+                      @change="handleAvatarChange" 
+                    />
+                  </div>
+                </div>
                 <div class="user-info-name">
                   <h3>{{ userStore.getUserInfo.fullName || '用户' }}</h3>
                   <p>{{ userStore.getUserInfo.email || '' }}</p>
@@ -263,11 +275,15 @@ import { useUserStore } from './stores/userStore';
 import { getConversationList, deleteConversations, deleteAllConversations, updateConversationTitle } from '@/services/conversationService';
 import { modelConfigService } from '@/services/modelConfigService';
 import { ref } from 'vue';
+import { CameraOutlined } from '@ant-design/icons-vue';
+
 const value = ref('');
 
 export default {
   name: 'App',
-
+  components: {
+    CameraOutlined
+  },
   data() {
     const modelStore = useModelStore();
     const userStore = useUserStore();
@@ -656,8 +672,51 @@ export default {
       } finally {
         this.isLoading = false;
       }
-    }
+    },
 
+    triggerFileInput() {
+      this.$refs.avatarFileInput.click();
+    },
+
+    async handleAvatarChange(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      // 验证文件类型和大小
+      if (!file.type.match('image.*')) {
+        message.error('请选择图片文件');
+        return;
+      }
+      
+      if (file.size > 2 * 1024 * 1024) {
+        message.error('图片大小不能超过2MB');
+        return;
+      }
+      
+      try {
+        
+        
+        message.loading({ content: '正在上传头像...', key: 'avatarUpload' });
+        
+        // 调用上传API
+        const userStore = useUserStore();
+        const response = await userStore.uploadAvatar(file);
+        console.log('头像上传响应:', response);
+        if (response.success) {
+          message.success({ content: '头像上传成功', key: 'avatarUpload' });
+          // 刷新用户信息以获取新头像
+          await this.userStore.refreshUserInfo();
+        } else {
+          message.error({ content: response.message || '头像上传失败', key: 'avatarUpload' });
+        }
+      } catch (error) {
+        console.error('上传头像失败:', error);
+        message.error({ content: '头像上传失败，请稍后重试', key: 'avatarUpload' });
+      } finally {
+        // 清空文件输入框，以便可以再次选择相同的文件
+        event.target.value = '';
+      }
+    }
   },
 }
 </script>
