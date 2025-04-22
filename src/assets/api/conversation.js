@@ -266,14 +266,13 @@ const conversationApi = {
             if (!interaction.messages) {
                 continue;
             }
-            // 收集所有思考内容
+            // 思考内容
             let allReasoning = '';
             interaction.messages.forEach(msg => {
                 if (msg.assistant_reasoning_output) {
                     allReasoning += msg.assistant_reasoning_output.trim() + '\n\n';
                 }
             });
-            // 添加思考消息
             if (allReasoning.trim()) {
                 messages.push({
                     id: `thinking-${interaction.id}`,
@@ -281,7 +280,7 @@ const conversationApi = {
                     thinking: allReasoning.trim()
                 });
             }
-            // 收集所有表情包
+            // 表情包
             let allContent = '';
             const allEmojiUrls = [];
             interaction.messages.forEach(msg => {
@@ -306,7 +305,7 @@ const conversationApi = {
                     });
                 }
             });
-            // 添加助手回复消息
+            // ai回复消息
             if (allContent.trim() || allEmojiUrls.length > 0) {
                 messages.push({
                     id: `assistant-${interaction.id}`,
