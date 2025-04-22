@@ -282,9 +282,16 @@
     justify-content: flex-start;
 }
 
-.message-emoji {
-    max-width: 200px;
-    max-height: 200px;
+  .emoji-container {
     margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .emoji-image {
+    max-width: 120px;
+    max-height: 120px;
     border-radius: 8px;
+    object-fit: contain;
   }
