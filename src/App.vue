@@ -218,7 +218,7 @@
               </div>
 
               <div class="user-actions">
-                <div class="preset-option preset-text action-button">
+                <div class="preset-option preset-text action-button" @click="openChangePasswordModal">
                   修改密码
                 </div>
                 <div class="preset-option preset-text action-button" @click="handleLogout">
@@ -261,6 +261,14 @@
     <div class="app-container">
       <router-view />
     </div>
+    <!-- 密码修改弹窗 -->
+    <div class="modal-overlay" v-if="showChangePasswordModal" @click="closeChangePasswordModal">
+      <ChangePassword 
+        @success="handlePasswordChanged" 
+        @cancel="closeChangePasswordModal" 
+        @click.stop
+      />
+    </div>
   </a-layout>
 </template>
 
@@ -273,13 +281,14 @@ import { getConversationList, deleteConversations, deleteAllConversations, updat
 import { modelConfigService } from '@/services/modelConfigService';
 import { ref } from 'vue';
 import { CameraOutlined } from '@ant-design/icons-vue';
-
+import ChangePassword from './components/ChangePassword.vue';
 const value = ref('');
 
 export default {
   name: 'App',
   components: {
-    CameraOutlined
+    CameraOutlined,
+    ChangePassword
   },
   data() {
     const modelStore = useModelStore();
@@ -339,7 +348,8 @@ export default {
           frequent_penalty: 0.4,
           description: "减少重复，聚焦关键信息"
         }
-      }
+      },
+      showChangePasswordModal: false,
     };
   },
 
@@ -762,6 +772,22 @@ export default {
         this.isEditingName = false;
       }
     },
+
+    // 打开密码修改弹窗
+    openChangePasswordModal() {
+      this.showChangePasswordModal = true;
+      this.userPopoverVisible = false; // 关闭用户信息卡片
+    },
+    
+    // 关闭密码修改弹窗
+    closeChangePasswordModal() {
+      this.showChangePasswordModal = false;
+    },
+    
+    // 密码修改成功处理
+    handlePasswordChanged() {
+      this.showChangePasswordModal = false;
+    }
   }
 };
 </script>
