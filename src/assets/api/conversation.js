@@ -42,12 +42,17 @@ const conversationApi = {
                             // 初始连接，获取会话ID
                             conversationId = data.conversationId;
                         }
+                        // 检测回合信息
+                        else if (data.postConversationRequest && data.round) {
+                            currentRound = data.round;
+                        }
                         // 处理表情包数据
-                        if (data.extraCall && data.extraCall.name === "emojiPack" && data.extraCall.arguments?.url) {
+                        else if (data.extraCall && data.extraCall.name === "emojiPack" && data.extraCall.arguments?.url) {
                             if (replyCallback) {
                                 replyCallback({
                                     type: 'emoji',
-                                    url: data.extraCall.arguments.url
+                                    url: data.extraCall.arguments.url,
+                                    round: currentRound
                                 });
                             }
                             continue;
@@ -55,22 +60,18 @@ const conversationApi = {
                         // 跳过特定的空内容
                         else if (data.content === "\n\n" && data.reasoning_content === null) {
                             continue;
-                            // 忽略这些特定类型的响应
-                        } else if (data.webSearchStatus || data.success === false || data.MCPStatus || data.content === "<tool_call>") {
+                        }
+                        // 其他需要过滤的响应类型
+                        else if (data.webSearchStatus || data.success === false || data.MCPStatus || data.content === "<tool_call>") {
                             continue;
-                        } else if (data.postConversationRequest) {
-                            // 更新当前轮次
-                            currentRound = data.round;
-                        } else if (data.content !== null && !data.reasoning_content) {
-                            // 处理回复内容
-                            if (replyCallback && data.content) {
-                                replyCallback(data.content);
-                            }
-                        } else if (data.reasoning_content) {
-                            // 处理思考过程
-                            if (reasoningCallback && data.reasoning_content) {
-                                reasoningCallback(data.reasoning_content);
-                            }
+                        }
+                        // 处理思考过程
+                        else if (data.reasoning_content && reasoningCallback) {
+                            reasoningCallback(data.reasoning_content, currentRound);
+                        }
+                        // 处理回复内容
+                        else if (data.content !== null && data.content !== undefined && replyCallback) {
+                            replyCallback(data.content, currentRound);
                         }
                     } catch (error) {
                         console.error("解析响应数据错误:", error, line);
@@ -125,37 +126,36 @@ const conversationApi = {
                         const jsonStr = line.startsWith('data: ') ? line.substring(6) : line;
                         data = JSON.parse(jsonStr);
 
+                        // 检测回合信息
+                        if (data.postConversationRequest && data.round) {
+                            currentRound = data.round;
+                        }
                         // 处理表情包数据
-                        if (data.extraCall && data.extraCall.name === "emojiPack" && data.extraCall.arguments?.url) {
+                        else if (data.extraCall && data.extraCall.name === "emojiPack" && data.extraCall.arguments?.url) {
                             if (replyCallback) {
                                 replyCallback({
                                     type: 'emoji',
-                                    url: data.extraCall.arguments.url
+                                    url: data.extraCall.arguments.url,
+                                    round: currentRound
                                 });
                             }
                             continue;
                         }
-
-                        // 添加条件：跳过特定的空内容
-                        if (data.content === "\n\n" && data.reasoning_content === null) {
+                        // 跳过特定的空内容
+                        else if (data.content === "\n\n" && data.reasoning_content === null) {
                             continue;
                         }
                         // 其他需要过滤的响应类型
                         else if (data.webSearchStatus || data.success === false || data.MCPStatus || data.content === "<tool_call>") {
                             continue;
-                        } else if (data.postConversationRequest) {
-                            // 更新当前轮次
-                            currentRound = data.round;
-                        } else if (data.content !== null && !data.reasoning_content) {
-                            // 处理回复内容
-                            if (replyCallback && data.content) {
-                                replyCallback(data.content);
-                            }
-                        } else if (data.reasoning_content) {
-                            // 处理思考过程
-                            if (reasoningCallback && data.reasoning_content) {
-                                reasoningCallback(data.reasoning_content);
-                            }
+                        }
+                        // 处理思考过程
+                        else if (data.reasoning_content && reasoningCallback) {
+                            reasoningCallback(data.reasoning_content, currentRound);
+                        }
+                        // 处理回复内容
+                        else if (data.content !== null && data.content !== undefined && replyCallback) {
+                            replyCallback(data.content, currentRound);
                         }
                     } catch (error) {
                         console.error("解析响应数据错误:", error, line);
@@ -213,7 +213,7 @@ const conversationApi = {
     async getConversationHistory(conversationId, page = 1, pageSize = 10) {
         try {
             const response = await api.get(`/chat/list/${conversationId}?page=${page}&pageSize=${pageSize}`);
-            
+
             if (response.status === 200) {
                 return {
                     success: response.data.success,
@@ -277,7 +277,7 @@ const conversationApi = {
             let allContent = '';
             const allEmojiUrls = [];
             interaction.messages.forEach(msg => {
-                if (msg.assistant_output ) {
+                if (msg.assistant_output) {
                     let cleanedOutput = msg.assistant_output
                         .replace(/<tool_call>/g, '')
                         .replace(/<del>/g, '')
@@ -378,7 +378,7 @@ const conversationApi = {
     async updateConversationTitle(conversationId, title) {
         try {
             const response = await api.put(`/chat/updateTitle/${conversationId}`, { title });
-            
+
             if (response.status === 200) {
                 return {
                     success: response.data.success,
