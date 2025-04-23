@@ -363,7 +363,15 @@ export default {
           this.loadModelConfig(newcurrentModel);
         }
       }
-    }
+    },
+    'userStore.loggedIn': {
+      handler(newValue, oldValue) {
+        if (newValue === true && oldValue === false) {
+          this.fetchConversationList();
+          console.log('用户登录成功，已加载对话列表');
+        } 
+      }
+    },
   },
 
   computed: {
@@ -494,6 +502,7 @@ export default {
       localStorage.removeItem('token');
       message.success('已退出登录');
       this.$router.push('/');
+      this.conversations = [];
     },
 
     async goToConversation(id) {
@@ -538,6 +547,29 @@ export default {
         }
       } catch (error) {
         console.error("获取对话列表失败:", error);
+      }
+    },
+
+    async loadMoreConversationList() {
+      this.isLoading = true;
+      this.currentPage += 1;
+      try {
+        const response = await getConversationList(this.currentPage, 20);
+        if (response.success && response.conversations.length > 0) {
+          const newConversations = response.conversations.map(conv => ({
+            ...conv,
+            id: conv.conversationId
+          })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          this.conversations = [...this.conversations, ...newConversations];
+          this.hasMorePages = this.currentPage < response.pagination.totalPages;
+        } else {
+          this.hasMorePages = false;
+        }
+      } catch (error) {
+        console.error("加载更多对话失败:", error);
+        this.hasMorePages = false;
+      } finally {
+        this.isLoading = false;
       }
     },
 
@@ -646,30 +678,7 @@ export default {
       const { scrollHeight, scrollTop, clientHeight } = event.target;
       const scrollBottom = scrollHeight - scrollTop - clientHeight;
       if (scrollBottom < 100 && this.hasMorePages && !this.isLoading) {
-        this.loadMoreConversations();
-      }
-    },
-
-    async loadMoreConversations() {
-      this.isLoading = true;
-      this.currentPage += 1;
-      try {
-        const response = await getConversationList(this.currentPage, 20);
-        if (response.success && response.conversations.length > 0) {
-          const newConversations = response.conversations.map(conv => ({
-            ...conv,
-            id: conv.conversationId
-          })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-          this.conversations = [...this.conversations, ...newConversations];
-          this.hasMorePages = this.currentPage < response.pagination.totalPages;
-        } else {
-          this.hasMorePages = false;
-        }
-      } catch (error) {
-        console.error("加载更多对话失败:", error);
-        this.hasMorePages = false;
-      } finally {
-        this.isLoading = false;
+        this.loadMoreConversationList();
       }
     },
 

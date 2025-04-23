@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { api } from './index';
 
 // 创建新对话
 const conversationApi = {
@@ -177,11 +177,7 @@ const conversationApi = {
     // 获取对话列表的方法
     async getConversationList(page = 1, pageSize = 20) {
         try {
-            const headers = {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            };
-            const response = await axios.get(`/api/chat/list?page=${page}&pageSize=${pageSize}`, { headers });
+            const response = await api.get(`/chat/list?page=${page}&pageSize=${pageSize}`);
             if (response.status === 200) {
                 return {
                     success: response.data.success,
@@ -216,11 +212,8 @@ const conversationApi = {
     // 获取特定对话的历史记录
     async getConversationHistory(conversationId, page = 1, pageSize = 10) {
         try {
-            const headers = {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            };
-            const response = await axios.get(`/api/chat/list/${conversationId}?page=${page}&pageSize=${pageSize}`, { headers });
+            const response = await api.get(`/chat/list/${conversationId}?page=${page}&pageSize=${pageSize}`);
+            
             if (response.status === 200) {
                 return {
                     success: response.data.success,
@@ -322,12 +315,7 @@ const conversationApi = {
     // 删除对话
     async deleteConversations(conversationIds) {
         try {
-            const headers = {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            };
-            const response = await axios.delete("/api/chat/delete", {
-                headers,
+            const response = await api.delete("/chat/delete", {
                 data: { conversationIds }
             });
             if (response.status === 200) {
@@ -359,13 +347,7 @@ const conversationApi = {
     // 删除所有对话
     async deleteAllConversations() {
         try {
-            const headers = {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            };
-            const response = await axios.delete("/api/chat/deleteAll", {
-                headers
-            });
+            const response = await api.delete("/chat/deleteAll");
             if (response.status === 200) {
                 return response.data;
             } else {
@@ -395,14 +377,8 @@ const conversationApi = {
     // 更新对话标题
     async updateConversationTitle(conversationId, title) {
         try {
-            const headers = {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            };
-            const response = await axios.put(`/api/chat/updateTitle/${conversationId}`,
-                { title },
-                { headers }
-            );
+            const response = await api.put(`/chat/updateTitle/${conversationId}`, { title });
+            
             if (response.status === 200) {
                 return {
                     success: response.data.success,
