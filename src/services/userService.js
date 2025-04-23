@@ -148,3 +148,18 @@ export async function uploadAvatar(file) {
         }
     }
 }   
+export async function updateInfo(userData) {
+    try {
+        const updateUserInfoRes = await authApi.updateInfo(userData);
+        if (updateUserInfoRes.success == true) {
+            return updateUserInfoRes;
+        } else {
+            throw new Error(updateUserInfoRes);
+        }
+    } catch (error) {
+        return {
+            success: false,
+            error
+        }
+    }
+}

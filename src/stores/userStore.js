@@ -153,6 +153,23 @@ export const useUserStore = defineStore("userStore", {
       } catch (error) {
         console.error(error);
       }
+    },
+    
+    async updateFullname(fullName) {
+      try {
+        const updateResponse = await userService.updateInfo(fullName);
+        if (updateResponse.success == true) {
+          this.fullName = fullName;
+          return updateResponse;
+        } else if (updateResponse.success == false) {
+          console.error(updateResponse);
+          return updateResponse;
+        }
+      } catch (error) {
+        console.error(error);
+      }
     }
   },
+
+  
 });

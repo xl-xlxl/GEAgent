@@ -242,10 +242,20 @@ const authApi = {
             console.log(error);
             throw (error.data)
         }
-    }
+    },
+
+    async  updateInfo(userData) {
+        try {
+            const response =  await api.put('/user/me', userData)
+            return response.data;
+        } catch (error) {
+           console.log(error);
+            throw (error.data);
+        }
+    } 
 }
 
-    
+      
     
 
 export default authApi;

@@ -306,3 +306,20 @@
 .avatar-upload-container:hover .avatar-upload-overlay {
   opacity: 1;
 }
+/* 昵称修改样式 */
+.user-info-name h3 {
+  margin: 0;
+  font-weight: bold;
+  font-size: clamp(14px, 2vw, 18px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.user-info-name h3:hover {
+  background-color: #f5f5f5;
+}

@@ -194,21 +194,18 @@
                   <a-avatar :size="60" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
                   <div class="avatar-upload-overlay" @click="triggerFileInput">
                     <camera-outlined />
-                    <input 
-                      type="file" 
-                      ref="avatarFileInput" 
-                      style="display: none;" 
-                      accept="image/*"
-                      @change="handleAvatarChange" 
-                    />
+                    <input type="file" ref="avatarFileInput" style="display: none;" accept="image/*"
+                      @change="handleAvatarChange" />
                   </div>
                 </div>
                 <div class="user-info-name">
-                  <h3>{{ userStore.getUserInfo.fullName || '用户' }}</h3>
+                  <h3 v-if="!isEditingName" @click="startEditingName">{{ userStore.getUserInfo.fullName || '昵称' }}</h3>
+                  <a-input v-else ref="nameInput" v-model:value="editingName" @blur="saveName" @keyup.enter="saveName"
+                    size="small" style="width: 100%" />
                   <p>{{ userStore.getUserInfo.email || '' }}</p>
                 </div>
               </div>
-              
+
               <div class="user-info-details">
                 <div class="info-item">
                   <span class="info-label">用户名:</span>
@@ -219,10 +216,10 @@
                   <span class="info-value">{{ userStore.getUserInfo.email || '未设置' }}</span>
                 </div>
               </div>
-              
+
               <div class="user-actions">
                 <div class="preset-option preset-text action-button">
-                  修改信息
+                  修改密码
                 </div>
                 <div class="preset-option preset-text action-button" @click="handleLogout">
                   退出登录
@@ -304,6 +301,8 @@ export default {
       morePopoverVisible: {},
       settingPopoverVisible: false,
       userPopoverVisible: false,
+      isEditingName: false,
+      editingName: '',
       originalSettings: {
         max_tokens: 0,
         temperature: 0,
@@ -681,23 +680,23 @@ export default {
     async handleAvatarChange(event) {
       const file = event.target.files[0];
       if (!file) return;
-      
+
       // 验证文件类型和大小
       if (!file.type.match('image.*')) {
         message.error('请选择图片文件');
         return;
       }
-      
+
       if (file.size > 2 * 1024 * 1024) {
         message.error('图片大小不能超过2MB');
         return;
       }
-      
+
       try {
-        
-        
+
+
         message.loading({ content: '正在上传头像...', key: 'avatarUpload' });
-        
+
         // 调用上传API
         const userStore = useUserStore();
         const response = await userStore.uploadAvatar(file);
@@ -716,9 +715,46 @@ export default {
         // 清空文件输入框，以便可以再次选择相同的文件
         event.target.value = '';
       }
-    }
-  },
-}
+    },
+
+    // 开始编辑昵称
+    startEditingName() {
+      this.isEditingName = true;
+      this.editingName = this.userStore.getUserInfo.fullName || '';
+      this.$nextTick(() => {
+        this.$refs.nameInput?.focus();
+      });
+    },
+
+    // 保存昵称
+    async saveName() {
+      if (!this.editingName.trim()) {
+        this.isEditingName = false;
+        return;
+      }
+
+      try {
+        const userStore = useUserStore();
+        // 调用API更新用户信息
+        const result = await userStore.updateFullname({
+          fullName: this.editingName.trim()
+        });
+
+        if (result && result.success) {
+          message.success('昵称修改成功');
+          await this.userStore.refreshUserInfo();
+        } else {
+          message.error('修改昵称失败');
+        }
+      } catch (error) {
+        console.error('修改昵称失败:', error);
+        message.error('修改昵称失败');
+      } finally {
+        this.isEditingName = false;
+      }
+    },
+  }
+};
 </script>
 
 <style scoped>
