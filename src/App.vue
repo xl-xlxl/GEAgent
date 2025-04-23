@@ -202,7 +202,7 @@
                   <h3 v-if="!isEditingName" @click="startEditingName">{{ userStore.getUserInfo.fullName || '昵称' }}</h3>
                   <a-input v-else ref="nameInput" v-model:value="editingName" @blur="saveName" @keyup.enter="saveName"
                     size="small" style="width: 100%" />
-                  <p>{{ userStore.getUserInfo.email || '' }}</p>
+                  
                 </div>
               </div>
 
