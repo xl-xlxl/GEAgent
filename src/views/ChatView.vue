@@ -35,7 +35,7 @@
               message.thinking.trim().length > 0
             " class="thinking-message-container">
               <div class="avatar-container">
-                <a-avatar v-if="isFirstRoundThinking(message)" :size="40" src=""></a-avatar>
+                <a-avatar v-if="!message.round || message.round === 1" :size="40" src=""></a-avatar>
                 <div v-else class="avatar-placeholder"></div>
               </div>
               <div class="thinking-bubble">
@@ -220,104 +220,44 @@ export default {
     enableMCPService() {
       return this.featureStore.enableMCPService;
     },
-    groupedMessages() {
-      if (!this.messages || this.messages.length === 0) return [];
-
-      const groups = {};
-
-      // 首先按groupId分组
-      this.messages.forEach(msg => {
-        const groupId = msg.groupId || `fallback-${msg.interactionId || Date.now()}`;
-
-        if (!groups[groupId]) {
-          groups[groupId] = {
-            groupId,
-            userMessage: null,
-            rounds: {}
-          };
-        }
-
-        // 按角色分类处理
-        if (msg.role === 'user') {
-          groups[groupId].userMessage = msg;
-        } else {
-          const round = msg.round || 1;
-          if (!groups[groupId].rounds[round]) {
-            groups[groupId].rounds[round] = {
-              roundNumber: round,
-              thinking: null,
-              assistant: null
-            };
-          }
-
-          if (msg.role === 'thinking') {
-            groups[groupId].rounds[round].thinking = msg;
-          } else if (msg.role === 'assistant') {
-            groups[groupId].rounds[round].assistant = msg;
-          }
-        }
-      });
-
-      // 转换为数组并排序
-      const result = Object.values(groups);
-
-      // 为每个组整理rounds为数组并按回合排序
-      result.forEach(group => {
-        group.rounds = Object.values(group.rounds).sort((a, b) => a.roundNumber - b.roundNumber);
-      });
-
-      // 按交互ID排序
-      return result.sort((a, b) => {
-        const idA = a.userMessage?.interactionId || 0;
-        const idB = b.userMessage?.interactionId || 0;
-        return idA - idB;
-      });
-    }
   },
 
   methods: {
-    // 判断是否为第一轮思考，只有第一轮显示头像
-    isFirstRoundThinking(message) {
-      // 如果消息没有round属性或round为1，显示头像
-      if (!message.round || message.round === 1) {
-        return true;
-      }
+    updateMessageOrder(groupId) {
+      if (!groupId || !this.messages || this.messages.length === 0) return;
 
-      // 其他情况（round > 1）不显示头像
-      return false;
-    },
+      // 一次性查找所有属于该组的消息及其索引
+      const groupMessagesWithIndices = this.messages
+        .map((msg, index) => ({ msg, index }))
+        .filter(item => item.msg.groupId === groupId);
 
-    ensureRoundOrder(groupId) {
-      if (!groupId) return;
+      // 如果没有找到消息或只有一条消息，无需排序
+      if (groupMessagesWithIndices.length <= 1) return;
 
-      // 1. 找到当前组的用户消息索引
-      const userMsgIndex = this.messages.findIndex(msg => msg.role === 'user' && msg.groupId === groupId);
-      if (userMsgIndex === -1) return;
+      // 获取组的索引范围
+      const indices = groupMessagesWithIndices.map(item => item.index);
+      const startIndex = Math.min(...indices);
+      const endIndex = Math.max(...indices);
 
-      // 2. 提取同组消息
-      const groupMessages = this.messages.filter(msg => msg.groupId === groupId && msg !== this.messages[userMsgIndex]);
+      // 获取需要排序的消息
+      const groupMessages = groupMessagesWithIndices.map(item => item.msg);
 
-      // 3. 按round排序组内消息
-      const sortedMessages = groupMessages.sort((a, b) => {
-        // 确保有round属性的消息按round排序
-        if (a.round && b.round) {
-          if (a.round !== b.round) {
-            return a.round - b.round; // 按round升序排列
-          }
+      // 排序当前组的消息
+      groupMessages.sort((a, b) => {
+        // 优先按回合排序
+        const roundA = a.round || 1;
+        const roundB = b.round || 1;
+        if (roundA !== roundB) return roundA - roundB;
 
-          // 如果round相同，thinking消息应该在assistant消息之前
-          if (a.role !== b.role) {
-            return a.role === 'thinking' ? -1 : 1;
-          }
-        }
-        return 0;
+        // 同一回合内按角色顺序排列 - 所有角色都已定义
+        const roleOrder = { user: 1, thinking: 2, assistant: 3 };
+        return roleOrder[a.role] - roleOrder[b.role];
       });
 
-      // 4. 移除旧的组内消息
-      this.messages = this.messages.filter(msg => msg.groupId !== groupId || msg === this.messages[userMsgIndex]);
-
-      // 5. 在用户消息后插入排序好的消息
-      this.messages.splice(userMsgIndex + 1, 0, ...sortedMessages);
+      // 原地替换排序后的消息
+      for (let i = 0; i < groupMessages.length; i++) {
+        this.messages[startIndex + i] = groupMessages[i];
+      }
     },
 
     handleScroll() {
@@ -400,184 +340,97 @@ export default {
 
 
     // 处理思考过程回调的辅助函数
-    handleReasoningCallback(thinkingMessage, loadHide) {
-      // 保存this引用以及从消息中获取groupId
-      const self = this;
-      const groupId = thinkingMessage.groupId;
+    handleReasoningCallback(messageObject, loadHide) {
+      const groupId = messageObject.groupId;
+      const baseId = messageObject.id;
 
-      return (reasoning, round = 0) => {
+      return (content, round = 0) => {
+        // 处理首次响应
         if (!this.firstResponseReceived) {
-          loadHide(); // 收到第一个回复时隐藏加载提示
+          loadHide();
           this.firstResponseReceived = true;
         }
 
-        const actualRound = round || 1; // 确保有有效的round值
-        // 创建回合特定的思考消息ID
-        const thinkingId = `${thinkingMessage.id}-round-${actualRound}`;
-        let thinkingIndex = this.messages.findIndex(msg => msg.id === thinkingId);
+        const actualRound = round || 1;
+        const messageId = `${baseId}-round-${actualRound}`;
 
-        if (thinkingIndex === -1) {
-          // 如果是新回合但不是第一个回合，则创建新的思考消息
-          if (actualRound > 1) {
-            const newThinkingMsg = {
-              id: thinkingId,
-              role: 'thinking',
-              thinking: reasoning,
-              round: actualRound,
-              groupId: groupId  // 保持组ID一致
-            };
+        // 查找是否已存在消息
+        let existingIndex = this.messages.findIndex(msg => msg.id === messageId);
 
-            // 找到合适的插入位置 - 使用改进的位置查找方法
-            const insertIndex = this.findInsertPositionForRound(actualRound);
-            this.messages.splice(insertIndex + 1, 0, newThinkingMsg);
-          } else {
-            // 更新第一轮思考
-            thinkingIndex = self.messages.findIndex(msg =>
-              msg.id === thinkingMessage.id && msg.groupId === groupId);
-            if (thinkingIndex !== -1) {
-              const currentThinking = self.messages[thinkingIndex].thinking || "";
-              self.messages[thinkingIndex].thinking = currentThinking + reasoning;
-              self.messages[thinkingIndex].round = actualRound;
-              self.messages[thinkingIndex].id = thinkingId;
-            }
-          }
+        // 简化思考处理逻辑
+        if (existingIndex === -1) {
+          // 创建新消息，无论哪个回合
+          this.messages.push({
+            id: messageId,
+            role: 'thinking',
+            thinking: content,
+            round: actualRound,
+            groupId
+          });
         } else {
-          // 更新现有回合的思考消息
-          const currentThinking = self.messages[thinkingIndex].thinking || "";
-          self.messages[thinkingIndex].thinking = currentThinking + reasoning;
+          // 更新现有消息
+          this.messages[existingIndex].thinking = (this.messages[existingIndex].thinking || "") + content;
         }
-        self.ensureRoundOrder(groupId);
+
+        this.updateMessageOrder(groupId);
       };
     },
 
     // 处理回答内容回调的辅助函数
-    handleReplyCallback(aiMessage, loadHide) {
-      // 保存this引用以及从消息中获取groupId
-      const self = this;
-      const groupId = aiMessage.groupId;
+    handleReplyCallback(messageObject, loadHide) {
+      const groupId = messageObject.groupId;
+      const baseId = messageObject.id;
 
-      return (reply, round = 0) => {
-        if (!self.firstResponseReceived) {
+      return (content, round = 0) => {
+        // 处理首次响应
+        if (!this.firstResponseReceived) {
           loadHide();
-          self.firstResponseReceived = true;
+          this.firstResponseReceived = true;
         }
 
-        // 明确处理round信息，确保每个round都有专属消息
-        const actualRound = round || 1; // 如果没有提供round，默认为第1轮
-        const aiId = `${aiMessage.id}-round-${actualRound}`;
-        let aiIndex = self.messages.findIndex(msg => msg.id === aiId);
+        const actualRound = round || 1;
+        const messageId = `${baseId}-round-${actualRound}`;
+        const existingIndex = this.messages.findIndex(msg => msg.id === messageId);
 
         // 处理表情包数据
-        if (typeof reply === 'object' && reply.type === 'emoji') {
-          const emojiRound = reply.round || actualRound;
-          const emojiAiId = `${aiMessage.id}-round-${emojiRound}`;
-          let emojiAiIndex = self.messages.findIndex(msg => msg.id === emojiAiId);
+        if (typeof content === 'object' && content.type === 'emoji') {
+          const emojiUrl = content.url;
 
-          if (emojiAiIndex === -1) {
-            // 创建新回合的AI消息
-            const newAiMsg = {
-              id: emojiAiId,
+          if (existingIndex === -1) {
+            // 创建新表情消息
+            this.messages.push({
+              id: messageId,
               role: 'assistant',
               content: '',
-              emojiUrls: [reply.url],
-              round: emojiRound,
-              groupId: groupId  // 保持组ID一致
-            };
-
-            // 找到同一组内对应回合的思考消息
-            const thinkingId = `${self.thinkingMessage.id}-round-${emojiRound}`;
-            const thinkingIndex = self.messages.findIndex(msg =>
-              msg.id === thinkingId && msg.groupId === groupId);
-
-            // 如果找到了对应回合的思考消息，就在其后插入
-            if (thinkingIndex !== -1) {
-              self.messages.splice(thinkingIndex + 1, 0, newAiMsg);
-            } else {
-              // 否则使用通用定位逻辑
-              const insertIndex = self.findInsertPositionForRound(emojiRound);
-              self.messages.splice(insertIndex + 1, 0, newAiMsg);
-            }
+              emojiUrls: [emojiUrl],
+              round: actualRound,
+              groupId
+            });
           } else {
-            // 更新现有emoji消息
-            if (!self.messages[emojiAiIndex].emojiUrls) {
-              self.messages[emojiAiIndex].emojiUrls = [];
-            }
-            self.messages[emojiAiIndex].emojiUrls.push(reply.url);
-          }
-          return;
-        }
-
-        // 处理文本内容
-        if (aiIndex === -1) {
-          // 创建新的AI消息
-          const newAiMsg = {
-            id: aiId,
-            role: 'assistant',
-            content: reply,
-            round: actualRound,
-            groupId: groupId  // 保持组ID一致
-          };
-
-          // 找到同一组内对应回合的思考消息
-          const thinkingId = `${self.thinkingMessage.id}-round-${actualRound}`;
-          const thinkingIndex = self.messages.findIndex(msg =>
-            msg.id === thinkingId && msg.groupId === groupId);
-
-          if (thinkingIndex !== -1) {
-            // 如果有对应回合的思考消息，在其后插入
-            self.messages.splice(thinkingIndex + 1, 0, newAiMsg);
-          } else {
-            // 否则使用通用定位逻辑
-            const insertIndex = self.findInsertPositionForRound(actualRound);
-            self.messages.splice(insertIndex + 1, 0, newAiMsg);
+            // 更新现有表情消息
+            const message = this.messages[existingIndex];
+            if (!message.emojiUrls) message.emojiUrls = [];
+            message.emojiUrls.push(emojiUrl);
           }
         } else {
-          // 更新现有回合的AI消息
-          const currentContent = self.messages[aiIndex].content || "";
-          self.messages[aiIndex].content = currentContent + reply;
+          // 处理文本内容
+          if (existingIndex === -1) {
+            // 创建新文本消息
+            this.messages.push({
+              id: messageId,
+              role: 'assistant',
+              content: content,
+              round: actualRound,
+              groupId
+            });
+          } else {
+            // 追加到现有文本
+            const currentContent = this.messages[existingIndex].content || "";
+            this.messages[existingIndex].content = currentContent + content;
+          }
         }
-        self.ensureRoundOrder(groupId);
+        this.updateMessageOrder(groupId);
       };
-    },
-
-    // 查找特定回合消息应该插入的位置
-    findInsertPositionForRound(round, groupId) {
-      // 只在当前对话组内寻找合适的位置
-
-      // 1. 尝试找到同一组同一回合的最后一条消息
-      for (let i = this.messages.length - 1; i >= 0; i--) {
-        const msg = this.messages[i];
-        if (msg.groupId === groupId && msg.round === round) {
-          return i;
-        }
-      }
-
-      // 2. 在同一组内寻找小于当前回合的最大回合消息
-      let maxRound = 0;
-      let maxRoundIndex = -1;
-
-      for (let i = this.messages.length - 1; i >= 0; i--) {
-        const msg = this.messages[i];
-        if (msg.groupId === groupId && msg.round && msg.round < round && msg.round > maxRound) {
-          maxRound = msg.round;
-          maxRoundIndex = i;
-        }
-      }
-
-      if (maxRoundIndex !== -1) {
-        return maxRoundIndex;
-      }
-
-      // 3. 找到当前组的用户消息
-      for (let i = this.messages.length - 1; i >= 0; i--) {
-        const msg = this.messages[i];
-        if (msg.groupId === groupId && msg.role === 'user') {
-          return i;
-        }
-      }
-
-      // 4. 如果都找不到，找到最近的消息位置
-      return this.messages.length - 1;
     },
 
     getTitleFromMessage(message) {
