@@ -23,6 +23,8 @@ declare module 'vue' {
     ASelectOption: typeof import('ant-design-vue/es')['SelectOption']
     ASlider: typeof import('ant-design-vue/es')['Slider']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
+    ChangeEmail: typeof import('./components/ChangeEmail.vue')['default']
+    ChangePassword: typeof import('./components/ChangePassword.vue')['default']
     LoginByEmail: typeof import('./components/LoginByEmail.vue')['default']
     LoginCard: typeof import('./components/LoginCard.vue')['default']
     RegisterCard: typeof import('./components/RegisterCard.vue')['default']
