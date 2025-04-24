@@ -211,6 +211,59 @@ export default {
     enableMCPService() {
       return this.featureStore.enableMCPService;
     },
+    groupedMessages() {
+      if (!this.messages || this.messages.length === 0) return [];
+      
+      const groups = {};
+      
+      // 首先按groupId分组
+      this.messages.forEach(msg => {
+        const groupId = msg.groupId || `fallback-${msg.interactionId || Date.now()}`;
+        
+        if (!groups[groupId]) {
+          groups[groupId] = {
+            groupId,
+            userMessage: null,
+            rounds: {}
+          };
+        }
+        
+        // 按角色分类处理
+        if (msg.role === 'user') {
+          groups[groupId].userMessage = msg;
+        } else {
+          const round = msg.round || 1;
+          if (!groups[groupId].rounds[round]) {
+            groups[groupId].rounds[round] = {
+              roundNumber: round,
+              thinking: null,
+              assistant: null
+            };
+          }
+          
+          if (msg.role === 'thinking') {
+            groups[groupId].rounds[round].thinking = msg;
+          } else if (msg.role === 'assistant') {
+            groups[groupId].rounds[round].assistant = msg;
+          }
+        }
+      });
+      
+      // 转换为数组并排序
+      const result = Object.values(groups);
+      
+      // 为每个组整理rounds为数组并按回合排序
+      result.forEach(group => {
+        group.rounds = Object.values(group.rounds).sort((a, b) => a.roundNumber - b.roundNumber);
+      });
+      
+      // 按交互ID排序
+      return result.sort((a, b) => {
+        const idA = a.userMessage?.interactionId || 0;
+        const idB = b.userMessage?.interactionId || 0;
+        return idA - idB;
+      });
+    }
   },
 
   methods: {

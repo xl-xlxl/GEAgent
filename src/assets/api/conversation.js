@@ -244,70 +244,102 @@ const conversationApi = {
         if (!interactions || !Array.isArray(interactions)) {
             return [];
         }
-
+    
         const messages = [];
-
+    
         // 遍历每个交互
         for (const interaction of interactions) {
+            // 用户消息 - 每个交互的开始
             if (interaction.user_input) {
                 messages.push({
                     id: `user-${interaction.id}`,
                     role: 'user',
-                    content: interaction.user_input
+                    content: interaction.user_input,
+                    interactionId: interaction.id,
+                    groupId: `group-${interaction.id}` // 添加组ID以便于分组
                 });
             }
+            
             if (!interaction.messages) {
                 continue;
             }
-            // 思考内容
-            let allReasoning = '';
+    
+            // 按回合分组处理消息
+            const roundMessages = {};
+            
+            // 首先将消息按回合分组
             interaction.messages.forEach(msg => {
-                if (msg.assistant_reasoning_output) {
-                    allReasoning += msg.assistant_reasoning_output.trim() + '\n\n';
+                const round = msg.round || 1; // 默认为第1回合
+                if (!roundMessages[round]) {
+                    roundMessages[round] = {
+                        thinking: '',
+                        content: '',
+                        emojiUrls: []
+                    };
                 }
-            });
-            if (allReasoning.trim()) {
-                messages.push({
-                    id: `thinking-${interaction.id}`,
-                    role: 'thinking',
-                    thinking: allReasoning.trim()
-                });
-            }
-            // 表情包
-            let allContent = '';
-            const allEmojiUrls = [];
-            interaction.messages.forEach(msg => {
+                
+                // 收集思考内容
+                if (msg.assistant_reasoning_output) {
+                    roundMessages[round].thinking += msg.assistant_reasoning_output.trim() + '\n\n';
+                }
+                
+                // 收集回复内容
                 if (msg.assistant_output) {
                     let cleanedOutput = msg.assistant_output
                         .replace(/<tool_call>/g, '')
                         .replace(/<del>/g, '')
                         .trim();
                     if (cleanedOutput) {
-                        allContent += cleanedOutput + ' ';
+                        roundMessages[round].content += cleanedOutput + ' ';
                     }
                 }
-                // 处理表情包URL
+                
+                // 收集表情包URL
                 if (msg.mcp_service_status && msg.mcp_service_status.extraCall) {
                     const extraCalls = Array.isArray(msg.mcp_service_status.extraCall)
                         ? msg.mcp_service_status.extraCall
                         : [msg.mcp_service_status.extraCall];
                     extraCalls.forEach(call => {
                         if (call && call.name === 'emojiPack' && call.arguments && call.arguments.url) {
-                            allEmojiUrls.push(call.arguments.url);
+                            roundMessages[round].emojiUrls.push(call.arguments.url);
                         }
                     });
                 }
             });
-            // ai回复消息
-            if (allContent.trim() || allEmojiUrls.length > 0) {
-                messages.push({
-                    id: `assistant-${interaction.id}`,
-                    role: 'assistant',
-                    content: allContent.trim(),
-                    emojiUrls: allEmojiUrls
-                });
+            
+            // 然后按回合顺序创建消息
+            const sortedRounds = Object.keys(roundMessages).sort((a, b) => parseInt(a) - parseInt(b));
+            
+            for (const round of sortedRounds) {
+                const roundData = roundMessages[round];
+                
+                // 添加思考消息
+                if (roundData.thinking.trim()) {
+                    messages.push({
+                        id: `thinking-${interaction.id}-round-${round}`,
+                        role: 'thinking',
+                        thinking: roundData.thinking.trim(),
+                        round: parseInt(round),
+                        interactionId: interaction.id,
+                        groupId: `group-${interaction.id}`
+                    });
+                }
+                
+                // 添加回复消息
+                if (roundData.content.trim() || roundData.emojiUrls.length > 0) {
+                    messages.push({
+                        id: `assistant-${interaction.id}-round-${round}`,
+                        role: 'assistant',
+                        content: roundData.content.trim(),
+                        emojiUrls: roundData.emojiUrls,
+                        round: parseInt(round),
+                        interactionId: interaction.id,
+                        groupId: `group-${interaction.id}`
+                    });
+                }
             }
         }
+        
         return messages;
     },
 
