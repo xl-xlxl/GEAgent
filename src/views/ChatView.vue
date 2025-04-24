@@ -48,10 +48,19 @@
                 <a-avatar v-if="!hasThinkingBefore(message)" :size="40" src=""></a-avatar>
                 <div v-else class="avatar-placeholder"></div>
               </div>
-              <div class="ai-bubble">
+              <!-- 文本内容气泡 -->
+              <div v-if="message.content" class="ai-bubble">
                 <div v-html="renderMarkdown(message.content)"></div>
-                <!-- 显示表情包 -->
-                <div v-if="message.emojiUrls && message.emojiUrls.length" class="emoji-container">
+              </div>
+            </div>
+            <!-- 表情包 -->
+            <div v-if="message.role === 'assistant' && message.emojiUrls && message.emojiUrls.length"
+              class="ai-message-container emoji-message-container">
+              <div class="avatar-container">
+                <div class="avatar-placeholder"></div>
+              </div>
+              <div class="ai-bubble">
+                <div class="emoji-container">
                   <img v-for="(url, index) in message.emojiUrls" :key="`emoji-${message.id}-${index}`" :src="url"
                     alt="表情包" class="emoji-image" />
                 </div>
@@ -213,13 +222,13 @@ export default {
     },
     groupedMessages() {
       if (!this.messages || this.messages.length === 0) return [];
-      
+
       const groups = {};
-      
+
       // 首先按groupId分组
       this.messages.forEach(msg => {
         const groupId = msg.groupId || `fallback-${msg.interactionId || Date.now()}`;
-        
+
         if (!groups[groupId]) {
           groups[groupId] = {
             groupId,
@@ -227,7 +236,7 @@ export default {
             rounds: {}
           };
         }
-        
+
         // 按角色分类处理
         if (msg.role === 'user') {
           groups[groupId].userMessage = msg;
@@ -240,7 +249,7 @@ export default {
               assistant: null
             };
           }
-          
+
           if (msg.role === 'thinking') {
             groups[groupId].rounds[round].thinking = msg;
           } else if (msg.role === 'assistant') {
@@ -248,15 +257,15 @@ export default {
           }
         }
       });
-      
+
       // 转换为数组并排序
       const result = Object.values(groups);
-      
+
       // 为每个组整理rounds为数组并按回合排序
       result.forEach(group => {
         group.rounds = Object.values(group.rounds).sort((a, b) => a.roundNumber - b.roundNumber);
       });
-      
+
       // 按交互ID排序
       return result.sort((a, b) => {
         const idA = a.userMessage?.interactionId || 0;
