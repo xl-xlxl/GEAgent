@@ -377,61 +377,92 @@ export default {
     },
 
     // 处理回答内容回调的辅助函数
-    handleReplyCallback(messageObject, loadHide) {
-      const groupId = messageObject.groupId;
-      const baseId = messageObject.id;
+    handleReplyCallback(aiMessage, loadHide) {
+  const groupId = aiMessage.groupId;
 
-      return (content, round = 0) => {
-        // 处理首次响应
-        if (!this.firstResponseReceived) {
-          loadHide();
-          this.firstResponseReceived = true;
-        }
+  return (reply, round = 0) => {
+    if (!this.firstResponseReceived) {
+      loadHide();
+      this.firstResponseReceived = true;
+    }
 
-        const actualRound = round || 1;
-        const messageId = `${baseId}-round-${actualRound}`;
-        const existingIndex = this.messages.findIndex(msg => msg.id === messageId);
+    // 明确处理 round 信息，确保每个 round 都有专属消息
+    const actualRound = round || 1; // 如果没有提供 round，默认为第 1 轮
+    const aiId = `${aiMessage.id}-round-${actualRound}`;
+    const aiIndex = this.messages.findIndex((msg) => msg.id === aiId);
 
-        // 处理表情包数据
-        if (typeof content === 'object' && content.type === 'emoji') {
-          const emojiUrl = content.url;
+    // 处理表情包数据
+    if (typeof reply === "object" && reply.type === "emoji") {
+      const emojiRound = reply.round || actualRound;
+      const emojiAiId = `${aiMessage.id}-round-${emojiRound}`;
+      const emojiAiIndex = this.messages.findIndex((msg) => msg.id === emojiAiId);
 
-          if (existingIndex === -1) {
-            // 创建新表情消息
-            this.messages.push({
-              id: messageId,
-              role: 'assistant',
-              content: '',
-              emojiUrls: [emojiUrl],
-              round: actualRound,
-              groupId
-            });
-          } else {
-            // 更新现有表情消息
-            const message = this.messages[existingIndex];
-            if (!message.emojiUrls) message.emojiUrls = [];
-            message.emojiUrls.push(emojiUrl);
-          }
+      if (emojiAiIndex === -1) {
+        // 创建新回合的 AI 消息
+        const newAiMsg = {
+          id: emojiAiId,
+          role: "assistant",
+          content: "",
+          emojiUrls: [reply.url],
+          round: emojiRound,
+          groupId: groupId, // 保持组 ID 一致
+        };
+
+        // 找到同一组内对应回合的思考消息
+        const thinkingId = `${this.thinkingMessage.id}-round-${emojiRound}`;
+        const thinkingIndex = this.messages.findIndex(
+          (msg) => msg.id === thinkingId && msg.groupId === groupId
+        );
+
+        // 如果找到了对应回合的思考消息，就在其后插入
+        if (thinkingIndex !== -1) {
+          this.messages.splice(thinkingIndex + 1, 0, newAiMsg);
         } else {
-          // 处理文本内容
-          if (existingIndex === -1) {
-            // 创建新文本消息
-            this.messages.push({
-              id: messageId,
-              role: 'assistant',
-              content: content,
-              round: actualRound,
-              groupId
-            });
-          } else {
-            // 追加到现有文本
-            const currentContent = this.messages[existingIndex].content || "";
-            this.messages[existingIndex].content = currentContent + content;
-          }
+          // 如果没有找到思考消息，则直接插入到消息列表末尾
+          this.messages.push(newAiMsg);
         }
-        this.updateMessageOrder(groupId);
+      } else {
+        // 更新现有 emoji 消息
+        if (!this.messages[emojiAiIndex].emojiUrls) {
+          this.messages[emojiAiIndex].emojiUrls = [];
+        }
+        this.messages[emojiAiIndex].emojiUrls.push(reply.url);
+      }
+      return;
+    }
+
+    // 处理文本内容
+    if (aiIndex === -1) {
+      // 创建新的 AI 消息
+      const newAiMsg = {
+        id: aiId,
+        role: "assistant",
+        content: reply,
+        round: actualRound,
+        groupId: groupId, // 保持组 ID 一致
       };
-    },
+
+      // 找到同一组内对应回合的思考消息
+      const thinkingId = `${this.thinkingMessage.id}-round-${actualRound}`;
+      const thinkingIndex = this.messages.findIndex(
+        (msg) => msg.id === thinkingId && msg.groupId === groupId
+      );
+
+      if (thinkingIndex !== -1) {
+        // 如果有对应回合的思考消息，在其后插入
+        this.messages.splice(thinkingIndex + 1, 0, newAiMsg);
+      } else {
+        // 如果没有找到思考消息，则直接插入到消息列表末尾
+        this.messages.push(newAiMsg);
+      }
+    } else {
+      // 更新现有回合的 AI 消息
+      const currentContent = this.messages[aiIndex].content || "";
+      this.messages[aiIndex].content = currentContent + reply;
+    }
+    this.updateMessageOrder(groupId);
+  };
+},
 
     getTitleFromMessage(message) {
       // 截取前20个字符，如果不足20个则使用整个消息
