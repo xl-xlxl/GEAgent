@@ -20,7 +20,7 @@
           
           <a-form-item name="code" :rules="[
             { required: true, message: '请输入验证码' },
-            { len: 6, message: '验证码长度必须为6位' }
+            { maxlength:6, message: '验证码长度必须为6位' }
           ]">
             <div class="verification-code-container">
               <a-input v-model:value="resetForm.code" placeholder="验证码" size="large">

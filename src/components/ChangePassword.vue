@@ -20,7 +20,7 @@
         <!-- 验证码输入框 -->
         <a-form-item name="code" :rules="[
           { required: true, message: '请输入验证码' },
-          { len: 6, message: '验证码长度必须为6位' }
+          {  validator: validateCodeLength }
         ]">
           <div class="verification-code-container">
             <a-input v-model:value="passwordForm.code" placeholder="验证码" size="large">
@@ -94,7 +94,7 @@ const passwordForm = ref({
   confirmPassword: ''
 });
 
-const emit = defineEmits(['success', 'cancel']);
+const emit = defineEmits(['success', 'cancel','click']);
 
 // 验证确认密码
 const validateConfirmPassword = async (_rule: any, value: string) => {
@@ -146,6 +146,12 @@ const sendVerificationCode = async () => {
   }
 };
 
+const validateCodeLength = async (_rule: any, value: string) => {
+  if (value && value.length !== 6) {
+    return Promise.reject('验证码长度必须为6位');
+  }
+  return Promise.resolve();
+};
 // 处理修改密码
 const handleChangePassword = async (values: any) => {
   loading.value = true;
@@ -173,6 +179,7 @@ const handleChangePassword = async (values: any) => {
   } finally {
     loading.value = false;
   }
+  
 };
 </script>
 
