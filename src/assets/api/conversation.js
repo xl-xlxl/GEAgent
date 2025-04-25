@@ -62,7 +62,7 @@ const conversationApi = {
                             continue;
                         }
                         // 其他需要过滤的响应类型
-                        else if (data.webSearchStatus || data.success === false || data.MCPStatus || data.content === "<tool_call>") {
+                        else if (data.webSearchStatus || data.success === false || data.content === "<tool_call>") {
                             continue;
                         }
                         // 处理思考过程
@@ -73,6 +73,18 @@ const conversationApi = {
                         else if (data.content !== null && data.content !== undefined && replyCallback) {
                             replyCallback(data.content, currentRound);
                         }
+                        // 处理 MCP 状态数据
+                        else if (data.MCPStatus) {
+                            if (replyCallback) {
+                                replyCallback({
+                                    type: 'mcp',
+                                    mcpData: data.MCPStatus,
+                                    round: currentRound
+                                });
+                            }
+                            continue;
+                        }
+
                     } catch (error) {
                         console.error("解析响应数据错误:", error, line);
                     }
@@ -146,7 +158,7 @@ const conversationApi = {
                             continue;
                         }
                         // 其他需要过滤的响应类型
-                        else if (data.webSearchStatus || data.success === false || data.MCPStatus || data.content === "<tool_call>") {
+                        else if (data.webSearchStatus || data.success === false || data.content === "<tool_call>") {
                             continue;
                         }
                         // 处理思考过程
@@ -157,6 +169,18 @@ const conversationApi = {
                         else if (data.content !== null && data.content !== undefined && replyCallback) {
                             replyCallback(data.content, currentRound);
                         }
+                        // 处理 MCP 状态数据
+                        else if (data.MCPStatus) {
+                            if (replyCallback) {
+                                replyCallback({
+                                    type: 'mcp',
+                                    mcpData: data.MCPStatus,
+                                    round: currentRound
+                                });
+                            }
+                            continue;
+                        }
+
                     } catch (error) {
                         console.error("解析响应数据错误:", error, line);
                     }
@@ -240,114 +264,168 @@ const conversationApi = {
     },
 
     // 处理消息格式化的方法
-processMessages(interactions) {
-    if (!interactions?.length) return [];
-    
-    const messages = [];
-    
-    for (const interaction of interactions) {
-        const groupId = `group-${interaction.id}`;
-        
-        // 添加用户消息
-        if (interaction.user_input) {
-            messages.push({
-                id: `user-${interaction.id}`,
-                role: 'user',
-                content: interaction.user_input,
-                interactionId: interaction.id,
-                groupId
-            });
-        }
-        
-        // 没有消息数据则跳过后续处理
-        if (!interaction.messages?.length) continue;
-        
-        // 将消息按回合分组并收集数据
-        const roundMessages = this.collectRoundMessages(interaction.messages);
-        
-        // 创建并添加思考和回复消息
-        Object.entries(roundMessages)
-            .sort(([a], [b]) => parseInt(a) - parseInt(b))
-            .forEach(([round, data]) => {
-                // 添加思考消息
-                if (data.thinking.trim()) {
-                    messages.push({
-                        id: `thinking-${interaction.id}-round-${round}`,
-                        role: 'thinking',
-                        thinking: data.thinking.trim(),
-                        round: parseInt(round),
-                        interactionId: interaction.id,
-                        groupId
-                    });
-                }
-                
-                // 添加回复消息
-                if (data.content.trim() || data.emojiUrls.length > 0) {
-                    messages.push({
-                        id: `assistant-${interaction.id}-round-${round}`,
-                        role: 'assistant',
-                        content: data.content.trim(),
-                        emojiUrls: data.emojiUrls,
-                        round: parseInt(round),
-                        interactionId: interaction.id,
-                        groupId
-                    });
-                }
-            });
-    }
-    
-    return messages;
-},
+    // 处理消息格式化的方法
+    processMessages(interactions) {
+        if (!interactions?.length) return [];
 
-// 提取的辅助方法，用于收集每个回合的消息数据
-collectRoundMessages(messages) {
-    const roundMessages = {};
-    
-    messages.forEach(msg => {
-        const round = msg.round || 1;
-        
-        // 初始化回合数据
-        if (!roundMessages[round]) {
-            roundMessages[round] = {
-                thinking: '',
-                content: '',
-                emojiUrls: []
-            };
-        }
-        
-        // 收集思考内容
-        if (msg.assistant_reasoning_output) {
-            roundMessages[round].thinking += msg.assistant_reasoning_output.trim() + '\n\n';
-        }
-        
-        // 收集回复内容
-        if (msg.assistant_output) {
-            const cleanedOutput = msg.assistant_output
-                .replace(/<tool_call>/g, '')
-                .replace(/<del>/g, '')
-                .trim();
-                
-            if (cleanedOutput) {
-                roundMessages[round].content += cleanedOutput + ' ';
+        const messages = [];
+
+        for (const interaction of interactions) {
+            const groupId = `group-${interaction.id}`;
+
+            // 添加用户消息
+            if (interaction.user_input) {
+                messages.push({
+                    id: `user-${interaction.id}`,
+                    role: 'user',
+                    content: interaction.user_input,
+                    interactionId: interaction.id,
+                    groupId
+                });
             }
+
+            // 没有消息数据则跳过后续处理
+            if (!interaction.messages?.length) continue;
+
+            // 将消息按回合分组并收集数据
+            const roundMessages = this.collectRoundMessages(interaction.messages);
+
+            // 创建并添加思考和回复消息
+            Object.entries(roundMessages)
+                .sort(([a], [b]) => parseInt(a) - parseInt(b))
+                .forEach(([round, data]) => {
+                    // 添加思考消息
+                    if (data.thinking.trim()) {
+                        messages.push({
+                            id: `thinking-${interaction.id}-round-${round}`,
+                            role: 'thinking',
+                            thinking: data.thinking.trim(),
+                            round: parseInt(round),
+                            interactionId: interaction.id,
+                            groupId
+                        });
+                    }
+
+                    // 添加回复消息
+                    if (data.content.trim() || data.emojiUrls.length > 0) {
+                        const assistantMsg = {
+                            id: `assistant-${interaction.id}-round-${round}`,
+                            role: 'assistant',
+                            content: data.content.trim(),
+                            round: parseInt(round),
+                            interactionId: interaction.id,
+                            groupId
+                        };
+
+                        // 添加表情包URL（如果有）
+                        if (data.emojiUrls.length > 0) {
+                            assistantMsg.emojiUrls = data.emojiUrls;
+                        }
+
+                        // 添加MCP数据（如果有）
+                        if (data.mcpData) {
+                            assistantMsg.mcpData = data.mcpData;
+                        }
+
+                        messages.push(assistantMsg);
+                    }
+                    // 如果有MCP数据但没有文本内容和表情，创建单独的MCP消息
+                    else if (data.mcpData) {
+                        messages.push({
+                            id: `assistant-${interaction.id}-round-${round}-mcp`,
+                            role: 'assistant',
+                            content: '',
+                            mcpData: data.mcpData,
+                            round: parseInt(round),
+                            interactionId: interaction.id,
+                            groupId
+                        });
+                    }
+                });
         }
-        
-        // 收集表情包URL
-        if (msg.mcp_service_status?.extraCall) {
-            const extraCalls = Array.isArray(msg.mcp_service_status.extraCall)
-                ? msg.mcp_service_status.extraCall
-                : [msg.mcp_service_status.extraCall];
-                
-            extraCalls.forEach(call => {
-                if (call?.name === 'emojiPack' && call.arguments?.url) {
-                    roundMessages[round].emojiUrls.push(call.arguments.url);
+
+        return messages;
+    },
+
+    // 提取的辅助方法，用于收集每个回合的消息数据
+    collectRoundMessages(messages) {
+        const roundMessages = {};
+
+        messages.forEach(msg => {
+            const round = msg.round || 1;
+
+            // 初始化回合数据
+            if (!roundMessages[round]) {
+                roundMessages[round] = {
+                    thinking: '',
+                    content: '',
+                    emojiUrls: [],
+                    mcpData: null
+                };
+            }
+
+            // 收集思考内容
+            if (msg.assistant_reasoning_output) {
+                roundMessages[round].thinking += msg.assistant_reasoning_output.trim() + '\n\n';
+            }
+
+            // 收集回复内容
+            if (msg.assistant_output) {
+                const cleanedOutput = msg.assistant_output
+                    .replace(/<tool_call>/g, '')
+                    .replace(/<del>/g, '')
+                    .trim();
+
+                if (cleanedOutput) {
+                    roundMessages[round].content += cleanedOutput + ' ';
                 }
-            });
-        }
-    });
-    
-    return roundMessages;
-},
+            }
+
+            // 收集表情包URL
+            if (msg.mcp_service_status?.extraCall) {
+                const extraCalls = Array.isArray(msg.mcp_service_status.extraCall)
+                    ? msg.mcp_service_status.extraCall
+                    : [msg.mcp_service_status.extraCall];
+
+                extraCalls.forEach(call => {
+                    if (call?.name === 'emojiPack' && call.arguments?.url) {
+                        roundMessages[round].emojiUrls.push(call.arguments.url);
+                    }
+                });
+            }
+
+            // 收集MCP状态数据
+            if (msg.mcp_service_status && !roundMessages[round].mcpData) {
+                // 提取MCP服务调用数据
+                const fnCalls = [];
+
+                // 处理函数调用信息
+                if (msg.mcp_service_status.fnCall) {
+                    const calls = Array.isArray(msg.mcp_service_status.fnCall)
+                        ? msg.mcp_service_status.fnCall
+                        : [msg.mcp_service_status.fnCall];
+
+                    calls.forEach(call => {
+                        if (call && call.name) {
+                            fnCalls.push({
+                                name: call.name,
+                                arguments: call.arguments || {}
+                            });
+                        }
+                    });
+                }
+
+                // 只有当存在函数调用时才添加MCP数据
+                if (fnCalls.length > 0) {
+                    roundMessages[round].mcpData = {
+                        fnCall: fnCalls
+                    };
+                }
+            }
+        });
+
+        return roundMessages;
+    },
 
 
     // 删除对话
