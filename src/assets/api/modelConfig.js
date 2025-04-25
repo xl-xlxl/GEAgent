@@ -24,5 +24,15 @@ export const modelConfigAPI = {
             console.error(`API调用失败 - 更新模型${currentModel}配置:`, error);
             throw error;
         }
-    }
+    },
+    
+    getAllModelConfig: async () => {
+        try {
+            const response = await api.get('/config/all');
+            return response.data;
+        } catch (error) {
+            console.error('API调用失败 - 获取所有模型配置:', error);
+            throw error;
+        }
+    },
 };
