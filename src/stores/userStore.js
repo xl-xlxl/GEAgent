@@ -168,8 +168,22 @@ export const useUserStore = defineStore("userStore", {
       } catch (error) {
         console.error(error);
       }
+    },
+
+    async bindEmail(data) {
+      try {
+        const bindEmailResponse = await userService.bindEmail(data);
+        if (bindEmailResponse.success == true) {
+          this.email = data.email;
+          return bindEmailResponse;
+        } else if (bindEmailResponse.success == false) {
+          console.error(bindEmailResponse);
+          return bindEmailResponse;
+        }
+      } catch (error) {
+        console.error(error);
+      }
     }
   },
-
   
 });

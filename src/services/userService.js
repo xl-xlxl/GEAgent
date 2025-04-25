@@ -163,3 +163,19 @@ export async function updateInfo(userData) {
         }
     }
 }
+
+export async function bindEmail(data) {
+    try {
+        const bindEmailRes = await authApi.bindEmail(data);
+        if (bindEmailRes.success == true) {
+            return bindEmailRes;
+        } else {
+            throw new Error(bindEmailRes);
+        }
+    } catch (error) {
+        return {
+            success: false,
+            error
+        }
+    }
+}

@@ -202,7 +202,7 @@
                   <h3 v-if="!isEditingName" @click="startEditingName">{{ userStore.getUserInfo.fullName || '昵称' }}</h3>
                   <a-input v-else ref="nameInput" v-model:value="editingName" @blur="saveName" @keyup.enter="saveName"
                     size="small" style="width: 100%" />
-                  <p>{{ userStore.getUserInfo.email || '' }}</p>
+
                 </div>
               </div>
 
@@ -213,12 +213,15 @@
                 </div>
                 <div class="info-item">
                   <span class="info-label">邮箱:</span>
-                  <span class="info-value">{{ userStore.getUserInfo.email || '未设置' }}</span>
+                  <span class="info-value editable-email" @click="openChangeEmailModal">
+                    {{ userStore.getUserInfo.email || '未设置' }}
+                    <edit-outlined class="edit-icon" />
+                  </span>
                 </div>
               </div>
 
               <div class="user-actions">
-                <div class="preset-option preset-text action-button">
+                <div class="preset-option preset-text action-button" @click="openChangePasswordModal">
                   修改密码
                 </div>
                 <div class="preset-option preset-text action-button" @click="handleLogout">
@@ -261,6 +264,16 @@
     <div class="app-container">
       <router-view />
     </div>
+    <!-- 密码修改弹窗 -->
+    <div class="modal-overlay" v-if="showChangePasswordModal" @click="closeChangePasswordModal">
+      <ChangePassword @success="handlePasswordChanged" @cancel="closeChangePasswordModal" @click.stop />
+    </div>
+    <!-- 邮箱修改弹窗 -->
+    <div class="modal-overlay" v-if="showChangeEmailModal" @click="closeChangeEmailModal">
+      <div @click.stop>
+        <ChangeEmail @success="handleEmailChanged" @cancel="closeChangeEmailModal" />
+      </div>
+    </div>
   </a-layout>
 </template>
 
@@ -272,14 +285,18 @@ import { useUserStore } from './stores/userStore';
 import { getConversationList, deleteConversations, deleteAllConversations, updateConversationTitle } from '@/services/conversationService';
 import { modelConfigService } from '@/services/modelConfigService';
 import { ref } from 'vue';
-import { CameraOutlined } from '@ant-design/icons-vue';
-
+import { CameraOutlined, EditOutlined } from '@ant-design/icons-vue';
+import ChangePassword from './components/ChangePassword.vue';
+import ChangeEmail from './components/ChangeEmail.vue';
 const value = ref('');
 
 export default {
   name: 'App',
   components: {
-    CameraOutlined
+    CameraOutlined,
+    EditOutlined,
+    ChangePassword,
+    ChangeEmail
   },
   data() {
     const modelStore = useModelStore();
@@ -302,6 +319,7 @@ export default {
       settingPopoverVisible: false,
       userPopoverVisible: false,
       isEditingName: false,
+      showChangeEmailModal: false,
       editingName: '',
       originalSettings: {
         max_tokens: 0,
@@ -339,7 +357,8 @@ export default {
           frequent_penalty: 0.4,
           description: "减少重复，聚焦关键信息"
         }
-      }
+      },
+      showChangePasswordModal: false,
     };
   },
 
@@ -369,7 +388,7 @@ export default {
         if (newValue === true && oldValue === false) {
           this.fetchConversationList();
           console.log('用户登录成功，已加载对话列表');
-        } 
+        }
       }
     },
   },
@@ -762,7 +781,41 @@ export default {
         this.isEditingName = false;
       }
     },
-  }
+
+    // 打开密码修改弹窗
+    openChangePasswordModal() {
+      this.showChangePasswordModal = true;
+      this.userPopoverVisible = false; // 关闭用户信息卡片
+    },
+
+    // 关闭密码修改弹窗
+    closeChangePasswordModal() {
+      this.showChangePasswordModal = false;
+    },
+
+    // 密码修改成功处理
+    handlePasswordChanged() {
+      this.showChangePasswordModal = false;
+    },
+    // 打开修改邮箱弹窗
+    openChangeEmailModal() {
+      this.showChangeEmailModal = true;
+    },
+
+    // 关闭修改邮箱弹窗
+    closeChangeEmailModal() {
+      this.showChangeEmailModal = false;
+    },
+
+    // 邮箱修改成功处理
+    handleEmailChanged() {
+      this.showChangeEmailModal = false;
+      message.success('邮箱修改成功，请重新登录');
+      setTimeout(() => {
+        this.handleLogout();
+      }, 1500);
+    },
+  },
 };
 </script>
 

@@ -252,10 +252,18 @@ const authApi = {
            console.log(error);
             throw (error.data);
         }
-    } 
+    },
+    
+    async bindEmail(data) {
+        try {
+            const response = await api.put('/user/bindEmail', data)
+            return response.data;
+        } catch (error) {
+            console.log(error);
+            throw (error.data);
+        }
+    }
 }
-
-      
     
 
 export default authApi;
