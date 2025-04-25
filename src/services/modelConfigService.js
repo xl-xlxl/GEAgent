@@ -63,10 +63,10 @@ export const modelConfigService = {
         }
     },
 
-    async getAllModelConfig() {
+    async getAllModelConfigs() {
         try {
             // 调用API层
-            const response = await modelConfigAPI.getAllModelConfig();
+            const response = await modelConfigAPI.getAllModelConfigs();
 
             if (!response.success===true) {
                 console.error('获取所有模型配置失败:', response);

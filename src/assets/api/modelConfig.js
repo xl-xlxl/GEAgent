@@ -26,9 +26,9 @@ export const modelConfigAPI = {
         }
     },
     
-    getAllModelConfig: async () => {
+    getAllModelConfigs: async () => {
         try {
-            const response = await api.get('/config/all');
+            const response = await api.get('/config/');
             return response.data;
         } catch (error) {
             console.error('API调用失败 - 获取所有模型配置:', error);

@@ -363,10 +363,11 @@ export default {
   },
 
 
-  created() {
-    this.initializeUser();
-    this.fetchConversationList();
-    this.loadModelConfig(this.modelStore.currentModel);
+     created() {
+     this.initializeUser();
+     this.fetchConversationList();
+     this.getAllModelConfig();
+
   },
 
   watch: {
@@ -430,6 +431,19 @@ export default {
       }
     },
 
+    async getAllModelConfig() {
+      try {
+        const response = await this.modelStore.getAllModelConfig();
+        if (response===true) {
+          message.success('模型配置获取成功');
+        } else {
+          console.error('获取模型配置失败:', response.error);
+        }
+      } catch (error) {
+        console.error('获取模型配置时发生错误:', error);
+      }
+    },
+
     async initializeUser() {
       try {
         const refreshToken = await this.userStore.refreshToken();
@@ -453,18 +467,9 @@ export default {
           console.log('用户未登录，使用默认模型配置');
           return;
         }
-        const configs = await modelConfigService.getModelConfig(currentModel);
-        if (configs) {
-          console.log(`成功获取模型${currentModel}配置:`, configs);
-          this.modelStore.switchSettings({
-            max_tokens: configs.max_tokens,
-            temperature: configs.temperature,
-            top_p: configs.top_p,
-            top_k: configs.top_k,
-            frequent_penalty: configs.frequent_penalty
-          });
-          console.log(`已从后端加载并更新模型${currentModel}的配置`);
-        }
+
+        // 从 store 中获取配置
+        await this.modelStore.switchSettings(currentModel);
       } catch (error) {
         console.error(`加载模型${currentModel}配置时出错:`, error);
       }
@@ -489,7 +494,7 @@ export default {
       const preset = this.presets[presetName];
       if (!preset) return;
 
-      this.modelStore.switchSettings({
+      this.modelStore.persistSettings({
         temperature: preset.temperature,
         top_p: preset.top_p,
         top_k: preset.top_k,
