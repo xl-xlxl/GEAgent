@@ -12,7 +12,7 @@
           <div v-if="
             message.role === 'user' ||
             message.role === 'thinking' ||
-            (message.role === 'assistant' && message.content)
+            (message.role === 'assistant' && (message.content || message.emojiUrls || message.mcpData))
           " :class="{
             message: true,
             'user-message': message.role === 'user',
@@ -35,23 +35,56 @@
               message.thinking.trim().length > 0
             " class="thinking-message-container">
               <div class="avatar-container">
-                <a-avatar :size="40" src=""></a-avatar>
+                <a-avatar v-if="!message.round || message.round === 1" :size="40" src=""></a-avatar>
+                <div v-else class="avatar-placeholder"></div>
               </div>
               <div class="thinking-bubble">
                 <div v-html="renderMarkdown(message.thinking)"></div>
               </div>
             </div>
             <!-- AI回复消息 -->
-            <div v-if="message.role === 'assistant'" class="ai-message-container">
+            <div v-if="message.role === 'assistant' && message.content && message.content.trim().length"
+              class="ai-message-container">
               <div class="avatar-container">
                 <a-avatar v-if="!hasThinkingBefore(message)" :size="40" src=""></a-avatar>
                 <div v-else class="avatar-placeholder"></div>
               </div>
-              <div class="ai-bubble">
+              <!-- 文本内容气泡 -->
+              <div v-if="message.content && message.content.trim().length" class="ai-bubble">
                 <div v-html="renderMarkdown(message.content)"></div>
-                <div v-if="message.emojiUrls && message.emojiUrls.length" class="emoji-container">
+              </div>
+            </div>
+            <!-- 表情包 -->
+            <div v-if="message.role === 'assistant' && message.emojiUrls && message.emojiUrls.length"
+              class="ai-message-container emoji-message-container">
+              <div class="avatar-container">
+                <div class="avatar-placeholder"></div>
+              </div>
+              <div class="ai-bubble">
+                <div class="emoji-container">
                   <img v-for="(url, index) in message.emojiUrls" :key="`emoji-${message.id}-${index}`" :src="url"
                     alt="表情包" class="emoji-image" />
+                </div>
+              </div>
+            </div>
+            <!-- MCP 状态卡片 -->
+            <div v-if="message.role === 'assistant' && message.mcpData && (message.hideMcp === undefined || message.hideMcp === false)"
+              class="ai-message-container">
+              <div class="avatar-container">
+                <div v-if="!hasThinkingBefore(message)" class="avatar-placeholder">
+                  <a-avatar :size="40" src=""></a-avatar>
+                </div>
+                <div v-else class="avatar-placeholder"></div>
+              </div>
+              <div class="ai-bubble mcp-card">
+                <div class="mcp-header">MCP 服务调用</div>
+                <div v-if="message.mcpData.fnCall && message.mcpData.fnCall.length" class="mcp-calls">
+                  <div v-for="(call, idx) in message.mcpData.fnCall" :key="idx" class="mcp-call-item">
+                    <div class="mcp-call-name">{{ call.name }}</div>
+                    <div class="mcp-call-args">
+                      <pre>{{ JSON.stringify(call.arguments) }}</pre>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -212,6 +245,44 @@ export default {
   },
 
   methods: {
+    updateMessageOrder(groupId) {
+      if (!groupId || !this.messages || this.messages.length === 0) return;
+
+      // 一次性查找所有属于该组的消息及其索引
+      const groupMessagesWithIndices = this.messages
+        .map((msg, index) => ({ msg, index }))
+        .filter(item => item.msg.groupId === groupId);
+
+      // 如果没有找到消息或只有一条消息，无需排序
+      if (groupMessagesWithIndices.length <= 1) return;
+
+      // 获取组的索引范围
+      const indices = groupMessagesWithIndices.map(item => item.index);
+      const startIndex = Math.min(...indices);
+      const endIndex = Math.max(...indices);
+
+      // 获取需要排序的消息
+      const groupMessages = groupMessagesWithIndices.map(item => item.msg);
+
+      // 排序当前组的消息
+      groupMessages.sort((a, b) => {
+        // 优先按回合排序
+        const roundA = a.round || 1;
+        const roundB = b.round || 1;
+        if (roundA !== roundB) return roundA - roundB;
+
+        // 同一回合内按类型顺序排列
+        if (a.role !== b.role) {
+          const roleOrder = { user: 1, thinking: 2, assistant: 3 };
+          return roleOrder[a.role] - roleOrder[b.role];
+        }
+      });
+
+      // 原地替换排序后的消息
+      for (let i = 0; i < groupMessages.length; i++) {
+        this.messages[startIndex + i] = groupMessages[i];
+      }
+    },
 
     handleScroll() {
       const scrollArea = this.$refs.scrollArea;
@@ -293,45 +364,215 @@ export default {
 
 
     // 处理思考过程回调的辅助函数
-    handleReasoningCallback(thinkingMessage, loadHide) {
-      return (reasoning) => {
-        const thinkingIndex = this.messages.findIndex(
-          (msg) => msg.id === thinkingMessage.id
-        );
-        if (thinkingIndex !== -1) {
-          if (!this.firstResponseReceived) {
-            loadHide(); // 收到第一个回复时隐藏加载提示
-            this.firstResponseReceived = true;
-          }
-          const currentThinking = this.messages[thinkingIndex].thinking || "";
-          const newThinking = currentThinking + reasoning;
-          this.messages[thinkingIndex].thinking = newThinking;
-        }
-      };
-    },
+    handleReasoningCallback(messageObject, loadHide) {
+      const groupId = messageObject.groupId;
+      const baseId = messageObject.id;
 
-    // 处理回答内容回调的辅助函数
-    handleReplyCallback(aiMessage, loadHide) {
-      return (reply) => {
+      return (content, round = 0) => {
+        // 处理首次响应
         if (!this.firstResponseReceived) {
           loadHide();
           this.firstResponseReceived = true;
         }
-        const aiIndex = this.messages.findIndex((msg) => msg.id === aiMessage.id);
-        if (aiIndex !== -1) {
-          // 处理表情包数据
-          if (typeof reply === 'object' && reply.type === 'emoji') {
-            if (!this.messages[aiIndex].emojiUrls) {
-              this.messages[aiIndex].emojiUrls = [];
+
+        const actualRound = round || 1;
+        const messageId = `${baseId}-round-${actualRound}`;
+
+        // 查找是否已存在消息
+        let existingIndex = this.messages.findIndex(msg => msg.id === messageId);
+
+        // 简化思考处理逻辑
+        if (existingIndex === -1) {
+          // 创建新消息，无论哪个回合
+          this.messages.push({
+            id: messageId,
+            role: 'thinking',
+            thinking: content,
+            round: actualRound,
+            groupId
+          });
+        } else {
+          // 更新现有消息
+          this.messages[existingIndex].thinking = (this.messages[existingIndex].thinking || "") + content;
+        }
+
+        this.updateMessageOrder(groupId);
+      };
+    },
+
+    handleReplyCallback(aiMessage, loadHide) {
+      const groupId = aiMessage.groupId;
+
+      return (reply, round = 0) => {
+        if (!this.firstResponseReceived) {
+          loadHide();
+          this.firstResponseReceived = true;
+        }
+
+        // 明确处理 round 信息，确保每个 round 都有专属消息
+        const actualRound = round || 1; // 如果没有提供 round，默认为第 1 轮
+        const aiId = `${aiMessage.id}-round-${actualRound}`;
+        const aiIndex = this.messages.findIndex((msg) => msg.id === aiId);
+
+        // 处理表情包数据
+        if (typeof reply === "object" && reply.type === "emoji") {
+          const emojiRound = reply.round || actualRound;
+          const emojiAiId = `${aiMessage.id}-round-${emojiRound}`;
+          const emojiAiIndex = this.messages.findIndex((msg) => msg.id === emojiAiId);
+
+          if (emojiAiIndex === -1) {
+            // 创建新回合的表情包消息
+            const newEmojiMsg = {
+              id: emojiAiId,
+              role: "assistant",
+              content: "",
+              emojiUrls: [reply.url],
+              round: emojiRound,
+              groupId: groupId, // 保持组 ID 一致
+            };
+
+            // 找到同一组内对应回合的思考消息
+            const thinkingId = `${this.thinkingMessage.id}-round-${emojiRound}`;
+            const thinkingIndex = this.messages.findIndex(
+              (msg) => msg.id === thinkingId && msg.groupId === groupId
+            );
+
+            // 如果找到了对应回合的思考消息，就在其后插入
+            if (thinkingIndex !== -1) {
+              this.messages.splice(thinkingIndex + 1, 0, newEmojiMsg);
+            } else {
+              // 如果没有找到思考消息，则直接插入到消息列表末尾
+              this.messages.push(newEmojiMsg);
             }
-            // 添加表情包URL
-            this.messages[aiIndex].emojiUrls.push(reply.url);
           } else {
-            // 处理文本内容
-            const currentContent = this.messages[aiIndex].content || "";
-            const newContent = currentContent + reply;
-            this.messages[aiIndex].content = newContent;
+            // 更新现有表情包消息
+            if (!this.messages[emojiAiIndex].emojiUrls) {
+              this.messages[emojiAiIndex].emojiUrls = [];
+            }
+            this.messages[emojiAiIndex].emojiUrls.push(reply.url);
           }
+          return;
+        }
+
+        // 处理 MCP 状态数据
+        else if (typeof reply === "object" && reply.type === "mcp") {
+          console.log("MCP数据:", reply);  // 添加调试日志
+          const mcpRound = reply.round || actualRound;
+          // 修改ID格式，确保同一round的MCP只有一个卡片
+          const mcpAiId = `${aiMessage.id}-round-${mcpRound}-mcp`;
+          const mcpAiIndex = this.messages.findIndex((msg) => msg.id === mcpAiId);
+
+          if (mcpAiIndex === -1) {
+            // 创建新回合的 MCP 消息，先设置为不可见
+            const newMcpMsg = {
+              id: mcpAiId,
+              role: "assistant",
+              content: "",
+              mcpData: reply.mcpData,
+              round: mcpRound,
+              groupId: groupId, // 保持组 ID 一致
+              hideMcp: true // 初始状态为隐藏
+            };
+
+            // 寻找最佳插入位置：同一round的表情包之后
+            let insertIndex = -1;
+
+            // 查找同一组、同一round的所有消息
+            const sameRoundMessages = this.messages.filter(msg =>
+              msg.groupId === groupId && msg.round === mcpRound
+            );
+
+            // 如果找到了同一round的表情包消息，在它之后插入
+            const emojiMessage = sameRoundMessages.find(msg =>
+              msg.role === 'assistant' && msg.emojiUrls && msg.emojiUrls.length
+            );
+
+            if (emojiMessage) {
+              insertIndex = this.messages.findIndex(msg => msg.id === emojiMessage.id) + 1;
+            } else {
+              // 如果没有表情包，则查找同一round的AI文本回复，在它之后插入
+              const textMessage = sameRoundMessages.find(msg =>
+                msg.role === 'assistant' && msg.content && typeof msg.content === 'string' && msg.content.trim().length > 0
+              );
+
+              if (textMessage) {
+                insertIndex = this.messages.findIndex(msg => msg.id === textMessage.id) + 1;
+              } else {
+                // 如果没有AI回复，找到思考消息后插入
+                const thinkingId = `${this.thinkingMessage.id}-round-${mcpRound}`;
+                const thinkingIndex = this.messages.findIndex(
+                  (msg) => msg.id === thinkingId && msg.groupId === groupId
+                );
+
+                if (thinkingIndex !== -1) {
+                  insertIndex = thinkingIndex + 1;
+                }
+              }
+            }
+
+            // 插入到找到的位置，如果没找到位置则添加到末尾
+            if (insertIndex !== -1) {
+              this.messages.splice(insertIndex, 0, newMcpMsg);
+            } else {
+              this.messages.push(newMcpMsg);
+            }
+
+            setTimeout(() => {
+              const updatedIndex = this.messages.findIndex(msg => msg.id === mcpAiId);
+              if (updatedIndex !== -1) {
+                this.messages[updatedIndex].hideMcp = false;
+              }
+            }, 500);
+          } else {
+            // 更新现有 MCP 消息
+            this.messages[mcpAiIndex].mcpData = reply.mcpData;
+            // 已存在的MCP消息也需要延迟显示
+            this.messages[mcpAiIndex].hideMcp = true;
+
+            setTimeout(() => {
+              const updatedIndex = this.messages.findIndex(msg => msg.id === mcpAiId);
+              if (updatedIndex !== -1) {
+                this.messages[updatedIndex].hideMcp = false;
+              }
+            }, 500);
+          }
+
+          this.updateMessageOrder(groupId);
+          return;
+        }
+
+        // 处理文本内容
+        else if (typeof reply === "string") {
+          const isReplyEmpty = reply.trim() === "";
+          if (aiIndex === -1) {
+            // 创建新的 AI 消息
+            const newAiMsg = {
+              id: aiId,
+              role: "assistant",
+              content: isReplyEmpty ? "" : reply,
+              round: actualRound,
+              groupId: groupId, // 保持组 ID 一致
+            };
+
+            // 找到同一组内对应回合的思考消息
+            const thinkingId = `${this.thinkingMessage.id}-round-${actualRound}`;
+            const thinkingIndex = this.messages.findIndex(
+              (msg) => msg.id === thinkingId && msg.groupId === groupId
+            );
+
+            if (thinkingIndex !== -1) {
+              // 如果有对应回合的思考消息，在其后插入
+              this.messages.splice(thinkingIndex + 1, 0, newAiMsg);
+            } else {
+              // 如果没有找到思考消息，则直接插入到消息列表末尾
+              this.messages.push(newAiMsg);
+            }
+          } else {
+            // 更新现有回合的 AI 消息
+            const currentContent = this.messages[aiIndex].content || "";
+            this.messages[aiIndex].content = isReplyEmpty ? currentContent : currentContent + reply;
+          }
+          this.updateMessageOrder(groupId);
         }
       };
     },
@@ -350,11 +591,15 @@ export default {
       const loadHide = messageApi.loading("正在思考中...", 0);
       this.firstResponseReceived = false;
 
+      // 创建一个唯一的对话组ID，用于关联此次用户提问及其相关回复
+      const conversationGroupId = Date.now();
+
       // 创建用户消息
       const userMessage = {
-        id: Date.now() + "-user",
+        id: `${conversationGroupId}-user`,
         role: "user",
         content: this.userInput,
+        groupId: conversationGroupId  // 添加组ID
       };
 
       // 保存用户输入并清空输入框
@@ -364,23 +609,31 @@ export default {
       // 添加用户消息到消息列表
       this.messages.push(userMessage);
 
-      // 创建思考消息
+      // 为第一个回合创建思考消息
       const thinkingMessage = {
-        id: Date.now() + "-thinking",
+        id: `${conversationGroupId}-thinking`,
         role: "thinking",
         thinking: "",
+        groupId: conversationGroupId  // 添加组ID
       };
 
-      // 创建AI回复消息
+      // AI回复消息的基础信息
       const aiMessage = {
-        id: Date.now() + "-assistant",
+        id: `${conversationGroupId}-assistant`,
         role: "assistant",
         content: "",
+        groupId: conversationGroupId  // 添加组ID
       };
 
-      // 添加思考消息和AI消息到消息列表
+      // 添加思考消息到消息列表
       this.messages.push(thinkingMessage);
       this.messages.push(aiMessage);
+
+      // 保存消息引用及groupId供回调使用
+      this.thinkingMessage = thinkingMessage;
+      this.aiMessage = aiMessage;
+      this.currentGroupId = conversationGroupId;
+
 
       try {
         const params = {
@@ -405,7 +658,7 @@ export default {
             // 保存会话ID到组件状态
             if (response && response.conversationId) {
               this.conversationId = response.conversationId;
-              this.title = params.title; // 提取会话标题
+              this.title = params.title;
 
               await getConversationList();
 
@@ -433,7 +686,6 @@ export default {
           );
           console.log("继续对话完成，会话ID:", this.conversationId);
         }
-
       } catch (error) {
         console.error("聊天操作-UI层错误:", error);
         if (error.error?.isShowable) {
@@ -443,7 +695,6 @@ export default {
         if (aiIndex !== -1) {
           this.messages[aiIndex].content = "抱歉，我暂时无法回答您的问题。";
         }
-
       } finally {
         this.loading = false;
         loadHide();

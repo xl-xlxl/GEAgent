@@ -30,11 +30,10 @@ export default defineConfig({
     ],
     server: {
         proxy: {
-            '/api/qianfan': {
-                target: 'https://qianfan.baidubce.com',
-                changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api\/qianfan/, '')
-            }
+            '/api/chat': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+    }
         }
     },
     resolve: {
