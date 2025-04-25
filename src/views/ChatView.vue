@@ -68,7 +68,8 @@
               </div>
             </div>
             <!-- MCP 状态卡片 -->
-            <div v-if="message.role === 'assistant' && message.mcpData && (message.hideMcp === undefined || message.hideMcp === false)"
+            <div
+              v-if="message.role === 'assistant' && message.mcpData && (message.hideMcp === undefined || message.hideMcp === false)"
               class="ai-message-container">
               <div class="avatar-container">
                 <div v-if="!hasThinkingBefore(message)" class="avatar-placeholder">
