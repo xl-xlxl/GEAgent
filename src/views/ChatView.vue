@@ -77,10 +77,12 @@
                 <div v-else class="avatar-placeholder"></div>
               </div>
               <div class="ai-bubble mcp-card">
-                <div class="mcp-header">MCP 服务调用</div>
                 <div v-if="message.mcpData.fnCall && message.mcpData.fnCall.length" class="mcp-calls">
                   <div v-for="(call, idx) in message.mcpData.fnCall" :key="idx" class="mcp-call-item">
                     <div class="mcp-call-name">{{ call.name }}</div>
+                    <span class="mcp-description" v-if="mcpServiceDescriptions[call.name]">
+                      {{ mcpServiceDescriptions[call.name] }}
+                    </span>
                     <div class="mcp-call-args">
                       <pre>{{ JSON.stringify(call.arguments) }}</pre>
                     </div>
@@ -163,6 +165,13 @@ export default {
       title: "新对话",
       pagination: null,
       loadingHistory: false,
+      mcpServiceDescriptions: {
+        "biliSearch_get_extra_keywords": "在bilibili广泛获取搜索词的推荐关键词",
+        "biliSearch": "在bilibili以关键词检索信息，获取网络上的综合信息",
+        "biliSearch_cheese": "在bilibili搜索网络上的课程相关内容",
+        "getGEInfo": "获取GE酱以及GEAgent的详细信息",
+        "emojiPack": "调用表情包来表达GE酱的情绪和反应，在对话中展现更丰富的情感",
+      },
     };
   },
 

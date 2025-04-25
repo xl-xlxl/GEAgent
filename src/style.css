@@ -26,3 +26,41 @@ body {
     margin-left: 10px !important;
     margin-top: 8px !important;
 }
+
+.ant-popover-inner {
+    background-color: #FAF6F5 !important;
+}
+
+.ant-popover-arrow::before {
+    background-color: #FAF6F5 !important;
+}
+
+.ant-select-selector {
+    background-color: #FAF6F5 !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 18px !important;
+   
+}
+
+
+.ant-select-selection-item{
+    color: #777777 !important;
+    font-weight: bold !important;
+    font-size: 12px !important;
+    padding: 0;
+}
+
+.ant-select-suffix {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-image: url('/public/大模型.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.ant-select-suffix > svg {
+    display: none !important;
+}

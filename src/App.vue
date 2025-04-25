@@ -4,7 +4,7 @@
     </div>
     <a-layout-sider :class="{ 'floating-sider': screenWidth < 768 }"
       style="padding: 0; user-select: none; height: 100vh;" v-model:collapsed="collapsed" collapsible
-      :trigger="!collapsed ? null : undefined" :width="screenWidth < 768 ? '70%' : '20%'"
+      :trigger="!collapsed ? null : undefined" :width="screenWidth < 768 ? '70%' : '15%'"
       :collapsedWidth="screenWidth < 768 ? 0 : 70" :zeroWidthTriggerStyle="{ background: 'transparent', top: '2%', }">
 
       <div class="close-container" style="height: 10vh;">

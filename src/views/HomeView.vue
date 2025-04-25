@@ -3,12 +3,14 @@
     <div class="home-container">
 
         <div class="input-area">
-            <h1 class="website-title">GEAgent</h1>
+            <div class="titleImg-container">
+                <img src="/public/LOGO-GEAent/logo+GEAGENT.svg">
+            </div>
             <div class="input-container">
                 <!-- 输入栏 -->
                 <textarea class="message-input" placeholder="给 GEAgent 发送消息" v-model="userInput" @submit="handleSubmit"
                     @keydown="handleKeyDown" :disabled="loading" :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
-                <div style="display: flex;justify-content: space-between;">
+                <div class="input-actions-container">
                     <div class="model-select">
                         <!-- 模型选择 -->
                         <a-select v-model:value="modelStore.currentModel" style="width: 150px" size="small"
@@ -44,42 +46,28 @@
 
         <!-- 登录卡片弹层 -->
         <div class="login-overlay" v-if="showLoginCard" @click="closeAllCards">
-            <LoginCard 
-                @login-success="handleLoginSuccess" 
-                @cancel="showLoginCard = false"
-                @switch-to-register="switchToRegister" 
-                @switch-to-email-login="switchToEmailLogin" 
-                @switch-to-reset-password="switchToResetPassword"
-            />
+            <LoginCard @login-success="handleLoginSuccess" @cancel="showLoginCard = false"
+                @switch-to-register="switchToRegister" @switch-to-email-login="switchToEmailLogin"
+                @switch-to-reset-password="switchToResetPassword" />
         </div>
 
         <!-- 注册卡片弹层 -->
         <div class="login-overlay" v-if="showRegisterCard" @click="closeAllCards">
-            <RegisterCard 
-                @register-success="handleRegisterSuccess" 
-                @cancel="showRegisterCard = false"
-                @switch-to-login="switchToLogin" 
-            />
+            <RegisterCard @register-success="handleRegisterSuccess" @cancel="showRegisterCard = false"
+                @switch-to-login="switchToLogin" />
         </div>
 
         <!-- 邮箱登录卡片弹层 -->
         <div class="login-overlay" v-if="showEmailLoginCard" @click="closeAllCards">
-            <LoginByEmail 
-                @login-success="handleEmailLoginSuccess" 
-                @cancel="showEmailLoginCard = false"
-                @switch-to-login="switchToLogin"
-                @switch-to-register="switchToRegister"
-                @switch-to-reset-password="switchToResetPassword"
-            />
+            <LoginByEmail @login-success="handleEmailLoginSuccess" @cancel="showEmailLoginCard = false"
+                @switch-to-login="switchToLogin" @switch-to-register="switchToRegister"
+                @switch-to-reset-password="switchToResetPassword" />
         </div>
 
         <!-- 重置密码卡片弹层 -->
         <div class="login-overlay" v-if="showResetPasswordCard" @click="closeAllCards">
-            <ResetPassword
-                @reset-success="handleResetSuccess"
-                @cancel="showResetPasswordCard = false"
-                @switch-to-login="switchToLogin"
-            />
+            <ResetPassword @reset-success="handleResetSuccess" @cancel="showResetPasswordCard = false"
+                @switch-to-login="switchToLogin" />
         </div>
     </div>
 </template>
