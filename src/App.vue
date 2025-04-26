@@ -11,7 +11,7 @@
 
         <div class="close-container" style="height: 10vh;">
           <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
-            <div v-if="!collapsed" style="display: flex; align-items: center; gap: 0.5em; width: 85%;">
+            <div v-if="!collapsed" style="display: flex; align-items: center; gap: 0.5em; width: 83%;">
               <img src="/LOGO-GEAent/大GEAGENT.svg" />
               <img src="/收起.svg" alt="collapse" class="icon" />
             </div>

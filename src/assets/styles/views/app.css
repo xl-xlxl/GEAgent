@@ -42,7 +42,7 @@
 }
 
 .bubble {
-  max-width: 99%;
+  max-width: 98%;
   background:  linear-gradient(135deg ,rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
   
   padding: 8px 16px;
