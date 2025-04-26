@@ -41,11 +41,11 @@ body {
     border: none !important;
     box-shadow: none !important;
     border-radius: 18px !important;
-   
+
 }
 
 
-.ant-select-selection-item{
+.ant-select-selection-item {
     color: #777777 !important;
     font-weight: bold !important;
     font-size: 12px !important;
@@ -64,4 +64,9 @@ body {
 
 .ant-select-suffix > svg {
     display: none !important;
+}
+
+.ant-image-preview-operations {
+    background-color: transparent !important;
+    backdrop-filter: none !important;
 }
