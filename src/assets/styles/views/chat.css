@@ -199,6 +199,13 @@
     color: #777777;
     font-weight: bold;
     height: 24px;
+    transition: all 0.3s ease;
+}
+
+.feature-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .MCP-button {
@@ -212,6 +219,7 @@
     color: #777777;
     font-weight: bold;
     height: 24px;
+    transition: all 0.3s ease;
 }
 
 .feature-button:disabled {
@@ -219,7 +227,16 @@
 }
 
 .MCP-button:disabled {
+    opacity: 0.6;
     cursor: not-allowed;
+    background: #FAF6F5 !important;
+    color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.MCP-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 
@@ -251,6 +268,13 @@
     justify-content: center;
     cursor: pointer;
     background-color: #FAF6F5;
+    transition: all 0.3s ease;
+}
+
+.send-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .send-button:disabled {
@@ -552,11 +576,4 @@
         display: flex;
         /* 在小屏幕下显示 */
     }
-}
-
-.MCP-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background: #FAF6F5 !important;
-    color: rgba(0, 0, 0, 0.25) !important;
 }
