@@ -99,6 +99,16 @@
     align-self: flex-start;
     border-bottom-left-radius: 18px;
     border-bottom-right-radius: 18px;
+}
+
+/* 无思考过程的AI消息(默认) - 有顶部圆角 */
+.ai-message:not(.has-thinking-before) {
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+}
+
+/* 有思考过程的AI消息 - 无顶部圆角 */
+.ai-message.has-thinking-before {
     border-top-left-radius: 0px;
     border-top-right-radius: 0px;
 }
@@ -346,7 +356,7 @@
     word-break: break-word;
 }
 
-.ai-bubble { 
+.ai-bubble {
     max-width: 80%;
     padding: 8px 16px;
     border-radius: 18px;
@@ -416,7 +426,7 @@
     background-color: #EAE7E0;
 }
 
-.messages-area .message[data-1]{
+.messages-area .message[data-1] {
     border-bottom-left-radius: 18px;
     border-bottom-right-radius: 18px;
 

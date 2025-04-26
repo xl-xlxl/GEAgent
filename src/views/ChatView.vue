@@ -21,6 +21,7 @@
             [`round-${message.round || 1}`]: true,
             'round-start': isRoundStart(message),
             'round-end': isRoundEnd(message),
+            'has-thinking-before': message.role === 'assistant' && hasThinkingBefore(message)
           }" :data-round="message.round || 1" :data-group="message.groupId">
             <!-- 用户消息 -->
             <div v-if="message.role === 'user'" class="user-message-container">
