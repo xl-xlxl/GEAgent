@@ -3,7 +3,7 @@
       <a-card class="login-card">
         <template #cover>
           <div class="card-cover">
-            <h1 class="website-title">GEAgent</h1>
+            <img src="/LOGO-GEAent/logo+GEAGENT.svg" class="logo-img"/>
           </div>
         </template>
         
@@ -182,6 +182,10 @@
     animation: fadeIn 0.3s;
   }
   
+  .logo-img {
+  margin: 15px;
+  max-width: 80%;
+  }
   .login-card {
     width: 380px;
     border-radius: 18px;
@@ -190,12 +194,12 @@
   
   .card-cover {
     height: 120px;
-    background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
+    background: #F1EDED;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    border-radius: 20px 8px 0 0;
+    border-radius: 18px 18px 0 0;
   }
   
   .website-title {
