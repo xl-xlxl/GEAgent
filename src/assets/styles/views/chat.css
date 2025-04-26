@@ -87,6 +87,8 @@
 .message {
     line-height: 2;
     word-break: break-word;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
 }
 
 .user-message {
@@ -97,6 +99,8 @@
     align-self: flex-start;
     border-bottom-left-radius: 18px;
     border-bottom-right-radius: 18px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
 }
 
 /* 输入框区域 */
