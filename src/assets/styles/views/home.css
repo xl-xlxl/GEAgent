@@ -3,7 +3,6 @@
     border-radius: 18px;
     margin-left: 20%;
     margin-right: 20%;
-    margin-bottom: 10%;
     display: flex;
     flex-direction: column;
     user-select: none !important;
@@ -104,7 +103,7 @@
 
 .active-feature {
     background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
-    
+
 }
 
 .web-icon {
@@ -251,54 +250,55 @@
 /* 桌面版和移动版功能区域控制 */
 .desktop-only {
     display: flex;
-  }
-  
-  .mobile-only {
+}
+
+.mobile-only {
     display: none;
-  }
-  
-  .mobile-tools {
+}
+
+.mobile-tools {
     display: flex;
     align-items: center;
     gap: 8px;
-  }
-  
-  /* 弹出层内样式 */
-  .popover-content {
+}
+
+/* 弹出层内样式 */
+.popover-content {
     padding: 8px;
-  }
-  
-  .popover-item {
+}
+
+.popover-item {
     margin-bottom: 16px;
-  }
-  
-  .popover-item:last-child {
+}
+
+.popover-item:last-child {
     margin-bottom: 0;
-  }
-  
-  .popover-label {
+}
+
+.popover-label {
     font-weight: bold;
     margin-bottom: 8px;
     color: #777777;
     font-size: 14px;
-  }
-  
-  .popover-buttons {
+}
+
+.popover-buttons {
     display: flex;
     flex-direction: column;
     gap: 8px;
-  }
-  
-  .popover-button {
+}
+
+.popover-button {
     width: 100%;
     justify-content: space-between;
     padding: 10px;
     height: auto;
-  }
-  
-  /* 设置按钮样式 */
-  .settings-button {
-    display: none; /* 默认不显示 */
+}
+
+/* 设置按钮样式 */
+.settings-button {
+    display: none;
+    /* 默认不显示 */
     background: #FAF6F5;
     border-radius: 18px;
     width: 24px;
@@ -306,22 +306,23 @@
     padding: 0;
     align-items: center;
     justify-content: center;
-  }
-  
-  /* 移动端适配 */
-  @media (max-width: 768px) {
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
     .desktop-only {
-      display: none;
+        display: none;
     }
-    
+
     .mobile-only {
-      display: flex;
+        display: flex;
     }
-    
+
     .settings-button {
-      display: flex; /* 在小屏幕下显示 */
+        display: flex;
+        /* 在小屏幕下显示 */
     }
-  }
+}
 
 /* 预设消息气泡样式 */
 .preset-bubbles {
