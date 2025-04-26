@@ -81,7 +81,6 @@
         margin-left: 5%;
         margin-right: 5%;
     }
-
 }
 
 .message {
@@ -368,6 +367,7 @@
     padding: 8px 16px;
     border-radius: 18px;
     word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .userAvatar-container {
@@ -376,6 +376,17 @@
     gap: 8px;
     background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
     padding: 5px 10px;
+}
+
+@media (max-width: 768px) {
+    .userAvatar-container {
+        display: block;
+        padding: 10px ;
+    }
+    
+    .user-bubble {
+        display: inline;
+    }
 }
 
 .ai-bubble {

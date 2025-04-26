@@ -94,7 +94,7 @@
             <div class="preset-bubbles">
                 <div class="preset-bubble" v-for="(preset, index) in presetMessages" :key="index"
                     @click="sendPresetMessage(preset.text)">
-                    <span class="bubble-icon">{{ preset.icon }}</span> {{ preset.text }}
+                    <span class="bubble-icon"></span> {{ preset.text }}
                 </div>
             </div>
 
@@ -163,25 +163,25 @@ const webSearch = computed(() => featureStore.webSearch);
 const enableMCPService = computed(() => featureStore.enableMCPService);
 
 const presetMessages = ref([
-    { icon: '🤓', text: '介绍一下自己' },
-    { icon: '☀️', text: '推荐本月新番' },
-    { icon: '📚', text: '教我做PPT' },
-    { icon: '💻', text: '想和我一起敲代码吗' },
-    { icon: '🥰', text: '表情包轰炸' },
-    { icon: '🎸', text: 'MyGO和Ave Mujica哪个好看'}
+    { text: '🤓 介绍一下自己' },
+    { text: '☀️ 推荐本月新番' },
+    { text: '📚 教我做PPT' },
+    { text: '💻 想和我一起敲代码吗' },
+    { text: '🥰 表情包轰炸' },
+    { text: '🎸 MyGO和Ave Mujica哪个好看' }
 ]);
 
 const isMCPDisabled = computed(() => {
-  // 当模型为 DeepSeek-R1(0) 或 DeepSeek-V3(1) 时禁用 MCP
-  return modelStore.currentModel === 0 || modelStore.currentModel === 1;
+    // 当模型为 DeepSeek-R1(0) 或 DeepSeek-V3(1) 时禁用 MCP
+    return modelStore.currentModel === 0 || modelStore.currentModel === 1;
 });
 
 watch(() => modelStore.currentModel, (newModel) => {
-  // 当切换到 DeepSeek-R1 或 DeepSeek-V3 时
-  if (newModel === 0 || newModel === 1) {
-    // 关闭 MCP 功能
-    featureStore.enableMCPService = false;
-  }
+    // 当切换到 DeepSeek-R1 或 DeepSeek-V3 时
+    if (newModel === 0 || newModel === 1) {
+        // 关闭 MCP 功能
+        featureStore.enableMCPService = false;
+    }
 }, { immediate: true });
 
 // 发送预设消息
