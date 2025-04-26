@@ -1,5 +1,7 @@
 import { api } from './index';
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+
 // 创建新对话
 const conversationApi = {
     async createConversation(params, reasoningCallback, replyCallback) {
@@ -9,7 +11,7 @@ const conversationApi = {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
             };
 
-            const response = await fetch("/api/chat/create", {
+            const response = await fetch(`${API_BASE}/api/chat/create`, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(params)
@@ -117,7 +119,7 @@ const conversationApi = {
             };
 
             // 创建请求
-            const response = await fetch(`/api/chat/continue/${conversationId}`, {
+            const response = await fetch(`${API_BASE}/api/chat/continue/${conversationId}`, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(params)

@@ -1,6 +1,6 @@
 <template>
     <div ref="bgContainer"
-        class="bg-[#FAF6F5] fixed top-1/2 left-1/2 z-[2] -translate-x-1/2 -translate-y-1/2 pointer-events-none *:pointer-events-auto overflow-hidden w-full h-full will-change-transform">
+        class="bg-[#FAF6F5] fixed top-1/2 left-1/2 z-[10000] -translate-x-1/2 -translate-y-1/2 pointer-events-none *:pointer-events-auto overflow-hidden w-full h-full will-change-transform">
         <div
             class="w-full absolute flex flex-col items-center justify-center select-none will-change-transform top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <div ref="bgLogo" class="relative w-3/5 min-w-[320px]">
