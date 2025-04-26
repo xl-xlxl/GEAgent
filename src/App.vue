@@ -9,7 +9,7 @@
 
       <div class="close-container" style="height: 10vh;">
         <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
-          <img v-if="!collapsed" src="/public/LOGO-GEAent/大GEAGENT.svg" />
+          <img v-if="!collapsed" src="/LOGO-GEAent/大GEAGENT.svg" />
           <img v-if="collapsed" src="/收起.svg" alt="close" class="icon" />
         </div>
       </div>
@@ -503,6 +503,7 @@ export default {
         top_k: preset.top_k,
         frequent_penalty: preset.frequent_penalty,
       });
+      this.PopoverVisible = false;
     },
 
     handleSettingPopoverChange(visible) {
