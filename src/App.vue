@@ -1,281 +1,287 @@
 <template>
-  <a-layout ref="rootApp" style="height: 100vh;">
-    <loadAnimation />
-    <div v-if="screenWidth < 768 && !collapsed" class="sidebar-overlay" @click="toggleCollapsed">
-    </div>
-    <a-layout-sider :class="{ 'floating-sider': screenWidth < 768 }"
-      style="padding: 0; user-select: none; height: 100vh;" v-model:collapsed="collapsed" collapsible
-      :trigger="!collapsed ? null : undefined" :width="screenWidth < 768 ? '70%' : '15%'"
-      :collapsedWidth="screenWidth < 768 ? 0 : 70" :zeroWidthTriggerStyle="{ background: 'transparent', top: '2%', }">
-
-      <div class="close-container" style="height: 10vh;">
-        <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
-          <img v-if="!collapsed" src="/public/LOGO-GEAent/大GEAGENT.svg" />
-          <img v-if="collapsed" src="/收起.svg" alt="close" class="icon" />
-        </div>
+  <loadAnimation />
+  <div ref="rootApp" class="w-full h-full">
+    <a-layout style="height: 100vh;">
+      <div v-if="screenWidth < 768 && !collapsed" class="sidebar-overlay" @click="toggleCollapsed">
       </div>
+      <a-layout-sider :class="{ 'floating-sider': screenWidth < 768 }"
+        style="padding: 0; user-select: none; height: 100vh;" v-model:collapsed="collapsed" collapsible
+        :trigger="!collapsed ? null : undefined" :width="screenWidth < 768 ? '70%' : '15%'"
+        :collapsedWidth="screenWidth < 768 ? 0 : 70" :zeroWidthTriggerStyle="{ background: 'transparent', top: '2%', }">
 
-      <div class="add-container" style="height:5vh;">
-        <!-- 新增对话按钮 -->
-        <div v-if="!collapsed">
-          <div class="bubble icon-container whitespace-nowrap" :class="{ collapsed: collapsed }"
-            @click="$router.push('/')">
-            开启新的对话
-            <img src="/新增对话.svg" alt="add" class="icon" />
+        <div class="close-container" style="height: 10vh;">
+          <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
+            <img v-if="!collapsed" src="/public/LOGO-GEAent/大GEAGENT.svg" />
+            <img v-if="collapsed" src="/收起.svg" alt="close" class="icon" />
           </div>
         </div>
-        <div v-else>
-          <div class="icon-container" :class="{ collapsed: collapsed }" @click="$router.push('/')">
-            <img src="/新增对话.svg" alt="add" class="icon" />
+
+        <div class="add-container" style="height:5vh;">
+          <!-- 新增对话按钮 -->
+          <div v-if="!collapsed">
+            <div class="bubble icon-container whitespace-nowrap" :class="{ collapsed: collapsed }"
+              @click="$router.push('/')">
+              开启新的对话
+              <img src="/新增对话.svg" alt="add" class="icon" />
+            </div>
+          </div>
+          <div v-else>
+            <div class="icon-container" :class="{ collapsed: collapsed }" @click="$router.push('/')">
+              <img src="/新增对话.svg" alt="add" class="icon" />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="history-container" style="height:68vh;padding-top: 0.5em;" @scroll.passive="handleScroll">
-        <div v-if="!collapsed">
-          <!-- 对话历史列表 -->
-          <div class="history-list">
-            <div v-for="conversation in conversations" :key="conversation.id" @click="goToConversation(conversation.id)"
-              class="conversation-item" :class="{ 'active': Number($route.params.id) === conversation.id }">
-              <div>
-                <div class="truncate" style="font-weight: bold;">{{ conversation.title }}</div>
-                <div class="text-xs truncate">
-                  {{ new Date(conversation.createdAt).toLocaleString() }}
+        <div class="history-container" style="height:68vh;padding-top: 0.5em;" @scroll.passive="handleScroll">
+          <div v-if="!collapsed">
+            <!-- 对话历史列表 -->
+            <div class="history-list">
+              <div v-for="conversation in conversations" :key="conversation.id"
+                @click="goToConversation(conversation.id)" class="conversation-item"
+                :class="{ 'active': Number($route.params.id) === conversation.id }">
+                <div>
+                  <div class="truncate" style="font-weight: bold;">{{ conversation.title }}</div>
+                  <div class="text-xs truncate">
+                    {{ new Date(conversation.createdAt).toLocaleString() }}
+                  </div>
                 </div>
-              </div>
-              <div class="-mt-9">
-                <a-popover trigger="click" placement="topRight" v-model:open="morePopoverVisible[conversation.id]">
-                  <template #content>
-                    <div class="no-select">
-                      <div class="preset-option preset-text" @click="deleteConversation(conversation.id)">
-                        删除对话
-                      </div>
-                      <a-popover trigger="click" placement="right" v-model:open="renamePopoverVisible[conversation.id]">
-                        <template #content>
-                          <div class="no-select" style="display: flex; flex-direction: column; align-items: center;"
-                            @click.stop>
-                            <div class="xs-input">
-                              <a-input v-model:value="newTitle" :bordered="false" placeholder="输入新标题" @click.stop
-                                @keyup.enter="confirmRename(conversation.id)" />
-                            </div>
-                            <div style="display: flex; gap: 1em;">
-                              <div class="preset-option preset-text"
-                                style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em;"
-                                @click.stop="confirmRename(conversation.id)">
-                                确定
-                              </div>
-                              <div class="preset-option preset-text"
-                                style="cursor: pointer; margin: 0; padding: 1em 3em;"
-                                @click.stop="cancelRename(conversation.id)">
-                                取消
-                              </div>
-                            </div>
-                          </div>
-                        </template>
-                        <div class="preset-option preset-text" @click.stop>
-                          重新命名
+                <div class="-mt-9">
+                  <a-popover trigger="click" placement="topRight" v-model:open="morePopoverVisible[conversation.id]">
+                    <template #content>
+                      <div class="no-select">
+                        <div class="preset-option preset-text" @click="deleteConversation(conversation.id)">
+                          删除对话
                         </div>
-                      </a-popover>
-                    </div>
-                  </template>
-                  <div class="icon"><img src="/更多.svg" alt="more"></div>
-                </a-popover>
-              </div>
-            </div>
-          </div>
-          <div class="clear-all-container" v-if="conversations.length > 1">
-            <a-popover trigger="click" v-model:open="deletePopoverVisible">
-              <template #content>
-                <div class="no-select" style="display: flex; flex-direction: column; align-items: center;">
-                  <div class="preset-text" style="text-align: center; user-select: none; cursor: default; margin: 0;">
-                    确定要删除所有对话记录吗
-                  </div>
-                  <div style="display: flex; gap: 1em;">
-                    <div class="preset-option preset-text"
-                      style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em ;"
-                      @click="deleteAllConversations">
-                      删除
-                    </div>
-                    <div class="preset-option preset-text" style="cursor: pointer; margin: 0; padding: 1em 3em ;"
-                      @click="deletePopoverVisible = false">
-                      取消
-                    </div>
-                  </div>
-                </div>
-              </template>
-              <div class="delete-all-button">
-                <img src="/全部删除.svg" alt="删除全部对话" />
-              </div>
-            </a-popover>
-          </div>
-        </div>
-        <div v-else>
-        </div>
-      </div>
-
-      <div class="setting-container" style="height: 8vh; padding-top: 0.5em;">
-        <a-popover trigger="click" v-model:open="settingPopoverVisible" @openChange="handleSettingPopoverChange">
-          <template #content>
-            <div class="no-select">
-              <div style="display: flex;">
-                <h1 style=" font-weight: bold; margin-bottom: 15px;">模型设置</h1>
-                <a-popover trigger="click" v-model:open="PopoverVisible">
-                  <template #content>
-                    <p class="ml-1.5" style="font-weight: bold; margin-bottom: 10px;user-select: none;">场景预设</p>
-                    <div v-for="(preset, name) in presets" :key="name" class="preset-option" @click="applyPreset(name)"
-                      style="padding: 10px; cursor: pointer; margin-bottom: 5px; border-radius: 18px; transition: all 0.3s;">
-                      {{ name }}
-                      <div style="font-size: 12px; color: #999; margin-top: 2px;">{{ preset.description }}</div>
-                    </div>
-                  </template>
-                  <div class="size-5 ml-46" style="cursor: pointer; display: flex; "><img src="/预设.svg"></div>
-                </a-popover>
-              </div>
-              <div v-for="model in modelStore.models" :key="model.value">
-                <div v-if="modelStore.currentModel === model.LLMID">
-                  <label>
-                    max_tokens
-                    <a-tooltip title="数值越高，模型可输入与输出文本长度越长；数值越低，模型可输入与输出文本长度越短（该值过低与文本长度不匹配时会导致生成中止）">
-                      <span style="cursor: pointer; color: #777777;">✿</span>
-                    </a-tooltip>
-                    <a-slider v-model:value="maxTokens" :step="1" :min="0" :max="model.maxTokens" />
-                  </label>
+                        <a-popover trigger="click" placement="right"
+                          v-model:open="renamePopoverVisible[conversation.id]">
+                          <template #content>
+                            <div class="no-select" style="display: flex; flex-direction: column; align-items: center;"
+                              @click.stop>
+                              <div class="xs-input">
+                                <a-input v-model:value="newTitle" :bordered="false" placeholder="输入新标题" @click.stop
+                                  @keyup.enter="confirmRename(conversation.id)" />
+                              </div>
+                              <div style="display: flex; gap: 1em;">
+                                <div class="preset-option preset-text"
+                                  style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em;"
+                                  @click.stop="confirmRename(conversation.id)">
+                                  确定
+                                </div>
+                                <div class="preset-option preset-text"
+                                  style="cursor: pointer; margin: 0; padding: 1em 3em;"
+                                  @click.stop="cancelRename(conversation.id)">
+                                  取消
+                                </div>
+                              </div>
+                            </div>
+                          </template>
+                          <div class="preset-option preset-text" @click.stop>
+                            重新命名
+                          </div>
+                        </a-popover>
+                      </div>
+                    </template>
+                    <div class="icon"><img src="/更多.svg" alt="more"></div>
+                  </a-popover>
                 </div>
               </div>
-              <label>
-                temperature
-                <a-tooltip title="数值越高，模型输出越随机，创造力越强；数值越低，输出越确定">
-                  <span style="cursor: pointer; color: #777777;">✿</span>
-                </a-tooltip>
-                <a-slider v-model:value="temperature" :step="0.1" :min="0.1" :max="1.5" />
-              </label>
-              <label>
-                top_p
-                <a-tooltip title="数值越高，生成的文本多样性越强；数值越低，生成的文本越集中在高概率的词汇上">
-                  <span style="cursor: pointer; color: #777777;">✿</span>
-                </a-tooltip>
-                <a-slider v-model:value="top_p" :step="0.1" :min="0.1" :max="1" />
-              </label>
-              <label>
-                top_k
-                <a-tooltip title="数值越高，模型从更多候选词中选择词汇，生成的文本可能更丰富；数值越低，模型从较少候选词中选择词汇，生成的文本可能更稳定">
-                  <span style="cursor: pointer; color: #777777;">✿</span>
-                </a-tooltip>
-                <a-slider v-model:value="top_k" :step="1" :min="5" :max="80" />
-              </label>
-              <label>
-                frequent_penalty
-                <a-tooltip title="数值越高，模型越倾向于使用新词而不是重复已用词；数值越低，模型越倾向于重复已用词">
-                  <span style="cursor: pointer; color: #777777;">✿</span>
-                </a-tooltip>
-                <a-slider v-model:value="frequent_penalty" :step="0.1" :min="-0.5" :max="1" />
-              </label>
             </div>
-          </template>
-          <div v-if="!collapsed">
-            <div class="bubble icon-container" :class="{ collapsed: collapsed }">
-              模型设置
-              <img src="/shezhi.svg" alt="user" class="icon" />
+            <div class="clear-all-container" v-if="conversations.length > 1">
+              <a-popover trigger="click" v-model:open="deletePopoverVisible">
+                <template #content>
+                  <div class="no-select" style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="preset-text" style="text-align: center; user-select: none; cursor: default; margin: 0;">
+                      确定要删除所有对话记录吗
+                    </div>
+                    <div style="display: flex; gap: 1em;">
+                      <div class="preset-option preset-text"
+                        style="color: #FF7F7F; cursor: pointer; margin: 0; padding: 1em 3em ;"
+                        @click="deleteAllConversations">
+                        删除
+                      </div>
+                      <div class="preset-option preset-text" style="cursor: pointer; margin: 0; padding: 1em 3em ;"
+                        @click="deletePopoverVisible = false">
+                        取消
+                      </div>
+                    </div>
+                  </div>
+                </template>
+                <div class="delete-all-button">
+                  <img src="/全部删除.svg" alt="删除全部对话" />
+                </div>
+              </a-popover>
             </div>
           </div>
           <div v-else>
-            <div class="icon-container" :class="{ collapsed: collapsed }">
-              <img src="/shezhi.svg" alt="user" class="icon" />
-            </div>
           </div>
-        </a-popover>
-      </div>
+        </div>
 
-      <div class="user-container" style="height: 8vh; align-items: center;">
-        <a-popover v-if="userStore.loggedIn" trigger="click" placement="topRight" :overlayStyle="{ width: '300px' }">
-          <template #content>
-            <div class="no-select user-info-card">
-              <div class="user-info-header">
-                <div class="avatar-upload-container">
-                  <a-avatar :size="60" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
-                  <div class="avatar-upload-overlay" @click="triggerFileInput">
-                    <camera-outlined />
-                    <input type="file" ref="avatarFileInput" style="display: none;" accept="image/*"
-                      @change="handleAvatarChange" />
+        <div class="setting-container" style="height: 8vh; padding-top: 0.5em;">
+          <a-popover trigger="click" v-model:open="settingPopoverVisible" @openChange="handleSettingPopoverChange">
+            <template #content>
+              <div class="no-select">
+                <div style="display: flex;">
+                  <h1 style=" font-weight: bold; margin-bottom: 15px;">模型设置</h1>
+                  <a-popover trigger="click" v-model:open="PopoverVisible">
+                    <template #content>
+                      <p class="ml-1.5" style="font-weight: bold; margin-bottom: 10px;user-select: none;">场景预设</p>
+                      <div v-for="(preset, name) in presets" :key="name" class="preset-option"
+                        @click="applyPreset(name)"
+                        style="padding: 10px; cursor: pointer; margin-bottom: 5px; border-radius: 18px; transition: all 0.3s;">
+                        {{ name }}
+                        <div style="font-size: 12px; color: #999; margin-top: 2px;">{{ preset.description }}</div>
+                      </div>
+                    </template>
+                    <div class="size-5 ml-46" style="cursor: pointer; display: flex; "><img src="/预设.svg"></div>
+                  </a-popover>
+                </div>
+                <div v-for="model in modelStore.models" :key="model.value">
+                  <div v-if="modelStore.currentModel === model.LLMID">
+                    <label>
+                      max_tokens
+                      <a-tooltip title="数值越高，模型可输入与输出文本长度越长；数值越低，模型可输入与输出文本长度越短（该值过低与文本长度不匹配时会导致生成中止）">
+                        <span style="cursor: pointer; color: #777777;">✿</span>
+                      </a-tooltip>
+                      <a-slider v-model:value="maxTokens" :step="1" :min="0" :max="model.maxTokens" />
+                    </label>
                   </div>
                 </div>
-                <div class="user-info-name">
-                  <h3 v-if="!isEditingName" @click="startEditingName">{{ userStore.getUserInfo.fullName || '昵称' }}</h3>
-                  <a-input v-else ref="nameInput" v-model:value="editingName" @blur="saveName" @keyup.enter="saveName"
-                    size="small" style="width: 100%" />
+                <label>
+                  temperature
+                  <a-tooltip title="数值越高，模型输出越随机，创造力越强；数值越低，输出越确定">
+                    <span style="cursor: pointer; color: #777777;">✿</span>
+                  </a-tooltip>
+                  <a-slider v-model:value="temperature" :step="0.1" :min="0.1" :max="1.5" />
+                </label>
+                <label>
+                  top_p
+                  <a-tooltip title="数值越高，生成的文本多样性越强；数值越低，生成的文本越集中在高概率的词汇上">
+                    <span style="cursor: pointer; color: #777777;">✿</span>
+                  </a-tooltip>
+                  <a-slider v-model:value="top_p" :step="0.1" :min="0.1" :max="1" />
+                </label>
+                <label>
+                  top_k
+                  <a-tooltip title="数值越高，模型从更多候选词中选择词汇，生成的文本可能更丰富；数值越低，模型从较少候选词中选择词汇，生成的文本可能更稳定">
+                    <span style="cursor: pointer; color: #777777;">✿</span>
+                  </a-tooltip>
+                  <a-slider v-model:value="top_k" :step="1" :min="5" :max="80" />
+                </label>
+                <label>
+                  frequent_penalty
+                  <a-tooltip title="数值越高，模型越倾向于使用新词而不是重复已用词；数值越低，模型越倾向于重复已用词">
+                    <span style="cursor: pointer; color: #777777;">✿</span>
+                  </a-tooltip>
+                  <a-slider v-model:value="frequent_penalty" :step="0.1" :min="-0.5" :max="1" />
+                </label>
+              </div>
+            </template>
+            <div v-if="!collapsed">
+              <div class="bubble icon-container" :class="{ collapsed: collapsed }">
+                模型设置
+                <img src="/shezhi.svg" alt="user" class="icon" />
+              </div>
+            </div>
+            <div v-else>
+              <div class="icon-container" :class="{ collapsed: collapsed }">
+                <img src="/shezhi.svg" alt="user" class="icon" />
+              </div>
+            </div>
+          </a-popover>
+        </div>
 
+        <div class="user-container" style="height: 8vh; align-items: center;">
+          <a-popover v-if="userStore.loggedIn" trigger="click" placement="topRight" :overlayStyle="{ width: '300px' }">
+            <template #content>
+              <div class="no-select user-info-card">
+                <div class="user-info-header">
+                  <div class="avatar-upload-container">
+                    <a-avatar :size="60" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
+                    <div class="avatar-upload-overlay" @click="triggerFileInput">
+                      <camera-outlined />
+                      <input type="file" ref="avatarFileInput" style="display: none;" accept="image/*"
+                        @change="handleAvatarChange" />
+                    </div>
+                  </div>
+                  <div class="user-info-name">
+                    <h3 v-if="!isEditingName" @click="startEditingName">{{ userStore.getUserInfo.fullName || '昵称' }}
+                    </h3>
+                    <a-input v-else ref="nameInput" v-model:value="editingName" @blur="saveName" @keyup.enter="saveName"
+                      size="small" style="width: 100%" />
+
+                  </div>
+                </div>
+
+                <div class="user-info-details">
+                  <div class="info-item">
+                    <span class="info-label">用户名:</span>
+                    <span class="info-value">{{ userStore.getUserInfo.userName || '未设置' }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">邮箱:</span>
+                    <span class="info-value editable-email" @click="openChangeEmailModal">
+                      {{ userStore.getUserInfo.email || '未设置' }}
+                      <edit-outlined class="edit-icon" />
+                    </span>
+                  </div>
+                </div>
+
+                <div class="user-actions">
+                  <div class="preset-option preset-text action-button" @click="openChangePasswordModal">
+                    修改密码
+                  </div>
+                  <div class="preset-option preset-text action-button" @click="handleLogout">
+                    退出登录
+                  </div>
                 </div>
               </div>
-
-              <div class="user-info-details">
-                <div class="info-item">
-                  <span class="info-label">用户名:</span>
-                  <span class="info-value">{{ userStore.getUserInfo.userName || '未设置' }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">邮箱:</span>
-                  <span class="info-value editable-email" @click="openChangeEmailModal">
-                    {{ userStore.getUserInfo.email || '未设置' }}
-                    <edit-outlined class="edit-icon" />
-                  </span>
-                </div>
-              </div>
-
-              <div class="user-actions">
-                <div class="preset-option preset-text action-button" @click="openChangePasswordModal">
-                  修改密码
-                </div>
-                <div class="preset-option preset-text action-button" @click="handleLogout">
-                  退出登录
-                </div>
+            </template>
+            <!-- 已登录状态显示 -->
+            <div v-if="!collapsed">
+              <div class="bubble icon-container" :class="{ collapsed: collapsed }">
+                <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
+                <span class="username-text">{{ userStore.getUserInfo.userName || '用户' }}</span>
+                <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
               </div>
             </div>
-          </template>
-          <!-- 已登录状态显示 -->
-          <div v-if="!collapsed">
-            <div class="bubble icon-container" :class="{ collapsed: collapsed }">
-              <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
-              <span class="username-text">{{ userStore.getUserInfo.userName || '用户' }}</span>
-              <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
+            <div v-else>
+              <div class="icon-container" :class="{ collapsed: collapsed }">
+                <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
+              </div>
             </div>
-          </div>
-          <div v-else>
-            <div class="icon-container" :class="{ collapsed: collapsed }">
-              <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
+          </a-popover>
+          <div v-else @click="goToHomeForLogin">
+            <div v-if="!collapsed">
+              <div class="bubble icon-container" :class="{ collapsed: collapsed }">
+                <a-avatar :size="40" src="/default-avatar.png"></a-avatar>
+                <span class="username-text">未登录</span>
+                <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
+              </div>
             </div>
-          </div>
-        </a-popover>
-        <div v-else @click="goToHomeForLogin">
-          <div v-if="!collapsed">
-            <div class="bubble icon-container" :class="{ collapsed: collapsed }">
-              <a-avatar :size="40" src="/default-avatar.png"></a-avatar>
-              <span class="username-text">未登录</span>
-              <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
-            </div>
-          </div>
-          <div v-else>
-            <div class="icon-container" :class="{ collapsed: collapsed }">
-              <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
+            <div v-else>
+              <div class="icon-container" :class="{ collapsed: collapsed }">
+                <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-    </a-layout-sider>
-    <div class="app-container">
-      <router-view />
-    </div>
-    <!-- 密码修改弹窗 -->
-    <div class="modal-overlay" v-if="showChangePasswordModal" @click="closeChangePasswordModal">
-      <ChangePassword @success="handlePasswordChanged" @cancel="closeChangePasswordModal" @click.stop />
-    </div>
-    <!-- 邮箱修改弹窗 -->
-    <div class="modal-overlay" v-if="showChangeEmailModal" @click="closeChangeEmailModal">
-      <div @click.stop>
-        <ChangeEmail @success="handleEmailChanged" @cancel="closeChangeEmailModal" />
+      </a-layout-sider>
+      <div class="app-container">
+        <router-view />
       </div>
-    </div>
-  </a-layout>
+      <!-- 密码修改弹窗 -->
+      <div class="modal-overlay" v-if="showChangePasswordModal" @click="closeChangePasswordModal">
+        <ChangePassword @success="handlePasswordChanged" @cancel="closeChangePasswordModal" @click.stop />
+      </div>
+      <!-- 邮箱修改弹窗 -->
+      <div class="modal-overlay" v-if="showChangeEmailModal" @click="closeChangeEmailModal">
+        <div @click.stop>
+          <ChangeEmail @success="handleEmailChanged" @cancel="closeChangeEmailModal" />
+        </div>
+      </div>
+    </a-layout>
+  </div>
 </template>
 
 <script>
@@ -301,6 +307,8 @@ import logo from '/LOGO-GEAent/logo.svg';
 import logoGEAGENT from '/LOGO-GEAent/logo+GEAGENT.svg';
 import MYGO from '/LOGO-GEAent/MyGO!!!.svg';
 import defaultAvatar from '/defaultAvatar.gif';
+import { useSystemStore } from '@/stores/system';
+import { gsap } from 'gsap';
 
 
 
@@ -318,6 +326,7 @@ export default {
   data() {
     const modelStore = useModelStore();
     const userStore = useUserStore();
+    const systemStore = useSystemStore();
     return {
       currentPage: 1,
       hasMorePages: true,
@@ -376,6 +385,7 @@ export default {
         }
       },
       showChangePasswordModal: false,
+      systemStore
     };
   },
 
@@ -422,6 +432,13 @@ export default {
         }
       }
     },
+    'systemStore.animationId': {
+      handler(newValue) {
+        if (newValue === 'mainIn') {
+          this.mountedAnimation()
+        }
+      }
+    }
   },
 
   computed: {
@@ -854,6 +871,23 @@ export default {
     getPreRes(id) {
       const resource = preloader.resources.find(r => r.id === id)
       return resource && resource.loaded ? resource.url : ''
+    },
+
+    mountedAnimation() {
+      console.log('mountedAnimation');
+      
+      const root = this.$refs.rootApp;
+      const tl = gsap.timeline()
+      tl.from(root, {
+        duration: 1,
+        opacity: 0,
+        y: '-20%',
+        x: '-5%',
+        scale: 0.8,
+        filter: 'blur(10px)',
+        ease: 'power2.out',
+        delay: 0.2
+      })
     }
   },
 };

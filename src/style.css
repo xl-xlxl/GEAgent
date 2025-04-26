@@ -6,6 +6,7 @@ body {
     padding: 0;
     height: 100%;
     overflow: hidden;
+    background-color: #FAF6F5;
 }
 
 .ant-layout-sider-trigger {
