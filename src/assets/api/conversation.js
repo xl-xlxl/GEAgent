@@ -75,6 +75,12 @@ const conversationApi = {
                         }
                         // 处理 MCP 状态数据
                         else if (data.MCPStatus) {
+                            if (data.MCPStatus.fnCall) {
+                                data.MCPStatus.fnCall = data.MCPStatus.fnCall.filter(
+                                    call => call && call.name && call.name !== 'emojiPack'
+                                );
+                            }
+
                             if (replyCallback) {
                                 replyCallback({
                                     type: 'mcp',
@@ -171,6 +177,12 @@ const conversationApi = {
                         }
                         // 处理 MCP 状态数据
                         else if (data.MCPStatus) {
+                            if (data.MCPStatus.fnCall) {
+                                data.MCPStatus.fnCall = data.MCPStatus.fnCall.filter(
+                                    call => call && call.name && call.name !== 'emojiPack'
+                                );
+                            }
+
                             if (replyCallback) {
                                 replyCallback({
                                     type: 'mcp',
@@ -203,10 +215,11 @@ const conversationApi = {
         try {
             const response = await api.get(`/chat/list?page=${page}&pageSize=${pageSize}`);
             if (response.status === 200) {
+                const conversationsList = response.data.conversationsList || {};
                 return {
                     success: response.data.success,
-                    pagination: response.data.conversationsList.pagination,
-                    conversations: response.data.conversationsList.conversations
+                    pagination: conversationsList.pagination,
+                    conversations: conversationsList.conversations
                 };
             } else {
                 throw {
@@ -405,7 +418,7 @@ const conversationApi = {
                         : [msg.mcp_service_status.fnCall];
 
                     calls.forEach(call => {
-                        if (call && call.name) {
+                        if (call && call.name && call.name !== 'emojiPack') {
                             fnCalls.push({
                                 name: call.name,
                                 arguments: call.arguments || {}
