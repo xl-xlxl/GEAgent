@@ -105,19 +105,19 @@
         <textarea class="message-input" :placeholder="loading ? ' GEAgent 思考中，请稍后 . . .' : '给 GEAgent 发送消息'"
           v-model="userInput" @keydown="handleKeyDown" :disabled="loading"
           :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
-        <div style="display: flex; justify-content: space-between">
-          <div class="model-select">
+        <div style="display: flex; justify-content: flex-end ;gap: 3px;">
+          <!-- 大屏幕显示的功能区域 -->
+          <div class="model-select desktop-only">
             <!-- 模型选择 -->
-            <a-select style="width: 150px" size="small" :disabled="loading" v-model:value="modelStore.currentModel"
-              @change="modelStore.switchModel">
+            <a-select style="width: 150px" size="small" :disabled="loading" v-model:value="modelStore.currentModel">
               <a-select-option v-for="model in modelStore.models" :key="model.value" :value="model.LLMID">
                 {{ model.value }}
               </a-select-option>
             </a-select>
           </div>
-          <div class="input-actions">
+          <div class="input-actions desktop-only">
             <!-- MCP按钮 -->
-            <button class="feature-button" :class="{ 'active-feature': enableMCPService }"
+            <button class="feature-button" :class="{ 'active-feature': enableMCPService }" 
               @click="() => featureStore.enableMCPService = !featureStore.enableMCPService" :disabled="loading">
               <span class="MCP-icon"><img src="/mcp.svg" /></span>
               MCP Services
@@ -128,11 +128,52 @@
               <span class="web-icon"><img src="/互联网搜索.svg" /></span>
               联网搜索
             </button>
-            <!-- 发送按钮 -->
-            <button class="send-button" @click="sendMessage" :disabled="!userInput.trim() || loading">
-              <span class="send-icon"><img src="/发送.svg" /></span>
-            </button>
           </div>
+          <!-- 小屏幕功能按钮和弹出层 -->
+          <div class="mobile-only mobile-tools">
+            <a-popover placement="topRight" trigger="click" v-model:visible="showFeaturePopover"
+              :overlayStyle="{ width: '200px' }">
+              <template #content>
+                <div class="popover-content">
+                  <!-- 模型选择 -->
+                  <div class="popover-item">
+                    <div class="popover-label">模型选择</div>
+                    <a-select style="width: 100%" size="small" :disabled="loading"
+                      v-model:value="modelStore.currentModel">
+                      <a-select-option v-for="model in modelStore.models" :key="model.value" :value="model.LLMID">
+                        {{ model.value }}
+                      </a-select-option>
+                    </a-select>
+                  </div>
+                  <!-- 功能按钮 -->
+                  <div class="popover-item">
+                    <div class="popover-label">功能选项</div>
+                    <div class="popover-buttons">
+                      <!-- MCP按钮 -->
+                      <button class="feature-button popover-button" :class="{ 'active-feature': enableMCPService }"
+                        @click="() => { featureStore.enableMCPService = !featureStore.enableMCPService; showFeaturePopover = false }">
+                        <span class="MCP-icon"><img src="/mcp.svg" /></span>
+                        MCP Services
+                      </button>
+                      <!-- 联网搜索按钮 -->
+                      <button class="feature-button popover-button" :class="{ 'active-feature': webSearch }"
+                        @click="() => { featureStore.webSearch = !featureStore.webSearch; showFeaturePopover = false }">
+                        <span class="web-icon"><img src="/互联网搜索.svg" /></span>
+                        联网搜索
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <button class="feature-button settings-button">
+                <img src="/功能设置.svg" alt="功能设置" style="width: 12px; height: 12px;" />
+              </button>
+            </a-popover>
+          </div>
+          <!-- 发送按钮 - 在任何屏幕尺寸下都显示 -->
+          <button class="send-button" @click="sendMessage" :disabled="!userInput.trim() || loading">
+            <span class="send-icon"><img src="/发送.svg" /></span>
+          </button>
         </div>
       </div>
     </div>
@@ -169,6 +210,7 @@ export default {
       title: "新对话",
       pagination: null,
       loadingHistory: false,
+      showFeaturePopover: false,
       mcpServiceDescriptions: {
         "biliSearch_get_extra_keywords": "在bilibili广泛获取搜索词的推荐关键词",
         "biliSearch": "在bilibili以关键词检索信息，获取网络上的综合信息",

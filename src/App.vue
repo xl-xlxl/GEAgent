@@ -9,12 +9,12 @@
         :trigger="!collapsed ? null : undefined" :width="screenWidth < 768 ? '70%' : '15%'"
         :collapsedWidth="screenWidth < 768 ? 0 : 70" :zeroWidthTriggerStyle="{ background: 'transparent', top: '2%', }">
 
-        <div class="close-container" style="height: 10vh;">
-          <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
-            <img v-if="!collapsed" src="/public/LOGO-GEAent/大GEAGENT.svg" />
-            <img v-if="collapsed" src="/收起.svg" alt="close" class="icon" />
-          </div>
+      <div class="close-container" style="height: 10vh;">
+        <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
+          <img v-if="!collapsed" src="/LOGO-GEAent/大GEAGENT.svg" />
+          <img v-if="collapsed" src="/收起.svg" alt="close" class="icon" />
         </div>
+      </div>
 
         <div class="add-container" style="height:5vh;">
           <!-- 新增对话按钮 -->
@@ -547,6 +547,7 @@ export default {
         top_k: preset.top_k,
         frequent_penalty: preset.frequent_penalty,
       });
+      this.PopoverVisible = false;
     },
 
     handleSettingPopoverChange(visible) {
