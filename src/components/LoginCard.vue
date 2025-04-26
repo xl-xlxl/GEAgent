@@ -3,7 +3,7 @@
     <a-card class="login-card">
       <template #cover>
         <div class="card-cover">
-          <h1 class="website-title">GEAgent</h1>
+          <img src="/LOGO-GEAent/logo+GEAGENT.svg" class="logo-img"/>
         </div>
       </template>
       
@@ -33,7 +33,7 @@
         </a-form-item>
         
         <a-form-item>
-          <a-button type="primary" html-type="submit" :loading="loading" block size="large">
+          <a-button type="primary" html-type="submit" :loading="loading" block size="large" class="gradient-btn">
             登录
           </a-button>
         </a-form-item>
@@ -105,8 +105,14 @@ const handleLogin = async (values:any) => {
 </script>
 
 <style scoped>
+
 .login-card-container {
   animation: fadeIn 0.3s;
+}
+
+.logo-img {
+  margin: 15px;
+  max-width: 80%;
 }
 
 .login-card {
@@ -117,19 +123,19 @@ const handleLogin = async (values:any) => {
 
 .card-cover {
   height: 120px;
-  background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
+  background: #F1EDED;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border-radius: 20px 20px 0 0;
+  border-radius: 18px 18px 0 0;
 }
 
 .website-title {
   text-align: center;
   font-size: 2.2rem;
   font-weight: bold;
-  color: white;
+  color: #FAF6F5;
   margin-bottom: 5px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
 }
@@ -137,7 +143,7 @@ const handleLogin = async (values:any) => {
 .login-title {
   text-align: center;
   margin: 0 0 24px;
-  color: rgba(0, 0, 0, 0.85);
+  color: #777777;
   font-weight: 600;
   font-size: 1.5rem;
 }
@@ -168,5 +174,20 @@ const handleLogin = async (values:any) => {
   text-align: right;
   margin-top: 0;
   padding-right: 8px;
+}
+
+:deep(.gradient-btn) {
+  background: linear-gradient(135deg ,rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
+  border: none;
+  color: #777777;
+}
+
+:deep(.gradient-btn:hover) {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 0.7), rgba(251, 188, 5, 0.7));
+  border: none;
+}
+
+:deep(.gradient-btn:active) {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 1), rgba(251, 188, 5, 1));
 }
 </style>

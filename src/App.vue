@@ -1,5 +1,6 @@
 <template>
-  <a-layout style="min-height: 100vh;">
+  <a-layout ref="rootApp" style="height: 100vh;">
+    <loadAnimation />
     <div v-if="screenWidth < 768 && !collapsed" class="sidebar-overlay" @click="toggleCollapsed">
     </div>
     <a-layout-sider :class="{ 'floating-sider': screenWidth < 768 }"
@@ -235,7 +236,7 @@
             <div class="bubble icon-container" :class="{ collapsed: collapsed }">
               <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
               <span class="username-text">{{ userStore.getUserInfo.userName || '用户' }}</span>
-              <img src="/user.svg" alt="user" class="icon" />
+              <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
             </div>
           </div>
           <div v-else>
@@ -249,12 +250,12 @@
             <div class="bubble icon-container" :class="{ collapsed: collapsed }">
               <a-avatar :size="40" src="/default-avatar.png"></a-avatar>
               <span class="username-text">未登录</span>
-              <img src="/user.svg" alt="user" class="icon" />
+              <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
             </div>
           </div>
           <div v-else>
             <div class="icon-container" :class="{ collapsed: collapsed }">
-              <img src="/user.svg" alt="user" class="icon" />
+              <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
             </div>
           </div>
         </div>
@@ -289,6 +290,21 @@ import { CameraOutlined, EditOutlined } from '@ant-design/icons-vue';
 import ChangePassword from './components/ChangePassword.vue';
 import ChangeEmail from './components/ChangeEmail.vue';
 const value = ref('');
+import loadAnimation from '@/components/loadAnimation.vue'
+import { preloader } from '@/services/preloader';
+import BIGGEAGENT from '/LOGO-GEAent/大GEAGENT.svg';
+import AGENT from '/LOGO-GEAent/AGENT.svg';
+import GE from '/LOGO-GEAent/GE.svg';
+import ALL from '/LOGO-GEAent/All.svg';
+import GEAGENTMYGO from '/LOGO-GEAent/GE+AGENT+MyGO.svg';
+import logo from '/LOGO-GEAent/logo.svg';
+import logoGEAGENT from '/LOGO-GEAent/logo+GEAGENT.svg';
+import MYGO from '/LOGO-GEAent/MyGO!!!.svg';
+import defaultAvatar from '/defaultAvatar.gif';
+
+
+
+
 
 export default {
   name: 'App',
@@ -296,7 +312,8 @@ export default {
     CameraOutlined,
     EditOutlined,
     ChangePassword,
-    ChangeEmail
+    ChangeEmail,
+    loadAnimation
   },
   data() {
     const modelStore = useModelStore();
@@ -363,11 +380,21 @@ export default {
   },
 
 
-     created() {
-     this.initializeUser();
-     this.fetchConversationList();
-     this.getAllModelConfig();
-
+  created() {
+    this.initializeUser();
+    this.fetchConversationList();
+    this.getAllModelConfig();
+    const assetsToPreload = [
+      { id: 'logo', url: logo, type: 'image' },
+      { id: 'logoGEAgent', url: logoGEAGENT, type: 'image' },
+      { id: 'all', url: ALL, type: 'image' },
+      { id: 'GE', url: GE, type: 'image' },
+      { id: 'AGENT', url: AGENT, type: 'image' },
+      { id: 'MyGO!!!', url: MYGO, type: 'image' },
+      { id: 'defaultAvatar', url: defaultAvatar, type: 'image' },
+    ]
+    preloader.addResources(assetsToPreload);
+    preloader.loadAll();
   },
 
   watch: {
@@ -437,7 +464,7 @@ export default {
     async getAllModelConfig() {
       try {
         const response = await this.modelStore.getAllModelConfig();
-        if (response===true) {
+        if (response === true) {
           message.success('模型配置获取成功');
         } else {
           console.error('获取模型配置失败:', response.error);
@@ -824,6 +851,11 @@ export default {
         this.handleLogout();
       }, 1500);
     },
+
+    getPreRes(id) {
+      const resource = preloader.resources.find(r => r.id === id)
+      return resource && resource.loaded ? resource.url : ''
+    }
   },
 };
 </script>

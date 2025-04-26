@@ -17,6 +17,7 @@
     "antd": "^5.24.6",
     "axios": "^1.8.4",
     "dompurify": "^3.2.5",
+    "gsap": "^3.12.7",
     "highlight.js": "^11.11.1",
     "markdown-it": "^14.1.0",
     "marked": "^15.0.7",
