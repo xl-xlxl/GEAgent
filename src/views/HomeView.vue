@@ -10,7 +10,7 @@
                 <!-- 输入栏 -->
                 <textarea class="message-input" placeholder="给 GEAgent 发送消息" v-model="userInput" @submit="handleSubmit"
                     @keydown="handleKeyDown" :disabled="loading" :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
-                <div style="display: flex; justify-content: flex-end ;gap: 3px;">
+                <div style="display: flex; justify-content: flex-end ;gap: 10px;">
                     <!-- 大屏幕显示的功能区域 -->
                     <div class="model-select desktop-only">
                         <!-- 模型选择 -->
@@ -162,11 +162,11 @@ const webSearch = computed(() => featureStore.webSearch);
 const enableMCPService = computed(() => featureStore.enableMCPService);
 
 const presetMessages = ref([
-    { icon: '💻', text: '1111111111！' },
-    { icon: '☀️', text: '2222222222' },
-    { icon: '📚', text: '333333' },
-    { icon: '😴', text: '44444444' },
-    { icon: '✏️', text: '55555555' }
+    { icon: '🤓', text: '介绍一下自己' },
+    { icon: '☀️', text: '推荐本月新番' },
+    { icon: '📚', text: '教我做PPT' },
+    { icon: '💻', text: '想和我一起敲代码吗' },
+    { icon: '🫣', text: '笑一笑' },
 ]);
 
 // 发送预设消息

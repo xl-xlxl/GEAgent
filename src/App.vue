@@ -9,12 +9,15 @@
         :trigger="!collapsed ? null : undefined" :width="screenWidth < 768 ? '70%' : '15%'"
         :collapsedWidth="screenWidth < 768 ? 0 : 70" :zeroWidthTriggerStyle="{ background: 'transparent', top: '2%', }">
 
-      <div class="close-container" style="height: 10vh;">
-        <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
-          <img v-if="!collapsed" src="/LOGO-GEAent/大GEAGENT.svg" />
-          <img v-if="collapsed" src="/收起.svg" alt="close" class="icon" />
+        <div class="close-container" style="height: 10vh;">
+          <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
+            <div v-if="!collapsed" style="display: flex; align-items: center; gap: 0.5em; width: 85%;">
+              <img src="/LOGO-GEAent/大GEAGENT.svg" />
+              <img src="/收起.svg" alt="collapse" class="icon" />
+            </div>
+            <img v-if="collapsed" src="/收起.svg" alt="close" class="icon" />
+          </div>
         </div>
-      </div>
 
         <div class="add-container" style="height:5vh;">
           <!-- 新增对话按钮 -->
@@ -875,7 +878,7 @@ export default {
 
     mountedAnimation() {
       console.log('mountedAnimation');
-      
+
       const root = this.$refs.rootApp;
       const tl = gsap.timeline()
       tl.from(root, {
