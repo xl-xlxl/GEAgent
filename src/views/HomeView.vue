@@ -24,8 +24,8 @@
                     <div class="input-actions desktop-only">
                         <!-- MCP按钮 -->
                         <button class="feature-button" :class="{ 'active-feature': enableMCPService }"
-                            @click="() => featureStore.enableMCPService = !featureStore.enableMCPService"
-                            :disabled="loading">
+                            @click="() => featureStore.enableMCPService = !featureStore.enableMCPService && !isMCPDisabled"
+                            :disabled="loading || isMCPDisabled">
                             <span class="MCP-icon"><img src="/mcp.svg" /></span>
                             MCP Services
                         </button>
@@ -61,7 +61,8 @@
                                             <!-- MCP按钮 -->
                                             <button class="feature-button popover-button"
                                                 :class="{ 'active-feature': enableMCPService }"
-                                                @click="() => { featureStore.enableMCPService = !featureStore.enableMCPService; showFeaturePopover = false }">
+                                                @click="() => { featureStore.enableMCPService = !featureStore.enableMCPService && !isMCPDisabled; showFeaturePopover = false }"
+                                                :disabled="isMCPDisabled">
                                                 <span class="MCP-icon"><img src="/mcp.svg" /></span>
                                                 MCP Services
                                             </button>
@@ -167,7 +168,21 @@ const presetMessages = ref([
     { icon: '📚', text: '教我做PPT' },
     { icon: '💻', text: '想和我一起敲代码吗' },
     { icon: '🥰', text: '表情包轰炸' },
+    { icon: '🎸', text: 'MyGO和Ave Mujica哪个好看'}
 ]);
+
+const isMCPDisabled = computed(() => {
+  // 当模型为 DeepSeek-R1(0) 或 DeepSeek-V3(1) 时禁用 MCP
+  return modelStore.currentModel === 0 || modelStore.currentModel === 1;
+});
+
+watch(() => modelStore.currentModel, (newModel) => {
+  // 当切换到 DeepSeek-R1 或 DeepSeek-V3 时
+  if (newModel === 0 || newModel === 1) {
+    // 关闭 MCP 功能
+    featureStore.enableMCPService = false;
+  }
+}, { immediate: true });
 
 // 发送预设消息
 const sendPresetMessage = (message) => {

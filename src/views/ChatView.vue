@@ -120,8 +120,8 @@
           </div>
           <div class="input-actions desktop-only">
             <!-- MCP按钮 -->
-            <button class="feature-button" :class="{ 'active-feature': enableMCPService }"
-              @click="() => featureStore.enableMCPService = !featureStore.enableMCPService" :disabled="loading">
+            <button class="MCP-button" :class="{ 'active-feature': enableMCPService }"
+              @click="() => !isMCPDisabled && (featureStore.enableMCPService = !featureStore.enableMCPService)" :disabled="loading || isMCPDisabled">
               <span class="MCP-icon"><img src="/mcp.svg" /></span>
               MCP Services
             </button>
@@ -153,14 +153,14 @@
                     <div class="popover-label">功能选项</div>
                     <div class="popover-buttons">
                       <!-- MCP按钮 -->
-                      <button class="feature-button popover-button" :class="{ 'active-feature': enableMCPService }"
-                        @click="() => { featureStore.enableMCPService = !featureStore.enableMCPService; showFeaturePopover = false }">
+                      <button class="MCP-button popover-button" :class="{ 'active-feature': enableMCPService }"
+                        @click="() => { featureStore.enableMCPService = !isMCPDisabled && (featureStore.enableMCPService = !featureStore.enableMCPService); showFeaturePopover = false }" :disabled="loading || isMCPDisabled">
                         <span class="MCP-icon"><img src="/mcp.svg" /></span>
                         MCP Services
                       </button>
                       <!-- 联网搜索按钮 -->
                       <button class="feature-button popover-button" :class="{ 'active-feature': webSearch }"
-                        @click="() => { featureStore.webSearch = !featureStore.webSearch; showFeaturePopover = false }">
+                      @click="() => { featureStore.webSearch = !featureStore.webSearch; showFeaturePopover = false }" :disabled="loading">
                         <span class="web-icon"><img src="/互联网搜索.svg" /></span>
                         联网搜索
                       </button>
@@ -278,6 +278,16 @@ export default {
       },
       deep: true,
     },
+    'modelStore.currentModel': {
+      handler(newModel) {
+        // 当切换到 DeepSeek-R1 或 DeepSeek-V3 时
+        if (newModel === 0 || newModel === 1) {
+          // 关闭 MCP 功能
+          this.featureStore.enableMCPService = false;
+        }
+      },
+      immediate: true // 确保组件加载时也执行一次
+    },
   },
 
   computed: {
@@ -301,6 +311,10 @@ export default {
     },
     enableMCPService() {
       return this.featureStore.enableMCPService;
+    },
+    isMCPDisabled() {
+      // 当模型为 DeepSeek-R1(0) 或 DeepSeek-V3(1) 时禁用 MCP
+      return useModelStore().currentModel === 0 || useModelStore().currentModel === 1;
     },
   },
 
