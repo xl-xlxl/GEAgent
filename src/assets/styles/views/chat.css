@@ -263,13 +263,6 @@
     gap: 8px;
 }
 
-.emoji-image {
-    max-width: 150px;
-    max-height: 150px;
-    border-radius: 18px;
-    object-fit: contain;
-}
-
 /* 添加 MCP 卡片相关样式 */
 
 .mcp-container {
@@ -449,59 +442,13 @@
     border-top-right-radius: 18px;
 }
 
-/* (从第二回合开始算) */
-/* .messages-area .message.ai-message.round-end,
-.messages-area .message.thinking-message.round-end {
-    padding-bottom: 12px;
-    margin-bottom: 8px;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-} */
-
 .messages-area .message.thinking-message:not(.round-end) .thinking-message-container {
     margin-bottom: 0px;
 }
 
-/* 确保AI消息容器在回合内无边距，保持连续性 */
-/* .messages-area .message.ai-message:not(.round-end) .ai-message-container {
-    margin-bottom: 4px;
-} */
-
-/* 为了更明显区分不同的组，可以添加组间距 */
-/* .messages-area .message[data-group]:last-child {
-    margin-bottom: 20px;
-} */
-
-/* 组的起始和结束消息的样式 */
-/* .messages-area .message[data-group].round-start:first-of-type::before {
-    top: 10;
-    border-top-left-radius: 18px;
-    border-top-right-radius: 18px;
-} */
-
-/* .messages-area .message[data-group].round-end:last-of-type::before {
-    bottom: 0;
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-} */
-
-/* 确保组内消息之间没有间隙
-.messages-area .message[data-group]:not(.round-end)+.message[data-group] {
-    margin-top: 0;
-} */
-
-
-/* .round-end {
-    padding-bottom: 12px;
-    margin-bottom: 8px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-} */
-
 .ai-message-container .avatar-container,
 .thinking-message-container .avatar-container {
     transform: translate(-10px, 20px);
-    /* 向左5px，向下5px */
 }
 
 /* 桌面版和移动版功能区域控制 */

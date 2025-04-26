@@ -69,8 +69,8 @@
                 <div class="avatar-placeholder"></div>
               </div>
               <div class="emoji-container">
-                <img v-for="(url, index) in message.emojiUrls" :key="`emoji-${message.id}-${index}`" :src="url"
-                  alt="表情包" class="emoji-image" />
+                <Image v-for="(url, index) in message.emojiUrls" :key="`emoji-${message.id}-${index}`" :src="url"
+                  alt="表情包" style="height: 130px; width: auto; border-radius: 18px; object-fit: contain;" class="emoji-image" :preview="{src: url, mask: false}"/>
               </div>
             </div>
             <!-- MCP 状态卡片 -->
@@ -186,7 +186,7 @@
 <script>
 import { useModelStore } from "@/stores/modelStore";
 import { useFeatureStore } from "@/stores/featureStore";
-import { message, Avatar } from "ant-design-vue";
+import { message, Avatar, Image} from "ant-design-vue";
 import { createConversation, continueConversation, getConversationHistory, getConversationList } from "@/services/conversationService";
 import { message as messageApi } from "ant-design-vue";
 import { useConversationStore } from '@/stores/conversationStore';
@@ -199,6 +199,7 @@ export default {
   name: "ChatView",
   components: {
     Avatar,
+    Image,
   },
   data() {
     const featureStore = useFeatureStore();
