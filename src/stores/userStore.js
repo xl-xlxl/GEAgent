@@ -105,7 +105,6 @@ export const useUserStore = defineStore("userStore", {
     async refreshUserInfo() {
       try {
         const userInfoResponse = await userService.getUserInfo();
-          console.log(userInfoResponse);
           this.userName = userInfoResponse.user.username;
           this.email = userInfoResponse.user.email;
           this.fullName = userInfoResponse.user.fullName;

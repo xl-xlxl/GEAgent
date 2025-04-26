@@ -61,5 +61,23 @@ export const modelConfigService = {
             }
             return false;
         }
+    },
+
+    async getAllModelConfigs() {
+        try {
+            // 调用API层
+            const response = await modelConfigAPI.getAllModelConfigs();
+
+            if (!response.success===true) {
+                console.error('获取所有模型配置失败:', response);
+                message.error('获取所有模型配置失败');
+                return null;
+            }
+            
+            return response;
+        } catch (error) {
+            console.error('获取所有模型配置服务失败:', error);
+            message.error('获取所有模型配置服务失败');
+        }
     }
 };

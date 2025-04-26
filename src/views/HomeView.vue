@@ -254,7 +254,6 @@ const closeAllCards = (event) => {
     }
 };
 
-console.log(userStore.showLogin);
 // 监听userStore中的showLogin状态
 watch(() => userStore.showLogin, (newVal) => {
     if (newVal) {
