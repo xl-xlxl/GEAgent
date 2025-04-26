@@ -32,6 +32,7 @@
 .scroll-container {
     flex: 1;
     overflow-y: auto;
+    margin-bottom: 0.5em;
 }
 
 .scroll-container::-webkit-scrollbar {
