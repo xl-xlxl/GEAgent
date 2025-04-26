@@ -63,11 +63,9 @@
               <div class="avatar-container">
                 <div class="avatar-placeholder"></div>
               </div>
-              <div class="ai-bubble">
-                <div class="emoji-container">
-                  <img v-for="(url, index) in message.emojiUrls" :key="`emoji-${message.id}-${index}`" :src="url"
-                    alt="表情包" class="emoji-image" />
-                </div>
+              <div class="emoji-container">
+                <img v-for="(url, index) in message.emojiUrls" :key="`emoji-${message.id}-${index}`" :src="url"
+                  alt="表情包" class="emoji-image" />
               </div>
             </div>
             <!-- MCP 状态卡片 -->
@@ -80,15 +78,15 @@
                 </div>
                 <div v-else class="avatar-placeholder"></div>
               </div>
-              <div class="ai-bubble mcp-card">
-                <div v-if="message.mcpData.fnCall && message.mcpData.fnCall.length" class="mcp-calls">
+              <div class="mcp-card">
+                <div class="mcp-calls">
                   <div v-for="(call, idx) in message.mcpData.fnCall" :key="idx" class="mcp-call-item">
                     <div class="mcp-call-name">{{ call.name }}</div>
                     <span class="mcp-description" v-if="mcpServiceDescriptions[call.name]">
                       {{ mcpServiceDescriptions[call.name] }}
                     </span>
                     <div class="mcp-call-args">
-                      <pre>{{ JSON.stringify(call.arguments) }}</pre>
+                      <pre>{{ JSON.stringify(call.arguments, null, 2) }}</pre>
                     </div>
                   </div>
                 </div>
@@ -117,7 +115,7 @@
           </div>
           <div class="input-actions desktop-only">
             <!-- MCP按钮 -->
-            <button class="feature-button" :class="{ 'active-feature': enableMCPService }" 
+            <button class="feature-button" :class="{ 'active-feature': enableMCPService }"
               @click="() => featureStore.enableMCPService = !featureStore.enableMCPService" :disabled="loading">
               <span class="MCP-icon"><img src="/mcp.svg" /></span>
               MCP Services

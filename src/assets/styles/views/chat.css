@@ -85,7 +85,6 @@
 }
 
 .message {
-    border-radius: 18px;
     line-height: 2;
     word-break: break-word;
 }
@@ -96,6 +95,8 @@
 
 .ai-message {
     align-self: flex-start;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
 }
 
 /* 输入框区域 */
@@ -230,16 +231,16 @@
 }
 
 .emoji-container {
-    margin-top: 8px;
+    margin: 15px 0;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
 }
 
 .emoji-image {
-    max-width: 120px;
-    max-height: 120px;
-    border-radius: 8px;
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 18px;
     object-fit: contain;
 }
 
@@ -266,8 +267,9 @@
 
 .mcp-call-item {
     background-color: #E5DACE;
-    border-radius: 6px;
-    padding: 8px;
+    border-radius: 18px;
+    padding: 15px;
+    margin: 15px 0;
 }
 
 .mcp-call-name {
@@ -284,6 +286,23 @@
 .mcp-call-args pre {
     margin: 0;
     white-space: pre-wrap;
+}
+
+/* MCP卡片样式 */
+.mcp-card {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+    word-break: break-word;
+}
+
+/* MCP描述样式 */
+.mcp-description {
+    display: block;
+    font-size: 12px;
+    color: #777777;
+    margin-bottom: 8px;
+    font-style: italic;
 }
 
 .user-message-container {
@@ -391,11 +410,16 @@
 /* round底色设置 */
 .messages-area .message[data-round] {
     background-color: #EAE7E0;
-    /* 稍微减弱round底色 */
+}
+
+.messages-area .message[data-1]{
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+
 }
 
 /* 调整回合开始和结束的圆角，只应用于AI消息 (从第二回合开始算)*/
-.messages-area .message.ai-message.round-start,
+.messages-area .message.ai-message.round-start:not(.has-thinking-before),
 .messages-area .message.thinking-message.round-start {
     padding-top: 12px;
     margin-top: 8px;
@@ -404,13 +428,13 @@
 }
 
 /* (从第二回合开始算) */
-.messages-area .message.ai-message.round-end,
+/* .messages-area .message.ai-message.round-end,
 .messages-area .message.thinking-message.round-end {
     padding-bottom: 12px;
     margin-bottom: 8px;
     border-bottom-left-radius: 18px;
     border-bottom-right-radius: 18px;
-}
+} */
 
 .messages-area .message.thinking-message:not(.round-end) .thinking-message-container {
     margin-bottom: 0px;
