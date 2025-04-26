@@ -272,16 +272,11 @@
     gap: 8px;
 }
 
-.mcp-container h4 {
-    margin: 0;
-    font-size: 14px;
-    color: #333;
-}
-
 .mcp-calls {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    font-weight: bold;
 }
 
 .mcp-call-item {
@@ -294,7 +289,7 @@
 .mcp-call-name {
     font-weight: bold;
     margin-bottom: 4px;
-    color: #777777;
+    color: #DDCBB6;
 }
 
 .mcp-call-args {
@@ -318,10 +313,9 @@
 /* MCP描述样式 */
 .mcp-description {
     display: block;
-    font-size: 12px;
+    font-size: 11px;
     color: #777777;
     margin-bottom: 8px;
-    font-style: italic;
 }
 
 .user-message-container {
@@ -363,7 +357,7 @@
     border-radius: 18px;
     gap: 8px;
     background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
-    padding: 10px;
+    padding: 5px 10px;
 }
 
 .ai-bubble {

@@ -86,10 +86,10 @@
               <div class="mcp-card">
                 <div class="mcp-calls">
                   <div v-for="(call, idx) in message.mcpData.fnCall" :key="idx" class="mcp-call-item">
-                    <div class="mcp-call-name">{{ call.name }}</div>
                     <span class="mcp-description" v-if="mcpServiceDescriptions[call.name]">
                       {{ mcpServiceDescriptions[call.name] }}
                     </span>
+                    <div class="mcp-call-name">{{ call.name }}</div>
                     <div class="mcp-call-args">
                       <pre>{{ JSON.stringify(call.arguments, null, 2) }}</pre>
                     </div>
