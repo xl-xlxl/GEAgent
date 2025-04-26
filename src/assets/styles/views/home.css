@@ -39,12 +39,19 @@
     margin: 10px;
     background-color: #f1eded;
     border-radius: 18px;
-    box-shadow: -1px 1px 1px rgba(255, 255, 255, 0.1);
+    /* 默认状态下的轻微阴影或无阴影 */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     height: auto;
     display: flex;
     flex-direction: column;
     gap: 1em;
-    /* 增加子元素间的间距 */
+    /* 添加平滑过渡效果 */
+    transition: box-shadow 0.2s ease-in-out;
+}
+
+/* 当输入框获得焦点时，为容器添加更明显的阴影 */
+.input-container:focus-within {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .message-input {
