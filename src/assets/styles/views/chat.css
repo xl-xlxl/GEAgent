@@ -345,9 +345,7 @@
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 0px;
-    position: relative;
+    margin: 0 20px;
     z-index: 2;
 }
 
@@ -412,8 +410,7 @@
 
 /* 从用户开始算一回合 */
 .round-start {
-    padding-top: 12px;
-    margin-top: 8px;
+    margin-top: 50px;
     border-top-left-radius: 18px;
     border-top-right-radius: 18px;
 }
@@ -437,17 +434,9 @@
     background-color: #F6F3F1;
 }
 
-
-.messages-area .message[data-1] {
-    border-bottom-left-radius: 18px;
-    border-bottom-right-radius: 18px;
-
-}
-
 /* 调整回合开始和结束的圆角，只应用于AI消息 (从第二回合开始算)*/
 .messages-area .message.ai-message.round-start:not(.has-thinking-before),
 .messages-area .message.thinking-message.round-start {
-    padding-top: 12px;
     margin-top: 8px;
     border-top-left-radius: 18px;
     border-top-right-radius: 18px;
