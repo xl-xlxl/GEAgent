@@ -106,7 +106,7 @@
         <textarea class="message-input" :placeholder="loading ? ' GEAgent 思考中，请稍后 . . .' : '给 GEAgent 发送消息'"
           v-model="userInput" @keydown="handleKeyDown" :disabled="loading"
           :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
-        <div style="display: flex; justify-content: flex-end ;gap: 10px;">
+        <div style="display: flex; justify-content: flex-end ;gap: 8px;">
           <!-- 大屏幕显示的功能区域 -->
           <div class="model-select desktop-only">
             <!-- 模型选择 -->

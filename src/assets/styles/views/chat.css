@@ -292,7 +292,7 @@
 }
 
 .mcp-call-item {
-    background-color: #E5DACE;
+    background-color: #FAF8F7;
     border-radius: 18px;
     padding: 15px;
     margin: 15px 0;
@@ -373,8 +373,7 @@
     padding: 8px 16px;
     border-radius: 18px;
     word-break: break-word;
-    background-color: #E5DACE;
-    color: #0A2E4A;
+    background-color: #FAF8F7;
     margin: 20px;
     margin-left: 0px;
 }
@@ -435,7 +434,7 @@
 
 /* round底色设置 */
 .messages-area .message[data-round] {
-    background-color: #EAE7E0;
+    background-color: #F6F3F1;
 }
 
 
