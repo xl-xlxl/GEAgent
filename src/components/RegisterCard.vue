@@ -3,7 +3,7 @@
     <a-card class="register-card">
       <template #cover>
         <div class="card-cover">
-          <h1 class="website-title">GEAgent</h1>
+          <img src="/LOGO-GEAent/logo+GEAGENT.svg" class="logo-img"/>
         </div>
       </template>
       
@@ -199,6 +199,11 @@ const handleRegister = async (values: any) => {
   animation: fadeIn 0.3s;
 }
 
+.logo-img {
+  margin: 15px;
+  max-width: 80%;
+}
+
 .register-card {
   width: 380px;
   border-radius: 18px;
@@ -207,12 +212,11 @@ const handleRegister = async (values: any) => {
 
 .card-cover {
   height: 120px;
-  background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
-  display: flex;
+  background: #F1EDED;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border-radius: 20px 20px 0 0;
+  border-radius: 18px 18px 0 0;
 }
 
 .website-title {

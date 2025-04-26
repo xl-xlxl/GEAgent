@@ -196,12 +196,12 @@ const handleChangePassword = async (values: any) => {
 
 .card-cover {
   height: 120px;
-  background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
+  background: #F1EDED;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  border-radius: 20px 20px 0 0;
+  border-radius: 18px 18px 0 0;
 }
 
 .website-title {
