@@ -282,9 +282,10 @@ const conversationApi = {
     processMessages(interactions) {
         if (!interactions?.length) return [];
 
+        const sortedInteractions = [...interactions].sort((a, b) => a.id - b.id);
         const messages = [];
 
-        for (const interaction of interactions) {
+        for (const interaction of sortedInteractions) {
             const groupId = `group-${interaction.id}`;
 
             // 添加用户消息
