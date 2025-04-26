@@ -359,7 +359,7 @@
 }
 
 .user-bubble {
-    max-width: 80%;
+    max-width: 100%;
     padding: 8px 16px;
     border-radius: 18px;
     word-break: break-word;
