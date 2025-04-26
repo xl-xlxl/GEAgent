@@ -31,7 +31,7 @@
                 {{ message.content }}
               </div>
               <div class="avatar-container">
-                <a-avatar :size="40" src=""></a-avatar>
+                <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/defaultAvatar.gif'"></a-avatar>
               </div>
             </div>
             <!-- 思考过程消息 -->
@@ -191,6 +191,7 @@ import { useConversationStore } from '@/stores/conversationStore';
 import MarkdownIt from "markdown-it";
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css"
+import { useUserStore } from "@/stores/userStore";
 
 export default {
   name: "ChatView",
@@ -204,6 +205,7 @@ export default {
       messages: [],
       userInput: "",
       loading: false,
+      userStore: useUserStore(),
       modelStore,
       featureStore,
       autoScroll: true,

@@ -199,7 +199,7 @@
               <div class="no-select user-info-card">
                 <div class="user-info-header">
                   <div class="avatar-upload-container">
-                    <a-avatar :size="60" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
+                    <a-avatar :size="60" :src="userStore.getUserInfo.avatarUrl || '/defaultAvatar.gif'"></a-avatar>
                     <div class="avatar-upload-overlay" @click="triggerFileInput">
                       <camera-outlined />
                       <input type="file" ref="avatarFileInput" style="display: none;" accept="image/*"
@@ -221,10 +221,10 @@
                     <span class="info-value">{{ userStore.getUserInfo.userName || '未设置' }}</span>
                   </div>
                   <div class="info-item">
-                    <span class="info-label">邮箱:</span>
+                    <span class="info-label">邮&ensp;&ensp;箱:</span>
                     <span class="info-value editable-email" @click="openChangeEmailModal">
-                      {{ userStore.getUserInfo.email || '未设置' }}
-                      <edit-outlined class="edit-icon" />
+                    {{ userStore.getUserInfo.email || '未设置' }}
+                    <edit-outlined class="edit-icon" />
                     </span>
                   </div>
                 </div>
@@ -242,21 +242,21 @@
             <!-- 已登录状态显示 -->
             <div v-if="!collapsed">
               <div class="bubble icon-container" :class="{ collapsed: collapsed }">
-                <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
+                <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/defaultAvatar.gif'"></a-avatar>
                 <span class="username-text">{{ userStore.getUserInfo.userName || '用户' }}</span>
                 <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
               </div>
             </div>
             <div v-else>
               <div class="icon-container" :class="{ collapsed: collapsed }">
-                <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/default-avatar.png'"></a-avatar>
+                <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/defaultAvatar.gif'"></a-avatar>
               </div>
             </div>
           </a-popover>
           <div v-else @click="goToHomeForLogin">
             <div v-if="!collapsed">
               <div class="bubble icon-container" :class="{ collapsed: collapsed }">
-                <a-avatar :size="40" src="/default-avatar.png"></a-avatar>
+                <a-avatar :size="40" src=""></a-avatar>
                 <span class="username-text">未登录</span>
                 <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
               </div>
@@ -485,7 +485,7 @@ export default {
       try {
         const response = await this.modelStore.getAllModelConfig();
         if (response === true) {
-          message.success('模型配置获取成功');
+
         } else {
           console.error('获取模型配置失败:', response.error);
         }
@@ -500,7 +500,6 @@ export default {
         if (refreshToken) {
           console.log('refreshToken', refreshToken);
           await this.userStore.refreshUserInfo();
-          message.success('用户恢复登录');
         }
       } catch (error) {
         console.error('初始化用户失败:', error);
