@@ -10,19 +10,21 @@
       <div class="messages-area">
         <template v-for="message in messages" :key="message.id">
           <div v-if="
-            message.role === 'user' ||
-            message.role === 'thinking' ||
-            (message.role === 'assistant' && (message.content || message.emojiUrls || message.mcpData))
-          " :class="{
-            message: true,
-            'user-message': message.role === 'user',
-            'ai-message': message.role === 'assistant',
-            'thinking-message': message.role === 'thinking',
-            [`round-${message.round || 1}`]: true,
-            'round-start': isRoundStart(message),
-            'round-end': isRoundEnd(message),
-            'has-thinking-before': message.role === 'assistant' && hasThinkingBefore(message)
-          }" :data-round="message.round || 1" :data-group="message.groupId">
+  message.role === 'user' ||
+  message.role === 'thinking' ||
+  (message.role === 'assistant' && (message.content || message.emojiUrls || message.mcpData))
+" :class="{
+  message: true,
+  'user-message': message.role === 'user',
+  'ai-message': message.role === 'assistant',
+  'thinking-message': message.role === 'thinking',
+  [`round-${message.round || 1}`]: true,
+  'round-start': isRoundStart(message),
+  'round-end': isRoundEnd(message),
+  'has-thinking-before': message.role === 'assistant' && hasThinkingBefore(message),
+  'has-mcp-after': message.role === 'assistant' && hasMCPAfter(message),
+  'has-emoji-after': message.role === 'assistant' && hasEmojiAfter(message)
+}" :data-round="message.round || 1" :data-group="message.groupId">
             <!-- 用户消息 -->
             <div v-if="message.role === 'user'" class="user-message-container">
               <div class="user-bubble">
@@ -72,7 +74,7 @@
             <!-- MCP 状态卡片 -->
             <div
               v-if="message.role === 'assistant' && message.mcpData && (message.hideMcp === undefined || message.hideMcp === false)"
-              class="ai-message-container">
+              class="ai-message-container ">
               <div class="avatar-container">
                 <div v-if="!hasThinkingBefore(message)" class="avatar-placeholder">
                   <a-avatar :size="40" src=""></a-avatar>
@@ -298,6 +300,32 @@ export default {
   },
 
   methods: {
+    hasMCPAfter(currentMessage) {
+  const currentIndex = this.messages.findIndex(msg => msg.id === currentMessage.id);
+  if (currentIndex === -1 || currentIndex === this.messages.length - 1) return false;
+  
+  // 检查同一组、同一轮次的后续消息是否有MCP卡片
+  for (let i = currentIndex + 1; i < this.messages.length; i++) {
+    const msg = this.messages[i];
+    if (msg.groupId !== currentMessage.groupId || msg.round !== currentMessage.round) break;
+    if (msg.mcpData) return true;
+  }
+  return false;
+},
+
+hasEmojiAfter(currentMessage) {
+  const currentIndex = this.messages.findIndex(msg => msg.id === currentMessage.id);
+  if (currentIndex === -1 || currentIndex === this.messages.length - 1) return false;
+  
+  // 检查同一组、同一轮次的后续消息是否有表情包
+  for (let i = currentIndex + 1; i < this.messages.length; i++) {
+    const msg = this.messages[i];
+    if (msg.groupId !== currentMessage.groupId || msg.round !== currentMessage.round) break;
+    if (msg.emojiUrls && msg.emojiUrls.length) return true;
+  }
+  return false;
+},
+
     isRoundStart(message) {
       const index = this.messages.findIndex(msg => msg.id === message.id);
       if (index <= 0) return true;

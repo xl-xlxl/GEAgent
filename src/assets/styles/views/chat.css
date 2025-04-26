@@ -113,6 +113,18 @@
     border-top-right-radius: 0px;
 }
 
+/* 当消息后面有MCP状态卡片时，隐藏底部圆角 */
+.ai-message.has-mcp-after {
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+/* 当消息后面有表情包但没有MCP卡片时保持底部圆角 */
+.ai-message.has-emoji-after:not(.has-mcp-after) {
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+}
+
 /* 输入框区域 */
 .input-area {
     border-radius: 18px;
@@ -425,6 +437,7 @@
 .messages-area .message[data-round] {
     background-color: #EAE7E0;
 }
+
 
 .messages-area .message[data-1] {
     border-bottom-left-radius: 18px;
