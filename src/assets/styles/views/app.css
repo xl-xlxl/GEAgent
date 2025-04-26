@@ -50,6 +50,25 @@
   font-weight: bold
 }
 
+/* 优化侧边栏收起展开性能 */
+.ant-layout-sider {
+  will-change: transform;
+}
+
+/* 优化侧边栏内部元素的变换 */
+.icon-container, 
+.bubble,
+.history-container,
+.user-container,
+.setting-container {
+  will-change: transform, opacity;
+}
+
+/* 优化侧边栏收起状态的特殊样式 */
+.floating-sider {
+  will-change: transform, width;
+}
+
 ::v-deep(.ant-slider-track) {
   background-color: #DECCB7 !important;
 }
