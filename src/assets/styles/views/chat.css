@@ -80,7 +80,7 @@
         margin-left: 5%;
         margin-right: 5%;
     }
-    
+
 }
 
 .message {
@@ -107,7 +107,7 @@
     flex-direction: column;
     user-select: none !important;
 }
-/* 中等屏幕上减小输入区域边距 */
+
 @media (max-width: 768px) {
     .input-area {
         margin-left: 5%;
@@ -453,65 +453,66 @@
 /* 桌面版和移动版功能区域控制 */
 .desktop-only {
     display: flex;
-  }
-  
-  .mobile-only {
+}
+
+.mobile-only {
     display: none;
-  }
-  
-  .mobile-tools {
+}
+
+.mobile-tools {
     display: flex;
     align-items: center;
     gap: 8px;
-  }
-  
-  /* 弹出层内样式 */
-  .popover-content {
+}
+
+/* 弹出层内样式 */
+.popover-content {
     padding: 8px;
-  }
-  
-  .popover-item {
+}
+
+.popover-item {
     margin-bottom: 16px;
-  }
-  
-  .popover-item:last-child {
+}
+
+.popover-item:last-child {
     margin-bottom: 0;
-  }
-  
-  .popover-label {
+}
+
+.popover-label {
     font-weight: bold;
     margin-bottom: 8px;
     color: #777777;
     font-size: 14px;
-  }
-  
-  .popover-buttons {
+}
+
+.popover-buttons {
     display: flex;
     flex-direction: column;
     gap: 8px;
-  }
-  
-  .popover-button {
+}
+
+.popover-button {
     width: 100%;
     justify-content: space-between;
     padding: 10px;
     height: auto;
-  }
-  
-  /* 移动端适配 */
-  @media (max-width: 768px) {
-    .desktop-only {
-      display: none;
-    }
-    
-    .mobile-only {
-      display: flex;
-    }
-  }
+}
 
-  /* 设置按钮样式 */
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none;
+    }
+
+    .mobile-only {
+        display: flex;
+    }
+}
+
+/* 设置按钮样式 */
 .settings-button {
-    display: none; /* 默认不显示 */
+    display: none;
+    /* 默认不显示 */
     background: #FAF6F5;
     border-radius: 18px;
     width: 24px;
@@ -519,11 +520,12 @@
     padding: 0;
     align-items: center;
     justify-content: center;
-  }
-  
-  /* 小屏幕设备上显示设置按钮 */
-  @media (max-width: 768px) {
+}
+
+/* 小屏幕设备上显示设置按钮 */
+@media (max-width: 768px) {
     .settings-button {
-      display: flex; /* 在小屏幕下显示 */
+        display: flex;
+        /* 在小屏幕下显示 */
     }
-  }
+}
