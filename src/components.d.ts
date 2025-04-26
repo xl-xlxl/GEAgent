@@ -25,6 +25,7 @@ declare module 'vue' {
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
     ChangeEmail: typeof import('./components/ChangeEmail.vue')['default']
     ChangePassword: typeof import('./components/ChangePassword.vue')['default']
+    LoadAnimation: typeof import('./components/loadAnimation.vue')['default']
     LoginByEmail: typeof import('./components/LoginByEmail.vue')['default']
     LoginCard: typeof import('./components/LoginCard.vue')['default']
     RegisterCard: typeof import('./components/RegisterCard.vue')['default']
