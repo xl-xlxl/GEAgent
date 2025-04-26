@@ -166,7 +166,7 @@ const presetMessages = ref([
     { icon: '☀️', text: '推荐本月新番' },
     { icon: '📚', text: '教我做PPT' },
     { icon: '💻', text: '想和我一起敲代码吗' },
-    { icon: '🥰', text: '笑一笑' },
+    { icon: '🥰', text: '表情包轰炸' },
 ]);
 
 // 发送预设消息
