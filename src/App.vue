@@ -122,7 +122,7 @@
                   <template #content>
                     <p class="ml-1.5" style="font-weight: bold; margin-bottom: 10px;user-select: none;">场景预设</p>
                     <div v-for="(preset, name) in presets" :key="name" class="preset-option" @click="applyPreset(name)"
-                      style="padding: 10px; cursor: pointer; margin-bottom: 5px; border-radius: 16px; transition: all 0.3s;">
+                      style="padding: 10px; cursor: pointer; margin-bottom: 5px; border-radius: 18px; transition: all 0.3s;">
                       {{ name }}
                       <div style="font-size: 12px; color: #999; margin-top: 2px;">{{ preset.description }}</div>
                     </div>
@@ -373,6 +373,9 @@ export default {
     $route(to) {
       if (to.path.includes('/chat/') && to.params.id) {
         this.fetchConversationList();
+      }
+      if (this.screenWidth < 768 && !this.collapsed) {
+        this.collapsed = true;
       }
     },
     'modelStore.currentModel': {

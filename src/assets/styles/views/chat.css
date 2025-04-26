@@ -19,75 +19,6 @@
     height: 40px;
 }
 
-.user-message-container {
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.user-bubble {
-    max-width: 80%;
-    background:  linear-gradient(135deg ,rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px 16px;
-    border-radius: 18px;
-    word-break: break-word;
-}
-
-.ai-bubble {
-    max-width: 80%;
-    padding: 8px 16px;
-    border-radius: 18px;
-    box-shadow: -2px 2px 2px rgba(0, 0, 0, 0.1);
-    word-break: break-word;
-}
-
-.ai-message-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.thinking-bubble {
-    max-width: 80%;
-    padding: 8px 16px;
-    border-radius: 18px;
-    word-break: break-word;
-    background-color: #F3F4F6;
-    color: #BBBBBB;
-    font-size: 14px;
-}
-
-.thinking-message-container {
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-/* 在小屏幕上增加气泡宽度 */
-@media (max-width: 768px) {
-    .user-bubble,
-    .ai-bubble,
-    .thinking-bubble {
-        max-width: 95%;
-    }
-}
-
-@media (max-width: 480px) {
-    .user-bubble,
-    .ai-bubble,
-    .thinking-bubble {
-        max-width: 98%;
-        padding: 8px 12px;
-    }
-}
-
 /* 整个聊天页面容器 */
 .chat-container {
     height: 100%;
@@ -149,6 +80,7 @@
         margin-left: 5%;
         margin-right: 5%;
     }
+    
 }
 
 .message {
@@ -171,16 +103,28 @@
     margin-left: 15%;
     margin-right: 15%;
     margin-bottom: 5px;
+    display: flex;
+    flex-direction: column;
+    user-select: none !important;
+}
+/* 中等屏幕上减小输入区域边距 */
+@media (max-width: 768px) {
+    .input-area {
+        margin-left: 5%;
+        margin-right: 5%;
+    }
 }
 
 .input-container {
-    padding: 10px;
-    padding-bottom: 5px;
-    margin: 5px;
-    margin: 0;
-    background-color: #f0f0f0;
+    padding: 20px;
+    margin-bottom: 10px;
+    background-color: #f1eded;
     border-radius: 18px;
-    box-shadow: -2px 2px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: -1px 1px 1px rgba(255, 255, 255, 0.1);
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
 }
 
 .message-input {
@@ -202,7 +146,8 @@
 /* 小屏幕设备上减小输入框高度 */
 @media (max-width: 768px) {
     .message-input {
-        min-height: 10px; /* 从40px减小到30px */
+        min-height: 10px;
+        /* 从40px减小到30px */
     }
 }
 
@@ -221,13 +166,12 @@
     align-items: center;
     padding: 6px 12px;
     background: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 18px;
     font-size: 12px;
     cursor: pointer;
     color: #777777;
     font-weight: bold;
-
+    height: 24px;
 }
 
 .feature-button:disabled {
@@ -235,8 +179,8 @@
 }
 
 .active-feature {
-    background:  linear-gradient(135deg ,rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
+
 }
 
 .web-icon {
@@ -246,22 +190,21 @@
 }
 
 .MCP-icon {
-    width: 1.7em; 
+    width: 1.7em;
     height: 1.7em;
     margin-right: 0.3125em;
 }
 
 /* 发送按钮 */
 .send-button {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    border-radius: 18px;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.2);
     background-color: white;
 }
 
@@ -270,13 +213,13 @@
 }
 
 .send-button:hover:not(:disabled) {
-    background:  linear-gradient(135deg ,rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
+
 }
 
 .send-icon {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
 }
 
 /* 模型选择下拉框 */
@@ -285,63 +228,224 @@
     justify-content: flex-start;
 }
 
-  .emoji-container {
+.emoji-container {
     margin-top: 8px;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-  }
-  
-  .emoji-image {
+}
+
+.emoji-image {
     max-width: 120px;
     max-height: 120px;
     border-radius: 8px;
     object-fit: contain;
-  }
+}
 
-  /* 添加 MCP 卡片相关样式 */
+/* 添加 MCP 卡片相关样式 */
 
 .mcp-container {
     margin-top: 8px;
     display: flex;
     flex-direction: column;
     gap: 8px;
-  }
-  
-  .mcp-container h4 {
+}
+
+.mcp-container h4 {
     margin: 0;
     font-size: 14px;
     color: #333;
-  }
-  
-  .mcp-calls {
+}
+
+.mcp-calls {
     display: flex;
     flex-direction: column;
     gap: 8px;
-  }
-  
-  .mcp-call-item {
+}
+
+.mcp-call-item {
     background-color: #f5f5f5;
     border-radius: 6px;
     padding: 8px;
-  }
-  
-  .mcp-call-name {
+}
+
+.mcp-call-name {
     font-weight: bold;
     margin-bottom: 4px;
     color: #1890ff;
-  }
-  
-  .mcp-call-args {
+}
+
+.mcp-call-args {
     font-size: 12px;
     overflow-x: auto;
-  }
-  
-  .mcp-call-args pre {
+}
+
+.mcp-call-args pre {
     margin: 0;
     white-space: pre-wrap;
-  }
-  
-  .mcp-bubble {
-    background-color: #f0f8ff;
-  }
+}
+
+.user-message-container {
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.ai-message-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 0px;
+    position: relative;
+    z-index: 2;
+}
+
+.thinking-message-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0px;
+    margin: 20px;
+    padding: 0px;
+}
+
+.user-bubble {
+    max-width: 80%;
+    background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
+    padding: 8px 16px;
+    border-radius: 18px;
+    word-break: break-word;
+}
+
+.ai-bubble {
+    max-width: 80%;
+    padding: 8px 16px;
+    border-radius: 18px;
+    word-break: break-word;
+    background-color: #F1EDED;
+    margin: 20px;
+    margin-left: 0px;
+}
+
+.thinking-bubble {
+    max-width: 80%;
+    padding: 8px 16px;
+    border-radius: 18px;
+    word-break: break-word;
+    background-color: #F3F4F6;
+    color: #BBBBBB;
+    font-size: 14px;
+    margin: 20px;
+    margin-left: 0px;
+}
+
+/* 在小屏幕上增加气泡宽度 */
+@media (max-width: 768px) {
+
+    .user-bubble,
+    .ai-bubble,
+    .thinking-bubble {
+        max-width: 95%;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .user-bubble,
+    .ai-bubble,
+    .thinking-bubble {
+        max-width: 98%;
+        padding: 8px 12px;
+    }
+}
+
+/* 从用户开始算一回合 */
+.round-start {
+    padding-top: 12px;
+    margin-top: 8px;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+}
+
+/* 回合底色样式 - 修改为仅对AI消息应用底色 */
+.messages-area .message.ai-message,
+.messages-area .message.thinking-message {
+    position: relative;
+    z-index: 1;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* 用户消息保持透明背景 */
+.messages-area .message.user-message {
+    background-color: transparent !important;
+}
+
+/* round底色设置 */
+.messages-area .message[data-round] {
+    background-color: #EAE7E0;
+    /* 稍微减弱round底色 */
+}
+
+/* 调整回合开始和结束的圆角，只应用于AI消息 (从第二回合开始算)*/
+.messages-area .message.ai-message.round-start,
+.messages-area .message.thinking-message.round-start {
+    padding-top: 12px;
+    margin-top: 8px;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+}
+
+/* (从第二回合开始算) */
+.messages-area .message.ai-message.round-end,
+.messages-area .message.thinking-message.round-end {
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+}
+
+.messages-area .message.thinking-message:not(.round-end) .thinking-message-container {
+    margin-bottom: 0px;
+}
+
+/* 确保AI消息容器在回合内无边距，保持连续性 */
+/* .messages-area .message.ai-message:not(.round-end) .ai-message-container {
+    margin-bottom: 4px;
+} */
+
+/* 为了更明显区分不同的组，可以添加组间距 */
+/* .messages-area .message[data-group]:last-child {
+    margin-bottom: 20px;
+} */
+
+/* 组的起始和结束消息的样式 */
+/* .messages-area .message[data-group].round-start:first-of-type::before {
+    top: 10;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+} */
+
+/* .messages-area .message[data-group].round-end:last-of-type::before {
+    bottom: 0;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+} */
+
+/* 确保组内消息之间没有间隙
+.messages-area .message[data-group]:not(.round-end)+.message[data-group] {
+    margin-top: 0;
+} */
+
+
+/* .round-end {
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+} */

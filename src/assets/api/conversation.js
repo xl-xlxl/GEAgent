@@ -264,7 +264,6 @@ const conversationApi = {
     },
 
     // 处理消息格式化的方法
-    // 处理消息格式化的方法
     processMessages(interactions) {
         if (!interactions?.length) return [];
 

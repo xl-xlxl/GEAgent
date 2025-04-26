@@ -44,47 +44,28 @@
 .bubble {
   max-width: 99%;
   background:  linear-gradient(135deg ,rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  
   padding: 8px 16px;
   border-radius: 18px;
   color: #777777;
   font-weight: bold
 }
 
-::v-deep(.ant-layout-sider) {
-  background-color: #f0f0f0 !important;
-}
-
-::v-deep(.ant-slider-handle) {
-  border-color: #E8F8FF !important;
-  /* 滑块的边框颜色 */
-}
-
-::v-deep(.ant-slider-handle:hover) {
-  border-color: #E8F8FF !important;
-  /* 滑块悬停时的边框颜色 */
-}
-
-::v-deep(.ant-slider-handle:focus) {
-  border-color: #E8F8FF !important;
-  /* 滑块聚焦时的边框颜色 */
-}
-
-::v-deep(.ant-slider-handle:active) {
-  border-color: #E8F8FF !important;
-  /* 滑块拖动时的边框颜色 */
-}
-
 ::v-deep(.ant-slider-track) {
-  background-color: #E8F8FF !important;
-  /* 滑动条选中部分的颜色 */
+  background-color: #DECCB7 !important;
 }
 
 ::v-deep(.ant-layout-sider) {
   background-color: #F1EDED !important;
 }
 
+::v-deep(ant-slider-handl::after) {
+  background-color: #d87b11 !important;
+}
 
+::v-deep(ant-slider-handl::before) {
+  background-color: #F1EDED !important;
+}
 
 /* 添加预设样式 */
 .preset-option {
@@ -93,11 +74,9 @@
 
 .preset-option:hover {
   background: linear-gradient(135deg ,rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  
 }
 
-
-/* 添加到 <style> 部分或导入的 CSS 文件中 */
 .conversation-item {
   border-radius: 18px;
   cursor: pointer;
@@ -111,7 +90,7 @@
 
 .conversation-item.active {
   background:  linear-gradient(135deg ,rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  
 }
 
 .history-container {

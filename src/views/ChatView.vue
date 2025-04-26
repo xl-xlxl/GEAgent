@@ -18,7 +18,10 @@
             'user-message': message.role === 'user',
             'ai-message': message.role === 'assistant',
             'thinking-message': message.role === 'thinking',
-          }">
+            [`round-${message.round || 1}`]: true,
+            'round-start': isRoundStart(message),
+            'round-end': isRoundEnd(message),
+          }" :data-round="message.round || 1" :data-group="message.groupId">
             <!-- 用户消息 -->
             <div v-if="message.role === 'user'" class="user-message-container">
               <div class="user-bubble">
@@ -255,6 +258,24 @@ export default {
   },
 
   methods: {
+    isRoundStart(message) {
+      const index = this.messages.findIndex(msg => msg.id === message.id);
+      if (index <= 0) return true;
+
+      const prevMsg = this.messages[index - 1];
+      return prevMsg.groupId !== message.groupId ||
+        (prevMsg.round || 1) !== (message.round || 1);
+    },
+
+    isRoundEnd(message) {
+      const index = this.messages.findIndex(msg => msg.id === message.id);
+      if (index >= this.messages.length - 1) return true;
+
+      const nextMsg = this.messages[index + 1];
+      return nextMsg.groupId !== message.groupId ||
+        (nextMsg.round || 1) !== (message.round || 1);
+    },
+
     updateMessageOrder(groupId) {
       if (!groupId || !this.messages || this.messages.length === 0) return;
 
