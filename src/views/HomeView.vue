@@ -39,7 +39,7 @@
 
                     <!-- 小屏幕功能按钮和弹出层 -->
                     <div class="mobile-only mobile-tools">
-                        <a-popover placement="topRight" trigger="click" v-model:visible="showFeaturePopover"
+                        <a-popover placement="topRight" trigger="click" v-model:open="showFeaturePopover"
                             :overlayStyle="{ width: '200px' }">
                             <template #content>
                                 <div class="popover-content">

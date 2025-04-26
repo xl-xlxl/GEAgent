@@ -131,7 +131,7 @@
           </div>
           <!-- 小屏幕功能按钮和弹出层 -->
           <div class="mobile-only mobile-tools">
-            <a-popover placement="topRight" trigger="click" v-model:visible="showFeaturePopover"
+            <a-popover placement="topRight" trigger="click" v-model:open="showFeaturePopover"
               :overlayStyle="{ width: '200px' }">
               <template #content>
                 <div class="popover-content">
@@ -216,7 +216,6 @@ export default {
         "biliSearch": "在bilibili以关键词检索信息，获取网络上的综合信息",
         "biliSearch_cheese": "在bilibili搜索网络上的课程相关内容",
         "getGEInfo": "获取GE酱以及GEAgent的详细信息",
-        "emojiPack": "调用表情包来表达GE酱的情绪和反应，在对话中展现更丰富的情感",
       },
     };
   },
