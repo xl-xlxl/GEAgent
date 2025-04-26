@@ -1,6 +1,6 @@
 <template>
     <div ref="bgContainer"
-        class="bg-black fixed top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 pointer-events-none *:pointer-events-auto overflow-hidden w-full h-full will-change-transform">
+        class="bg-[#FAF6F5] fixed top-1/2 left-1/2 z-[2] -translate-x-1/2 -translate-y-1/2 pointer-events-none *:pointer-events-auto overflow-hidden w-full h-full will-change-transform">
         <div
             class="w-full absolute flex flex-col items-center justify-center select-none will-change-transform top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <div ref="bgLogo" class="relative w-3/5 min-w-[320px]">
@@ -8,10 +8,10 @@
                     class="w-full min-w-[320px] relative z-[4] will-change-transform">
                 <img ref="logoAGENT" :src="getPreRes('AGENT')" alt=""
                     class="w-full min-w-[320px] absolute inset-0 z-[3] will-change-transform">
-                <div ref="logoMask1" class="absolute inset-0 bg-black z-[3] will-change-transform"></div>
+                <div ref="logoMask1" class="absolute inset-0 bg-[#FAF6F5] z-[3] will-change-transform"></div>
                 <img ref="logoMyGO" :src="getPreRes('MyGO!!!')" alt=""
                     class="w-full min-w-[320px] absolute inset-0 z-[2] will-change-transform">
-                <div ref="logoMask2" class="absolute inset-0 bg-black z-[2] will-change-transform"></div>
+                <div ref="logoMask2" class="absolute inset-0 bg-[#FAF6F5] z-[2] will-change-transform"></div>
             </div>
         </div>
         <!-- <div class="absolute w-10 h-10 bg-slate-400 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -21,8 +21,8 @@
     </div>
 </template>
 
-<script setup>
-import { ref, onMounted, watch, nextTick } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSystemStore } from '@/stores/system'
 import { preloader } from '@/services/preloader'
@@ -44,9 +44,6 @@ const logoMyGO = ref(null)
 
 
 onMounted(() => {
-    systemStore.setElement(bgContainer.value)
-    systemStore.setContent(route.name)
-    systemStore.currentRoute = route.name
     gsap.set(bgContent.value, {
         opacity: 1,
         scale: 1,
@@ -86,47 +83,37 @@ onMounted(() => {
     })
 })
 
-
-// 监听路由属性变化
-watch(() => route.name, (newRoute) => {
-    nextTick(() => {
-        if (newRoute === 'login') {
-            gsap.set('.login-left-card h1', {
-                y: 30,
-                opacity: 0,
-                filter: "blur(12px)"
-            })
-            gsap.set('.login-left-card h2', {
-                y: 20,
-                opacity: 0,
-                filter: "blur(8px)"
-            })
-            gsap.set('.login-left-card img', {
-                scale: 0.95,
-                opacity: 0
-            })
-        }
-    })
-}, { immediate: true })
-
 let loadTL = gsap.timeline()
 
 watch(() => preloader.progress.value, (progress) => {
     console.log(progress)
-    if (progress <= 100) {
-        loadTL.add(gsap.to(bgContent.value, {
-            duration: 0.25,
+    if (progress <= 100 && !startLoadComplete) {
+        loadTL.to(bgContent.value, {
+            duration: 0.1,
             width: `${10 + progress / 2.5}%`,
             ease: 'back.out(1.2)',
             onComplete: () => {
                 if (progress === 100) {
                     loadTL = null
                     loadCompleteAnimation()
+                    startLoadComplete = true
                 }
             }
-        }))
+        })
+    }
+    if (progress === 100) {
+        setTimeout(() => {
+            if (!startLoadComplete) {
+                loadTL.kill()
+                loadTL = null;
+                loadCompleteAnimation()
+                startLoadComplete = true
+            }
+        }, 1000)
     }
 })
+
+let startLoadComplete = false
 
 function loadCompleteAnimation() {
     const tl = gsap.timeline()
@@ -159,69 +146,41 @@ function loadCompleteAnimation() {
     tl.to(logoMyGO.value, {
         duration: 1.2,
         top: 0,
-        ease: 'power4.inOut'
+        ease: 'power4.inOut',
+        onComplete: () => {
+            systemStore.animationId = 'mainIn'
+        }
     }, '-=0.75')
-    tl.to(bgContent.value, {
-        duration: 0.8,
-        height: '100%',
+    tl.to(bgContainer.value, {
+        duration: 1,
+        scale: 1.05,
+        filter: 'blur(12px)',
+        opacity: 0,
+        x: '2%',
+        y: '5%',
         ease: 'power4.inOut',
         onComplete: () => {
             bgLogo.value.style.display = 'none'
             bgContainer.value.classList.remove('bg-black');
             bgContainer.value.style.backgroundColor = 'transparent'
-            systemStore.animationId = 'loginCardIn'
-            if (route.name === 'login') {
-                loadAnimationToLogin(tl)
-            } else {
-                loadAnimationToMain(tl)
-                systemStore.animationId = 'mainIn'
-            }
+            loadAnimationToMain(tl)
         }
     })
 }
 
-function loadAnimationToLogin(tl) {
-    tl.to(bgContent.value, {
-        duration: 0.8,
-        width: '33.33%',
-        ease: 'power4.out'
-    })
-    tl.to('.login-left-card h1', {
-        y: 0,
-        opacity: 1,
-        filter: "blur(0px)",
-        duration: 0.7,
-        ease: "power2.out"
-    }, '-=0.4');
-    tl.to('.login-left-card h2', {
-        y: 0,
-        opacity: 1,
-        filter: "blur(0px)",
-        duration: 0.6,
-        ease: "power2.out"
-    }, "-=0.5");
-    tl.to('.login-left-card img', {
-        scale: 1,
-        opacity: 1,
-        duration: 0.5,
-        ease: "back.out(1.7)"
-    }, "-=0.4");
-}
-
-function loadAnimationToMain(tl) {
+function loadAnimationToMain(tl: gsap.core.Timeline) {
     tl.to(bgContent.value, {
         duration: 1.2,
         y: '100%',
         ease: "power4.inOut",
         onComplete: () => {
             bgContent.value.style.display = 'none'
-            systemStore.setContent('main')
         }
     })
 }
 
 
-function getPreRes(id) {
+function getPreRes(id: string) {
     const resource = preloader.resources.find(r => r.id === id)
     return resource && resource.loaded ? resource.url : ''
 }
@@ -235,6 +194,6 @@ function getPreRes(id) {
 
 <style scoped>
 .bg {
-    background: linear-gradient(100deg, #f0cfd5, #d5c2e2, #e6d5c2);
+    background: linear-gradient(100deg, #bba7a1, #bdaa95, #b3a390);
 }
 </style>
