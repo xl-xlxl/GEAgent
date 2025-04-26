@@ -61,7 +61,7 @@
           </a-form-item>
           
           <a-form-item>
-            <a-button type="primary" html-type="submit" :loading="loading" block size="large">
+            <a-button type="primary" html-type="submit" :loading="loading" block size="large" class="gradient-btn">
               重置密码
             </a-button>
           </a-form-item>
@@ -239,10 +239,50 @@
     flex: 1;
   }
   
-  .code-button {
-    white-space: nowrap;
-    min-width: 110px;
-  }
+  /* 验证码按钮样式 */
+.code-button {
+  white-space: nowrap;
+  min-width: 110px;
+}
+
+:deep(.code-button) {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
+  border: none;
+  color: #777777;
+}
+
+:deep(.code-button:hover) {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 0.7), rgba(251, 188, 5, 0.7));
+  border: none;
+  color: white;
+}
+
+:deep(.code-button:active) {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 1), rgba(251, 188, 5, 1));
+  color: white;
+}
+
+/* 禁用状态的样式 */
+:deep(.code-button[disabled]) {
+  background: #f5f5f5 !important;
+  color: rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid #d9d9d9 !important;
+}
+  
+:deep(.gradient-btn) {
+  background: linear-gradient(135deg ,rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
+  border: none;
+  color: #777777;
+}
+
+:deep(.gradient-btn:hover) {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 0.7), rgba(251, 188, 5, 0.7));
+  border: none;
+}
+
+:deep(.gradient-btn:active) {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 1), rgba(251, 188, 5, 1));
+}
   
   /* 移动端适配 */
   @media (max-width: 480px) {

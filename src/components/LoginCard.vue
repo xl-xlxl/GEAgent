@@ -33,7 +33,7 @@
         </a-form-item>
         
         <a-form-item>
-          <a-button type="primary" html-type="submit" :loading="loading" block size="large">
+          <a-button type="primary" html-type="submit" :loading="loading" block size="large" class="gradient-btn">
             登录
           </a-button>
         </a-form-item>
@@ -174,5 +174,20 @@ const handleLogin = async (values:any) => {
   text-align: right;
   margin-top: 0;
   padding-right: 8px;
+}
+
+:deep(.gradient-btn) {
+  background: linear-gradient(135deg ,rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
+  border: none;
+  color: #777777;
+}
+
+:deep(.gradient-btn:hover) {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 0.7), rgba(251, 188, 5, 0.7));
+  border: none;
+}
+
+:deep(.gradient-btn:active) {
+  background: linear-gradient(135deg, rgba(234, 67, 53, 1), rgba(251, 188, 5, 1));
 }
 </style>
