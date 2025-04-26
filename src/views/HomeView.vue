@@ -10,7 +10,7 @@
                 <!-- 输入栏 -->
                 <textarea class="message-input" placeholder="给 GEAgent 发送消息" v-model="userInput" @submit="handleSubmit"
                     @keydown="handleKeyDown" :disabled="loading" :auto-size="{ minRows: 3, maxRows: 8 }"></textarea>
-                    <div style="display: flex; justify-content: flex-end ;gap: 3px;">
+                <div style="display: flex; justify-content: flex-end ;gap: 3px;">
                     <!-- 大屏幕显示的功能区域 -->
                     <div class="model-select desktop-only">
                         <!-- 模型选择 -->
@@ -88,6 +88,15 @@
                     </button>
                 </div>
             </div>
+
+            <!-- 预设问题气泡 -->
+            <div class="preset-bubbles">
+                <div class="preset-bubble" v-for="(preset, index) in presetMessages" :key="index"
+                    @click="sendPresetMessage(preset.text)">
+                    <span class="bubble-icon">{{ preset.icon }}</span> {{ preset.text }}
+                </div>
+            </div>
+
         </div>
 
         <!-- 登录卡片弹层 -->
@@ -152,16 +161,18 @@ const featureStore = useFeatureStore();
 const webSearch = computed(() => featureStore.webSearch);
 const enableMCPService = computed(() => featureStore.enableMCPService);
 
-// 切换联网搜索模式
-const switchWebSearch = () => {
-    featureStore.webSearch = !featureStore.webSearch;
-    console.log('联网模式: ' + (featureStore.webSearch ? '开启' : '关闭'));
-};
+const presetMessages = ref([
+    { icon: '💻', text: '1111111111！' },
+    { icon: '☀️', text: '2222222222' },
+    { icon: '📚', text: '333333' },
+    { icon: '😴', text: '44444444' },
+    { icon: '✏️', text: '55555555' }
+]);
 
-// 切换MCP服务
-const switchMCPService = () => {
-    featureStore.enableMCPService = !featureStore.enableMCPService;
-    console.log('MCP服务: ' + (featureStore.enableMCPService ? '开启' : '关闭'));
+// 发送预设消息
+const sendPresetMessage = (message) => {
+    userInput.value = message;
+    handleSubmit();
 };
 
 // 处理提交

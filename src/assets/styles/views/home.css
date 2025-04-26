@@ -322,3 +322,41 @@
       display: flex; /* 在小屏幕下显示 */
     }
   }
+
+/* 预设消息气泡样式 */
+.preset-bubbles {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin: 35px 0;
+    padding: 0 20px;
+}
+
+.preset-bubble {
+    background-color: #F1EDED;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #777777;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.preset-bubble:hover {
+    background: linear-gradient(135deg, rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bubble-icon {
+    margin-right: 6px;
+    font-size: 16px;
+}
