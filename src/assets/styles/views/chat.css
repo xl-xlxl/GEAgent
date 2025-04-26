@@ -265,7 +265,7 @@
 }
 
 .mcp-call-item {
-    background-color: #f5f5f5;
+    background-color: #E5DACE;
     border-radius: 6px;
     padding: 8px;
 }
@@ -273,7 +273,7 @@
 .mcp-call-name {
     font-weight: bold;
     margin-bottom: 4px;
-    color: #1890ff;
+    color: #777777;
 }
 
 .mcp-call-args {
@@ -323,12 +323,13 @@
     word-break: break-word;
 }
 
-.ai-bubble {
+.ai-bubble { 
     max-width: 80%;
     padding: 8px 16px;
     border-radius: 18px;
     word-break: break-word;
-    background-color: #F1EDED;
+    background-color: #E5DACE;
+    color: #0A2E4A;
     margin: 20px;
     margin-left: 0px;
 }
@@ -338,8 +339,8 @@
     padding: 8px 16px;
     border-radius: 18px;
     word-break: break-word;
-    background-color: #F3F4F6;
-    color: #BBBBBB;
+    background-color: #F1EDED;
+    color: #999999;
     font-size: 14px;
     margin: 20px;
     margin-left: 0px;

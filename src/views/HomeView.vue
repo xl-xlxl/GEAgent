@@ -15,7 +15,7 @@
                     <div class="model-select desktop-only">
                         <!-- 模型选择 -->
                         <a-select v-model:value="modelStore.currentModel" style="width: 150px" size="small"
-                            :disabled="loading" @change="modelStore.switchModel">
+                            :disabled="loading">
                             <a-select-option v-for="model in modelStore.models" :key="model.value" :value="model.LLMID">
                                 {{ model.value }}
                             </a-select-option>
@@ -47,7 +47,7 @@
                                     <div class="popover-item">
                                         <div class="popover-label">模型选择</div>
                                         <a-select style="width: 100%" size="small" :disabled="loading"
-                                            v-model:value="modelStore.currentModel" @change="modelStore.switchModel">
+                                            v-model:value="modelStore.currentModel">
                                             <a-select-option v-for="model in modelStore.models" :key="model.value"
                                                 :value="model.LLMID">
                                                 {{ model.value }}
