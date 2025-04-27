@@ -16,6 +16,11 @@ export class Preloader {
     loaded = ref(false)
     errors = ref<string[]>([])
 
+    getResource(id) {
+        const resource = this.resources.find(r => r.id === id);
+        return resource && resource.loaded ? resource.url : '';
+    }
+
     addResource(id: string, url: string, type: ResourceType = 'image') {
         this.resources.push({ id, url, type, loaded: false })
         return this

@@ -30,7 +30,6 @@ export async function continueConversation(params, conversationId, reasoningCall
         );
         return response;
     } catch (error) {
-        console.log("继续对话-服务层错误:", error);
         return {
             success: false,
             error: {
@@ -38,6 +37,16 @@ export async function continueConversation(params, conversationId, reasoningCall
                 isShowable: error.isShowable === true
             }
         }
+    }
+}
+
+// 添加中断对话的函数
+export function abortConversation(conversationId) {
+    try {
+        return conversationApi.abortConversation(conversationId);
+    } catch (error) {
+        console.log("中断对话-服务层错误:", error);
+        return false;
     }
 }
 

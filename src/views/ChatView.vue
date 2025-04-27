@@ -70,7 +70,8 @@
               </div>
               <div class="emoji-container">
                 <Image v-for="(url, index) in message.emojiUrls" :key="`emoji-${message.id}-${index}`" :src="url"
-                  alt="表情包" style="height: 130px; width: auto; border-radius: 18px; object-fit: contain;" class="emoji-image" :preview="{src: url, mask: false}"/>
+                  alt="表情包" style="height: 130px; width: auto; border-radius: 18px; object-fit: contain;"
+                  class="emoji-image" :preview="{ src: url, mask: false }" />
               </div>
             </div>
             <!-- MCP 状态卡片 -->
@@ -121,7 +122,8 @@
           <div class="input-actions desktop-only">
             <!-- MCP按钮 -->
             <button class="MCP-button" :class="{ 'active-feature': enableMCPService }"
-              @click="() => !isMCPDisabled && (featureStore.enableMCPService = !featureStore.enableMCPService)" :disabled="loading || isMCPDisabled">
+              @click="() => !isMCPDisabled && (featureStore.enableMCPService = !featureStore.enableMCPService)"
+              :disabled="loading || isMCPDisabled">
               <span class="MCP-icon"><img :src="getPreRes('mcp')" /></span>
               MCP Services
             </button>
@@ -154,13 +156,15 @@
                     <div class="popover-buttons">
                       <!-- MCP按钮 -->
                       <button class="MCP-button popover-button" :class="{ 'active-feature': enableMCPService }"
-                        @click="() => { featureStore.enableMCPService = !isMCPDisabled && (featureStore.enableMCPService = !featureStore.enableMCPService); showFeaturePopover = false }" :disabled="loading || isMCPDisabled">
+                        @click="() => { featureStore.enableMCPService = !isMCPDisabled && (featureStore.enableMCPService = !featureStore.enableMCPService); showFeaturePopover = false }"
+                        :disabled="loading || isMCPDisabled">
                         <span class="MCP-icon"><img :src="getPreRes('mcp')" /></span>
                         MCP Services
                       </button>
                       <!-- 联网搜索按钮 -->
                       <button class="feature-button popover-button" :class="{ 'active-feature': webSearch }"
-                      @click="() => { featureStore.webSearch = !featureStore.webSearch; showFeaturePopover = false }" :disabled="loading">
+                        @click="() => { featureStore.webSearch = !featureStore.webSearch; showFeaturePopover = false }"
+                        :disabled="loading">
                         <span class="web-icon"><img :src="getPreRes('web')" /></span>
                         联网搜索
                       </button>
@@ -174,7 +178,10 @@
             </a-popover>
           </div>
           <!-- 发送按钮 - 在任何屏幕尺寸下都显示 -->
-          <button class="send-button" @click="sendMessage" :disabled="!userInput.trim() || loading">
+          <button v-if="isProcessingMessage" class="send-button" @click="stopGenerating">
+            <span class="send-icon"><img :src="getPreRes('stop')"></span>
+          </button>
+          <button v-else class="send-button" @click="sendMessage" :disabled="!userInput.trim() || loading">
             <span class="send-icon"><img :src="getPreRes('send')" /></span>
           </button>
         </div>
@@ -186,10 +193,11 @@
 <script>
 import { useModelStore } from "@/stores/modelStore";
 import { useFeatureStore } from "@/stores/featureStore";
-import { message, Avatar, Image} from "ant-design-vue";
+import { message, Avatar, Image } from "ant-design-vue";
 import { createConversation, continueConversation, getConversationHistory, getConversationList } from "@/services/conversationService";
 import { message as messageApi } from "ant-design-vue";
 import { useConversationStore } from '@/stores/conversationStore';
+import { abortConversation } from '@/services/conversationService';
 import MarkdownIt from "markdown-it";
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css"
@@ -199,6 +207,7 @@ import SEND from '/send.svg';
 import MCP from '/mcp.svg';
 import WEB from '/web.svg';
 import FEATURE from '/feature.svg';
+import STOP from '/stop.svg';
 
 export default {
   name: "ChatView",
@@ -213,6 +222,7 @@ export default {
       messages: [],
       userInput: "",
       loading: false,
+      isProcessingMessage: false,
       userStore: useUserStore(),
       modelStore,
       featureStore,
@@ -237,6 +247,7 @@ export default {
       { id: 'web', url: WEB, type: 'image' },
       { id: 'feature', url: FEATURE, type: 'image' },
       { id: 'send', url: SEND, type: 'image' },
+      { id: 'stop', url: STOP, type: 'image' },
     ]
     preloader.addResources(assetsToPreload);
     preloader.loadAll();
@@ -335,6 +346,16 @@ export default {
   },
 
   methods: {
+    stopGenerating() {
+      if (this.conversationId) {
+        const success = abortConversation(this.conversationId);
+        if (success) {
+          this.isProcessingMessage = false;
+          messageApi.info('GEAent已停止思考');
+        }
+      }
+    },
+
     getPreRes(id) {
       const resource = preloader.resources.find(r => r.id === id)
       return resource && resource.loaded ? resource.url : ''
@@ -727,6 +748,7 @@ export default {
 
       // 设置加载状态
       this.loading = true;
+      this.isProcessingMessage = true;
       const loadHide = messageApi.loading("正在思考中...", 0);
       this.firstResponseReceived = false;
 
@@ -827,12 +849,18 @@ export default {
         }
       } catch (error) {
         console.error("聊天操作-UI层错误:", error);
-        if (error.error?.isShowable) {
+        if (error.isAborted) {
+          console.log("消息生成已被用户中断");
+          messageApi.info("消息生成已停止");
+        } else if (error.error?.isShowable) {
           messageApi.error("服务暂时不可用，请稍后再试");
         }
         const aiIndex = this.messages.findIndex(msg => msg.id === aiMessage.id);
         if (aiIndex !== -1) {
-          this.messages[aiIndex].content = "抱歉，我暂时无法回答您的问题。";
+          const errorMessage = error.isAborted ?
+            "GEAgent已停止思考" :
+            "抱歉，我暂时无法回答您的问题。";
+          this.messages[aiIndex].content = errorMessage;
         }
       } finally {
         this.loading = false;

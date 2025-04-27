@@ -4,6 +4,8 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 // 创建新对话
 const conversationApi = {
+    _abortControllers: new Map(), // 用于存储每个对话的中断控制器
+
     async createConversation(params, reasoningCallback, replyCallback) {
         try {
             const headers = {
@@ -113,6 +115,10 @@ const conversationApi = {
     // 继续对话方法
     async continueConversation(params, conversationId, reasoningCallback, replyCallback) {
         try {
+            // 创建一个新的AbortController并与这个会话ID关联
+        const abortController = new AbortController();
+        this._abortControllers.set(conversationId, abortController);
+
             const headers = {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -122,7 +128,8 @@ const conversationApi = {
             const response = await fetch(`${API_BASE}/api/chat/continue/${conversationId}`, {
                 method: 'POST',
                 headers: headers,
-                body: JSON.stringify(params)
+                body: JSON.stringify(params),
+                signal: abortController.signal 
             });
 
             let currentRound = 0;
@@ -196,21 +203,40 @@ const conversationApi = {
                         }
 
                     } catch (error) {
-                        console.error("解析响应数据错误:", error, line);
+                      // 检查是否为中断错误
+                if (error.name === 'AbortError') {
+                    console.log("对话已被用户中断");
+                    break;
+                }
                     }
                 }
             }
 
             return { conversationId, round: currentRound };
         } catch (error) {
-            console.error("继续对话-API层错误:", error);
             throw {
                 message: error.message || "继续对话失败",
                 isShowable: true,
+                isAborted: error.name === 'AbortError'
             };
+        }finally {
+            // 完成后清理中断控制器
+            if (conversationId) {
+                this._abortControllers.delete(conversationId);
+            }
         }
     },
 
+    // 中断对话
+abortConversation(conversationId) {
+    const controller = this._abortControllers.get(conversationId);
+    if (controller) {
+        controller.abort();
+        this._abortControllers.delete(conversationId);
+        return true;
+    }
+    return false;
+},
 
     // 获取对话列表的方法
     async getConversationList(page = 1, pageSize = 20) {
