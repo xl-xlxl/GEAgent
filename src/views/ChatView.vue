@@ -43,7 +43,7 @@
               message.thinking.trim().length > 0
             " class="thinking-message-container">
               <div class="avatar-container">
-                <a-avatar v-if="!message.round || message.round === 1" :size="40" src=""></a-avatar>
+                <a-avatar v-if="!message.round || message.round === 1" :size="40" :src="getPreRes('GEAvatar')"></a-avatar>
                 <div v-else class="avatar-placeholder"></div>
               </div>
               <div class="thinking-bubble">
@@ -54,7 +54,7 @@
             <div v-if="message.role === 'assistant' && message.content && message.content.trim().length"
               class="ai-message-container">
               <div class="avatar-container">
-                <a-avatar v-if="!hasThinkingBefore(message)" :size="40" src=""></a-avatar>
+                <a-avatar v-if="!hasThinkingBefore(message)" :size="40" :src="getPreRes('GEAvatar')"></a-avatar>
                 <div v-else class="avatar-placeholder"></div>
               </div>
               <!-- 文本内容气泡 -->
@@ -80,7 +80,7 @@
               class="ai-message-container ">
               <div class="avatar-container">
                 <div v-if="!hasThinkingBefore(message)" class="avatar-placeholder">
-                  <a-avatar :size="40" src=""></a-avatar>
+                  <a-avatar :size="40" :src="getPreRes('GEAvatar')"></a-avatar>
                 </div>
                 <div v-else class="avatar-placeholder"></div>
               </div>
@@ -208,6 +208,7 @@ import MCP from '/mcp.svg';
 import WEB from '/web.svg';
 import FEATURE from '/feature.svg';
 import STOP from '/stop.svg';
+import GEAVATAR from '/GEAvatar.webp';
 
 export default {
   name: "ChatView",
@@ -248,6 +249,7 @@ export default {
       { id: 'feature', url: FEATURE, type: 'image' },
       { id: 'send', url: SEND, type: 'image' },
       { id: 'stop', url: STOP, type: 'image' },
+      { id: 'GEAvatar', url: GEAVATAR, type: 'image' },
     ]
     preloader.addResources(assetsToPreload);
     preloader.loadAll();
