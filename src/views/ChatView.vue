@@ -735,6 +735,7 @@ export default {
             this.messages[aiIndex].content = isReplyEmpty ? currentContent : currentContent + reply;
           }
           this.updateMessageOrder(groupId);
+          
         }
       };
     },
@@ -868,6 +869,7 @@ export default {
         this.loading = false;
         loadHide();
         this.scrollToBottom();
+        this.isProcessingMessage = false;
       }
     },
 
