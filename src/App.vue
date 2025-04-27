@@ -12,10 +12,10 @@
         <div class="close-container" style="height: 10vh;">
           <div class="icon-container" @click="toggleCollapsed" :class="{ collapsed: collapsed }">
             <div v-if="!collapsed" style="display: flex; align-items: center; gap: 0.5em; width: 83%;">
-              <img src="/LOGO-GEAent/大GEAGENT.svg" />
-              <img src="/收起.svg" alt="collapse" class="icon" />
+              <img :src="getPreRes('BIGGEAGENT')" />
+              <img :src="getPreRes('collapse')" alt="collapse" class="icon" />
             </div>
-            <img v-if="collapsed" src="/收起.svg" alt="close" class="icon" />
+            <img v-else :src="getPreRes('collapse')" alt="collapse" class="icon" />
           </div>
         </div>
 
@@ -25,12 +25,12 @@
             <div class="bubble icon-container whitespace-nowrap" :class="{ collapsed: collapsed }"
               @click="$router.push('/')">
               开启新的对话
-              <img src="/新增对话.svg" alt="add" class="icon" />
+              <img :src="getPreRes('add')" alt="add" class="icon" />
             </div>
           </div>
           <div v-else>
             <div class="icon-container" :class="{ collapsed: collapsed }" @click="$router.push('/')">
-              <img src="/新增对话.svg" alt="add" class="icon" />
+              <img :src="getPreRes('add')" alt="add" class="icon" />
             </div>
           </div>
         </div>
@@ -84,7 +84,7 @@
                         </a-popover>
                       </div>
                     </template>
-                    <div class="icon"><img src="/更多.svg" alt="more"></div>
+                    <div class="icon"><img :src="getPreRes('more')" alt="more"></div>
                   </a-popover>
                 </div>
               </div>
@@ -110,7 +110,7 @@
                   </div>
                 </template>
                 <div class="delete-all-button">
-                  <img src="/全部删除.svg" alt="删除全部对话" />
+                  <img :src="getPreRes('deleteAll')" alt="删除全部对话" />
                 </div>
               </a-popover>
             </div>
@@ -135,7 +135,8 @@
                         <div style="font-size: 12px; color: #999; margin-top: 2px;">{{ preset.description }}</div>
                       </div>
                     </template>
-                    <div class="size-5 ml-46" style="cursor: pointer; display: flex; "><img src="/预设.svg"></div>
+                    <div class="size-5 ml-46" style="cursor: pointer; display: flex; "><img
+                        :src="getPreRes('preloadValue')"></div>
                   </a-popover>
                 </div>
                 <div v-for="model in modelStore.models" :key="model.value">
@@ -182,12 +183,12 @@
             <div v-if="!collapsed">
               <div class="bubble icon-container" :class="{ collapsed: collapsed }">
                 模型设置
-                <img src="/shezhi.svg" alt="user" class="icon" />
+                <img :src="getPreRes('setting')" class="icon" />
               </div>
             </div>
             <div v-else>
               <div class="icon-container" :class="{ collapsed: collapsed }">
-                <img src="/shezhi.svg" alt="user" class="icon" />
+                <img :src="getPreRes('setting')" class="icon" />
               </div>
             </div>
           </a-popover>
@@ -223,8 +224,8 @@
                   <div class="info-item">
                     <span class="info-label">邮&ensp;&ensp;箱:</span>
                     <span class="info-value editable-email" @click="openChangeEmailModal">
-                    {{ userStore.getUserInfo.email || '未设置' }}
-                    <edit-outlined class="edit-icon" />
+                      {{ userStore.getUserInfo.email || '未设置' }}
+                      <edit-outlined class="edit-icon" />
                     </span>
                   </div>
                 </div>
@@ -293,12 +294,9 @@ import { useModelStore } from "@/stores/modelStore";
 import { message } from 'ant-design-vue';
 import { useUserStore } from './stores/userStore';
 import { getConversationList, deleteConversations, deleteAllConversations, updateConversationTitle } from '@/services/conversationService';
-import { modelConfigService } from '@/services/modelConfigService';
-import { ref } from 'vue';
 import { CameraOutlined, EditOutlined } from '@ant-design/icons-vue';
 import ChangePassword from './components/ChangePassword.vue';
 import ChangeEmail from './components/ChangeEmail.vue';
-const value = ref('');
 import loadAnimation from '@/components/loadAnimation.vue'
 import { preloader } from '@/services/preloader';
 import BIGGEAGENT from '/LOGO-GEAent/大GEAGENT.svg';
@@ -310,6 +308,13 @@ import logo from '/LOGO-GEAent/logo.svg';
 import logoGEAGENT from '/LOGO-GEAent/logo+GEAGENT.svg';
 import MYGO from '/LOGO-GEAent/MyGO!!!.svg';
 import defaultAvatar from '/defaultAvatar.gif';
+import SETTING from '/setting.svg';
+import MORE from '/more.svg';
+import ADD from '/add.svg';
+import DELETEALL from '/deleteAll.svg';
+import PRELOADVALUE from '/preloadValue.svg';
+import COLLAPSE from '/collapse.svg';
+
 import { useSystemStore } from '@/stores/system';
 import { gsap } from 'gsap';
 
@@ -405,9 +410,23 @@ export default {
       { id: 'AGENT', url: AGENT, type: 'image' },
       { id: 'MyGO!!!', url: MYGO, type: 'image' },
       { id: 'defaultAvatar', url: defaultAvatar, type: 'image' },
+      { id: 'BIGGEAGENT', url: BIGGEAGENT, type: 'image' },
+      { id: 'GEAGENT+MyGO', url: GEAGENTMYGO, type: 'image' },
+      { id: 'collapse', url: COLLAPSE, type: 'image' },
+      { id: 'add', url: ADD, type: 'image' },
+      { id: 'deleteAll', url: DELETEALL, type: 'image' },
+      { id: 'setting', url: SETTING, type: 'image' },
+      { id: 'more', url: MORE, type: 'image' },
+      { id: 'preloadValue', url: PRELOADVALUE, type: 'image' },
     ]
     preloader.addResources(assetsToPreload);
-    preloader.loadAll();
+    preloader.loadAll().then(() => {
+      // 设置 CSS 变量
+      document.documentElement.style.setProperty(
+        '--collapse-svg-url',
+        `url('${preloader.getResource('collapse')}')`
+      );
+    });
   },
 
   watch: {

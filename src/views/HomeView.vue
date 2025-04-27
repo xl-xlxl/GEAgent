@@ -4,7 +4,7 @@
 
         <div class="input-area">
             <div class="titleImg-container">
-                <img src="/LOGO-GEAent/logo+GEAGENT.svg">
+                <img :src="getPreRes('logoGEAGENT')">
             </div>
             <div class="input-container">
                 <!-- 输入栏 -->
@@ -26,13 +26,13 @@
                         <button class="feature-button" :class="{ 'active-feature': enableMCPService }"
                             @click="() => featureStore.enableMCPService = !featureStore.enableMCPService && !isMCPDisabled"
                             :disabled="loading || isMCPDisabled">
-                            <span class="MCP-icon"><img src="/mcp.svg" /></span>
+                            <span class="MCP-icon"><img :src="getPreRes('mcp')" /></span>
                             MCP Services
                         </button>
                         <!-- 联网搜索按钮 -->
                         <button class="feature-button" :class="{ 'active-feature': webSearch }"
                             @click="() => featureStore.webSearch = !featureStore.webSearch" :disabled="loading">
-                            <span class="web-icon"><img src="/互联网搜索.svg" /></span>
+                            <span class="web-icon"><img :src="getPreRes('web')" /></span>
                             联网搜索
                         </button>
                     </div>
@@ -63,14 +63,14 @@
                                                 :class="{ 'active-feature': enableMCPService }"
                                                 @click="() => { featureStore.enableMCPService = !featureStore.enableMCPService && !isMCPDisabled; showFeaturePopover = false }"
                                                 :disabled="isMCPDisabled">
-                                                <span class="MCP-icon"><img src="/mcp.svg" /></span>
+                                                <span class="MCP-icon"><img :src="getPreRes('mcp')" /></span>
                                                 MCP Services
                                             </button>
                                             <!-- 联网搜索按钮 -->
                                             <button class="feature-button popover-button"
                                                 :class="{ 'active-feature': webSearch }"
                                                 @click="() => { featureStore.webSearch = !featureStore.webSearch; showFeaturePopover = false }">
-                                                <span class="web-icon"><img src="/互联网搜索.svg" /></span>
+                                                <span class="web-icon"><img :src="getPreRes('web')" /></span>
                                                 联网搜索
                                             </button>
                                         </div>
@@ -78,14 +78,14 @@
                                 </div>
                             </template>
                             <button class="feature-button settings-button">
-                                <img src="/功能设置.svg" alt="功能设置" style="width: 12px; height: 12px;" />
+                                <img :src="getPreRes('feature')" alt="功能设置" style="width: 12px; height: 12px;" />
                             </button>
                         </a-popover>
                     </div>
 
                     <!-- 发送按钮 -->
                     <button class="send-button" @click="handleSubmit" :disabled="!userInput.trim() || loading">
-                        <span class="send-icon"><img src="/发送.svg"></span>
+                        <span class="send-icon"><img :src="getPreRes('send')"></span>
                     </button>
                 </div>
             </div>
@@ -140,6 +140,34 @@ import { useFeatureStore } from "@/stores/featureStore";
 import { useUserStore } from '@/stores/userStore';
 import { useRouter } from 'vue-router';
 import { useConversationStore } from '@/stores/conversationStore';
+import { preloader, ResourceType } from '@/services/preloader';
+import SEND from '/send.svg';
+import MCP from '/mcp.svg';
+import WEB from '/web.svg';
+import FEATURE from '/feature.svg';
+import logoGEAGENT from '/LOGO-GEAent/logo+GEAGENT.svg';
+
+// 获取预加载资源的函数
+const getPreRes = (id) => {
+    const resource = preloader.resources.find(r => r.id === id);
+    return resource && resource.loaded ? resource.url : '';
+};
+
+// 在组件挂载时添加并加载资源
+onMounted(() => {
+    // 定义需要预加载的资源 - 添加类型注解以匹配期望的类型
+    const assetsToPreload: Array<{ id: string, url: string, type?: ResourceType }> = [
+        { id: 'send', url: SEND, type: 'image' },
+        { id: 'mcp', url: MCP, type: 'image' },
+        { id: 'web', url: WEB, type: 'image' },
+        { id: 'feature', url: FEATURE, type: 'image' },
+        { id: 'logoGEAGENT', url: logoGEAGENT, type: 'image' },
+    ];
+
+    // 添加资源并开始加载
+    preloader.addResources(assetsToPreload);
+    preloader.loadAll();
+});
 
 const [messageApi, contextHolder] = message.useMessage();
 const userInput = ref<any>('');

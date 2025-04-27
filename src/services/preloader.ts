@@ -15,6 +15,7 @@ export class Preloader {
     progress = ref(0)
     loaded = ref(false)
     errors = ref<string[]>([])
+
     addResource(id: string, url: string, type: ResourceType = 'image') {
         this.resources.push({ id, url, type, loaded: false })
         return this

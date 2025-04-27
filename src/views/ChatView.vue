@@ -122,13 +122,13 @@
             <!-- MCP按钮 -->
             <button class="MCP-button" :class="{ 'active-feature': enableMCPService }"
               @click="() => !isMCPDisabled && (featureStore.enableMCPService = !featureStore.enableMCPService)" :disabled="loading || isMCPDisabled">
-              <span class="MCP-icon"><img src="/mcp.svg" /></span>
+              <span class="MCP-icon"><img :src="getPreRes('mcp')" /></span>
               MCP Services
             </button>
             <!-- 联网搜索按钮 -->
             <button class="feature-button" :class="{ 'active-feature': webSearch }"
               @click="() => featureStore.webSearch = !featureStore.webSearch" :disabled="loading">
-              <span class="web-icon"><img src="/互联网搜索.svg" /></span>
+              <span class="web-icon"><img :src="getPreRes('web')" /></span>
               联网搜索
             </button>
           </div>
@@ -155,13 +155,13 @@
                       <!-- MCP按钮 -->
                       <button class="MCP-button popover-button" :class="{ 'active-feature': enableMCPService }"
                         @click="() => { featureStore.enableMCPService = !isMCPDisabled && (featureStore.enableMCPService = !featureStore.enableMCPService); showFeaturePopover = false }" :disabled="loading || isMCPDisabled">
-                        <span class="MCP-icon"><img src="/mcp.svg" /></span>
+                        <span class="MCP-icon"><img :src="getPreRes('mcp')" /></span>
                         MCP Services
                       </button>
                       <!-- 联网搜索按钮 -->
                       <button class="feature-button popover-button" :class="{ 'active-feature': webSearch }"
                       @click="() => { featureStore.webSearch = !featureStore.webSearch; showFeaturePopover = false }" :disabled="loading">
-                        <span class="web-icon"><img src="/互联网搜索.svg" /></span>
+                        <span class="web-icon"><img :src="getPreRes('web')" /></span>
                         联网搜索
                       </button>
                     </div>
@@ -169,13 +169,13 @@
                 </div>
               </template>
               <button class="feature-button settings-button">
-                <img src="/功能设置.svg" alt="功能设置" style="width: 12px; height: 12px;" />
+                <img :src="getPreRes('feature')" alt="功能设置" style="width: 12px; height: 12px;" />
               </button>
             </a-popover>
           </div>
           <!-- 发送按钮 - 在任何屏幕尺寸下都显示 -->
           <button class="send-button" @click="sendMessage" :disabled="!userInput.trim() || loading">
-            <span class="send-icon"><img src="/发送.svg" /></span>
+            <span class="send-icon"><img :src="getPreRes('send')" /></span>
           </button>
         </div>
       </div>
@@ -194,6 +194,11 @@ import MarkdownIt from "markdown-it";
 import hljs from "highlight.js";
 import "highlight.js/styles/github.css"
 import { useUserStore } from "@/stores/userStore";
+import { preloader } from '@/services/preloader';
+import SEND from '/send.svg';
+import MCP from '/mcp.svg';
+import WEB from '/web.svg';
+import FEATURE from '/feature.svg';
 
 export default {
   name: "ChatView",
@@ -224,6 +229,17 @@ export default {
         "getGEInfo": "获取GE酱以及GEAgent的详细信息",
       },
     };
+  },
+
+  created() {
+    const assetsToPreload = [
+      { id: 'mcp', url: MCP, type: 'image' },
+      { id: 'web', url: WEB, type: 'image' },
+      { id: 'feature', url: FEATURE, type: 'image' },
+      { id: 'send', url: SEND, type: 'image' },
+    ]
+    preloader.addResources(assetsToPreload);
+    preloader.loadAll();
   },
 
   mounted() {
@@ -319,6 +335,11 @@ export default {
   },
 
   methods: {
+    getPreRes(id) {
+      const resource = preloader.resources.find(r => r.id === id)
+      return resource && resource.loaded ? resource.url : ''
+    },
+
     hasMCPAfter(currentMessage) {
       const currentIndex = this.messages.findIndex(msg => msg.id === currentMessage.id);
       if (currentIndex === -1 || currentIndex === this.messages.length - 1) return false;

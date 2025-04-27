@@ -19,7 +19,7 @@ body {
 
 .ant-layout-sider-zero-width-trigger::after {
     content: "" !important;
-    background-image: url('/收起.svg') !important;
+    background-image: var(--collapse-svg-url, url('/collapse.svg')) !important;
     background-size: contain !important;
     width: 23px !important;
     height: 23px !important;
