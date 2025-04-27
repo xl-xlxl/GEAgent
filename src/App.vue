@@ -200,7 +200,7 @@
               <div class="no-select user-info-card">
                 <div class="user-info-header">
                   <div class="avatar-upload-container">
-                    <a-avatar :size="60" :src="userStore.getUserInfo.avatarUrl || '/defaultAvatar.gif'"></a-avatar>
+                    <a-avatar :size="60" :src="userStore.getUserInfo.avatarUrl || getPreRes('defaultAvatar')"></a-avatar>
                     <div class="avatar-upload-overlay" @click="triggerFileInput">
                       <camera-outlined />
                       <input type="file" ref="avatarFileInput" style="display: none;" accept="image/*"
@@ -243,14 +243,14 @@
             <!-- 已登录状态显示 -->
             <div v-if="!collapsed">
               <div class="bubble icon-container" :class="{ collapsed: collapsed }">
-                <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/defaultAvatar.gif'"></a-avatar>
+                <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || getPreRes('defaultAvatar')"></a-avatar>
                 <span class="username-text">{{ userStore.getUserInfo.userName || '用户' }}</span>
-                <img :src="getPreRes('defaultAvatar')" alt="user" class="icon" />
+                <img :src="getPreRes('user')" alt="user" class="icon" />
               </div>
             </div>
             <div v-else>
               <div class="icon-container" :class="{ collapsed: collapsed }">
-                <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || '/defaultAvatar.gif'"></a-avatar>
+                <a-avatar :size="40" :src="userStore.getUserInfo.avatarUrl || getPreRes('defaultAvatar')"></a-avatar>
               </div>
             </div>
           </a-popover>
@@ -314,6 +314,7 @@ import ADD from '/add.svg';
 import DELETEALL from '/deleteAll.svg';
 import PRELOADVALUE from '/preloadValue.svg';
 import COLLAPSE from '/collapse.svg';
+import USER from '/user.svg';
 
 import { useSystemStore } from '@/stores/system';
 import { gsap } from 'gsap';
@@ -418,6 +419,7 @@ export default {
       { id: 'setting', url: SETTING, type: 'image' },
       { id: 'more', url: MORE, type: 'image' },
       { id: 'preloadValue', url: PRELOADVALUE, type: 'image' },
+      { id: 'user', url: USER, type: 'image'}
     ]
     preloader.addResources(assetsToPreload);
     preloader.loadAll().then(() => {
