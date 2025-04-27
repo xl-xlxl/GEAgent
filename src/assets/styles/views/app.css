@@ -46,13 +46,19 @@
 }
 
 .bubble {
-  max-width: 98%;
+  max-width: 90%;
   background:  linear-gradient(135deg ,rgba(234, 67, 53, 0.1), rgba(251, 188, 5, 0.1));
   padding: 8px 16px;
   border-radius: 18px;
   color: #777777;
   font-weight: bold;
   transition: all 0.3s ease;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .bubble:hover {
@@ -127,8 +133,10 @@
 .history-container {
   overflow-y: auto;
   scrollbar-width: none;
-  width: 99%;
+  width: 90%;
   color: #777777;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .history-container::-webkit-scrollbar {
